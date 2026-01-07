@@ -6469,6 +6469,38 @@ export class EnrichmentService {
       case 'nyc_mappluto':
         return await this.getNYCMapPLUTO(lat, lon, radius);
       
+      // NYC MapPLUTO Commercial + Mixed Use - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_commercial_mixed_use':
+        return await this.getNYCMapPLUTOCommercialMixedUse(lat, lon, radius);
+      
+      // NYC MapPLUTO Retail - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_retail':
+        return await this.getNYCMapPLUTORetail(lat, lon, radius);
+      
+      // NYC MapPLUTO Office - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_office':
+        return await this.getNYCMapPLUTOOffice(lat, lon, radius);
+      
+      // NYC MapPLUTO Industrial / Manufacturing - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_industrial':
+        return await this.getNYCMapPLUTOIndustrial(lat, lon, radius);
+      
+      // NYC MapPLUTO Warehouses - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_warehouses':
+        return await this.getNYCMapPLUTOWarehouses(lat, lon, radius);
+      
+      // NYC MapPLUTO Hotels / Hospitality - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_hotels':
+        return await this.getNYCMapPLUTOHotels(lat, lon, radius);
+      
+      // NYC MapPLUTO Auto-Related Commercial - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_auto_commercial':
+        return await this.getNYCMapPLUTOAutoCommercial(lat, lon, radius);
+      
+      // NYC MapPLUTO Large Commercial Footprint - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_large_commercial':
+        return await this.getNYCMapPLUTOLargeCommercial(lat, lon, radius);
+      
       // NYC Bike Routes - Proximity query (max 5 miles)
       case 'nyc_bike_routes':
         return await this.getNYCBikeRoutes(lat, lon, radius);
@@ -18773,6 +18805,197 @@ out center tags;`;
         nyc_mappluto_all: []
       };
     }
+  }
+
+  private async getNYCMapPLUTOFiltered(lat: number, lon: number, radius: number | undefined, whereClause: string, layerId: string, layerName: string): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching NYC MapPLUTO ${layerName} data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const taxLots = await getNYCMapPLUTOData(lat, lon, radius, whereClause);
+      
+      const result: Record<string, any> = {};
+
+      if (taxLots.length === 0) {
+        result[`${layerId}_containing`] = null;
+        result[`${layerId}_containing_message`] = `No ${layerName.toLowerCase()} lot found containing this location`;
+        result[`${layerId}_count`] = 0;
+        result[`${layerId}_all`] = [];
+      } else {
+        // Get the first containing tax lot (should typically be only one for point-in-polygon)
+        const containingTaxLot = taxLots.find(t => t.isContaining) || taxLots[0];
+        
+        if (containingTaxLot && containingTaxLot.isContaining) {
+          result[`${layerId}_containing`] = containingTaxLot.bbl || containingTaxLot.address || containingTaxLot.objectId || 'Unknown Tax Lot';
+          result[`${layerId}_containing_message`] = `Location is within ${layerName.toLowerCase()} lot: ${containingTaxLot.bbl || containingTaxLot.address || containingTaxLot.objectId || 'Unknown'}`;
+        } else {
+          result[`${layerId}_containing`] = null;
+          result[`${layerId}_containing_message`] = `No ${layerName.toLowerCase()} lot found containing this location`;
+        }
+        
+        result[`${layerId}_count`] = taxLots.length;
+        result[`${layerId}_all`] = taxLots.map(taxLot => ({
+          ...taxLot.attributes,
+          objectId: taxLot.objectId,
+          borough: taxLot.borough,
+          block: taxLot.block,
+          lot: taxLot.lot,
+          address: taxLot.address,
+          bbl: taxLot.bbl,
+          zipCode: taxLot.zipCode,
+          ownerName: taxLot.ownerName,
+          landUse: taxLot.landUse,
+          yearBuilt: taxLot.yearBuilt,
+          bldgClass: taxLot.bldgClass,
+          lotArea: taxLot.lotArea,
+          bldgArea: taxLot.bldgArea,
+          numBldgs: taxLot.numBldgs,
+          numFloors: taxLot.numFloors,
+          unitsRes: taxLot.unitsRes,
+          unitsTotal: taxLot.unitsTotal,
+          assessLand: taxLot.assessLand,
+          assessTot: taxLot.assessTot,
+          zoneDist1: taxLot.zoneDist1,
+          geometry: taxLot.geometry,
+          distance_miles: taxLot.distance_miles,
+          isContaining: taxLot.isContaining
+        }));
+        
+        result[`${layerId}_summary`] = `Found ${taxLots.length} ${layerName.toLowerCase()} lot(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ NYC MapPLUTO ${layerName} data processed:`, {
+        totalCount: result[`${layerId}_count`],
+        containing: result[`${layerId}_containing`]
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NYC MapPLUTO ${layerName} data:`, error);
+      return {
+        [`${layerId}_containing`]: null,
+        [`${layerId}_containing_message`]: `Error querying ${layerName.toLowerCase()} lots`,
+        [`${layerId}_count`]: 0,
+        [`${layerId}_all`]: []
+      };
+    }
+  }
+
+  private async getNYCMapPLUTOCommercialMixedUse(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching NYC MapPLUTO Commercial + Mixed Use data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      // Filter for LandUse codes: 04 (Mixed Residential & Commercial), 05 (Commercial & Office), 06 (Industrial & Manufacturing)
+      // Note: PLUTO uses two-digit codes with leading zeros
+      const whereClause = "LandUse IN ('04','05','06')";
+      const taxLots = await getNYCMapPLUTOData(lat, lon, radius, whereClause);
+      
+      const result: Record<string, any> = {};
+
+      if (taxLots.length === 0) {
+        result.nyc_mappluto_commercial_mixed_use_containing = null;
+        result.nyc_mappluto_commercial_mixed_use_containing_message = 'No commercial or mixed use lot found containing this location';
+        result.nyc_mappluto_commercial_mixed_use_count = 0;
+        result.nyc_mappluto_commercial_mixed_use_all = [];
+      } else {
+        // Get the first containing tax lot (should typically be only one for point-in-polygon)
+        const containingTaxLot = taxLots.find(t => t.isContaining) || taxLots[0];
+        
+        if (containingTaxLot && containingTaxLot.isContaining) {
+          result.nyc_mappluto_commercial_mixed_use_containing = containingTaxLot.bbl || containingTaxLot.address || containingTaxLot.objectId || 'Unknown Tax Lot';
+          result.nyc_mappluto_commercial_mixed_use_containing_message = `Location is within commercial/mixed use lot: ${containingTaxLot.bbl || containingTaxLot.address || containingTaxLot.objectId || 'Unknown'}`;
+        } else {
+          result.nyc_mappluto_commercial_mixed_use_containing = null;
+          result.nyc_mappluto_commercial_mixed_use_containing_message = 'No commercial or mixed use lot found containing this location';
+        }
+        
+        result.nyc_mappluto_commercial_mixed_use_count = taxLots.length;
+        result.nyc_mappluto_commercial_mixed_use_all = taxLots.map(taxLot => ({
+          ...taxLot.attributes,
+          objectId: taxLot.objectId,
+          borough: taxLot.borough,
+          block: taxLot.block,
+          lot: taxLot.lot,
+          address: taxLot.address,
+          bbl: taxLot.bbl,
+          zipCode: taxLot.zipCode,
+          ownerName: taxLot.ownerName,
+          landUse: taxLot.landUse,
+          yearBuilt: taxLot.yearBuilt,
+          bldgClass: taxLot.bldgClass,
+          lotArea: taxLot.lotArea,
+          bldgArea: taxLot.bldgArea,
+          numBldgs: taxLot.numBldgs,
+          numFloors: taxLot.numFloors,
+          unitsRes: taxLot.unitsRes,
+          unitsTotal: taxLot.unitsTotal,
+          assessLand: taxLot.assessLand,
+          assessTot: taxLot.assessTot,
+          zoneDist1: taxLot.zoneDist1,
+          geometry: taxLot.geometry,
+          distance_miles: taxLot.distance_miles,
+          isContaining: taxLot.isContaining
+        }));
+        
+        result.nyc_mappluto_commercial_mixed_use_summary = `Found ${taxLots.length} commercial/mixed use lot(s)${radius ? ` within ${radius} miles` : ' containing the point'}.`;
+      }
+      
+      console.log(`✅ NYC MapPLUTO Commercial + Mixed Use data processed:`, {
+        totalCount: result.nyc_mappluto_commercial_mixed_use_count,
+        containing: result.nyc_mappluto_commercial_mixed_use_containing
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NYC MapPLUTO Commercial + Mixed Use data:', error);
+      return {
+        nyc_mappluto_commercial_mixed_use_containing: null,
+        nyc_mappluto_commercial_mixed_use_containing_message: 'Error querying commercial/mixed use lots',
+        nyc_mappluto_commercial_mixed_use_count: 0,
+        nyc_mappluto_commercial_mixed_use_all: []
+      };
+    }
+  }
+
+  private async getNYCMapPLUTORetail(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Retail: LandUse IN ('04','05') AND RetailArea > 0 AND BldgClass LIKE 'K%'
+    const whereClause = "LandUse IN ('04','05') AND RetailArea > 0 AND BldgClass LIKE 'K%'";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_retail', 'Retail');
+  }
+
+  private async getNYCMapPLUTOOffice(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Office: LandUse = '05' AND OfficeArea > 0 AND BldgClass LIKE 'O%'
+    const whereClause = "LandUse = '05' AND OfficeArea > 0 AND BldgClass LIKE 'O%'";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_office', 'Office');
+  }
+
+  private async getNYCMapPLUTOIndustrial(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Industrial / Manufacturing: LandUse = '06' AND (BldgClass LIKE 'E%' OR BldgClass LIKE 'F%')
+    const whereClause = "LandUse = '06' AND (BldgClass LIKE 'E%' OR BldgClass LIKE 'F%')";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_industrial', 'Industrial / Manufacturing');
+  }
+
+  private async getNYCMapPLUTOWarehouses(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Warehouses: LandUse = '06' AND BldgClass LIKE 'E%'
+    const whereClause = "LandUse = '06' AND BldgClass LIKE 'E%'";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_warehouses', 'Warehouse');
+  }
+
+  private async getNYCMapPLUTOHotels(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Hotels / Hospitality: LandUse IN ('04','05') AND BldgClass LIKE 'H%'
+    const whereClause = "LandUse IN ('04','05') AND BldgClass LIKE 'H%'";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_hotels', 'Hotel / Hospitality');
+  }
+
+  private async getNYCMapPLUTOAutoCommercial(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Auto-Related Commercial: LandUse IN ('04','05','06') AND (BldgClass LIKE 'G%' OR BldgClass = 'K8')
+    const whereClause = "LandUse IN ('04','05','06') AND (BldgClass LIKE 'G%' OR BldgClass = 'K8')";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_auto_commercial', 'Auto-Related Commercial');
+  }
+
+  private async getNYCMapPLUTOLargeCommercial(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Large Commercial Footprint: LandUse IN ('04','05') AND ComArea >= 20000
+    const whereClause = "LandUse IN ('04','05') AND ComArea >= 20000";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_large_commercial', 'Large Commercial Footprint');
   }
 
   private async getNYCBikeRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {

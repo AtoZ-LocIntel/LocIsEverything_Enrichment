@@ -578,6 +578,14 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'chicago_speed_cameras_all' ||
         key === 'chicago_red_light_cameras_all' ||
         key === 'nyc_mappluto_all' ||
+        key === 'nyc_mappluto_commercial_mixed_use_all' ||
+        key === 'nyc_mappluto_retail_all' ||
+        key === 'nyc_mappluto_office_all' ||
+        key === 'nyc_mappluto_industrial_all' ||
+        key === 'nyc_mappluto_warehouses_all' ||
+        key === 'nyc_mappluto_hotels_all' ||
+        key === 'nyc_mappluto_auto_commercial_all' ||
+        key === 'nyc_mappluto_large_commercial_all' ||
         key === 'nyc_bike_routes_all' ||
         key === 'nyc_neighborhoods_all' ||
         key === 'nyc_zoning_districts_all' ||
@@ -8191,6 +8199,223 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           '', // Phone
           attributesJson,
           'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_commercial_mixed_use_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const ownerName = taxLot.ownerName || taxLot.OwnerName || taxLot.OWNERNAME || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.bbl;
+        delete allAttributes.BBL;
+        delete allAttributes.address;
+        delete allAttributes.Address;
+        delete allAttributes.ADDRESS;
+        delete allAttributes.borough;
+        delete allAttributes.Borough;
+        delete allAttributes.BOROUGH;
+        delete allAttributes.block;
+        delete allAttributes.Block;
+        delete allAttributes.BLOCK;
+        delete allAttributes.lot;
+        delete allAttributes.Lot;
+        delete allAttributes.LOT;
+        delete allAttributes.zipCode;
+        delete allAttributes.ZipCode;
+        delete allAttributes.ZIPCODE;
+        delete allAttributes.ownerName;
+        delete allAttributes.OwnerName;
+        delete allAttributes.OWNERNAME;
+        delete allAttributes.landUse;
+        delete allAttributes.LandUse;
+        delete allAttributes.LANDUSE;
+        delete allAttributes.yearBuilt;
+        delete allAttributes.YearBuilt;
+        delete allAttributes.YEARBUILT;
+        delete allAttributes.bldgClass;
+        delete allAttributes.BldgClass;
+        delete allAttributes.BLDGCLASS;
+        delete allAttributes.lotArea;
+        delete allAttributes.LotArea;
+        delete allAttributes.LOTAREA;
+        delete allAttributes.bldgArea;
+        delete allAttributes.BldgArea;
+        delete allAttributes.BLDGAREA;
+        delete allAttributes.numBldgs;
+        delete allAttributes.NumBldgs;
+        delete allAttributes.NUMBLDGS;
+        delete allAttributes.numFloors;
+        delete allAttributes.NumFloors;
+        delete allAttributes.NUMFLOORS;
+        delete allAttributes.unitsRes;
+        delete allAttributes.UnitsRes;
+        delete allAttributes.UNITSRES;
+        delete allAttributes.unitsTotal;
+        delete allAttributes.UnitsTotal;
+        delete allAttributes.UNITSTOTAL;
+        delete allAttributes.assessLand;
+        delete allAttributes.AssessLand;
+        delete allAttributes.ASSESSLAND;
+        delete allAttributes.assessTot;
+        delete allAttributes.AssessTot;
+        delete allAttributes.ASSESSTOT;
+        delete allAttributes.zoneDist1;
+        delete allAttributes.ZoneDist1;
+        delete allAttributes.ZONEDIST1;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'New York City',
+          (location.confidence || 'N/A').toString(),
+          'NYC_MAPPLUTO_COMMERCIAL_MIXED_USE_LOT',
+          `${bbl}${address ? ` - ${address}` : ''}`,
+          '', // Lat (polygon, no single point)
+          '', // Lon (polygon, no single point)
+          distance,
+          taxLot.isContaining ? 'Within Commercial/Mixed Use Lot' : `Nearby Commercial/Mixed Use Lot (${distance} miles)`,
+          address || bbl,
+          ownerName || '',
+          '', // Phone
+          attributesJson,
+          'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_retail_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_RETAIL',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Retail Lot' : `Nearby Retail Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_office_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_OFFICE',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Office Lot' : `Nearby Office Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_industrial_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_INDUSTRIAL',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Industrial Lot' : `Nearby Industrial Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_warehouses_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_WAREHOUSES',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Warehouse Lot' : `Nearby Warehouse Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_hotels_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_HOTELS',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Hotel Lot' : `Nearby Hotel Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_auto_commercial_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_AUTO_COMMERCIAL',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Auto Commercial Lot' : `Nearby Auto Commercial Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_large_commercial_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_LARGE_COMMERCIAL',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Large Commercial Lot' : `Nearby Large Commercial Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
         ]);
       });
     } else if (key === 'nyc_bike_routes_all' && Array.isArray(value)) {

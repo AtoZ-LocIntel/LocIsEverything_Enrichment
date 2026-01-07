@@ -2426,6 +2426,14 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'chicago_speed_cameras_all' || // Skip Chicago Speed Cameras array (handled separately for map drawing)
     key === 'chicago_red_light_cameras_all' || // Skip Chicago Red Light Cameras array (handled separately for map drawing)
     key === 'nyc_mappluto_all' || // Skip NYC MapPLUTO array (handled separately for map drawing)
+    key === 'nyc_mappluto_commercial_mixed_use_all' || // Skip NYC MapPLUTO Commercial + Mixed Use array (handled separately for map drawing)
+    key === 'nyc_mappluto_retail_all' || // Skip NYC MapPLUTO Retail array (handled separately for map drawing)
+    key === 'nyc_mappluto_office_all' || // Skip NYC MapPLUTO Office array (handled separately for map drawing)
+    key === 'nyc_mappluto_industrial_all' || // Skip NYC MapPLUTO Industrial array (handled separately for map drawing)
+    key === 'nyc_mappluto_warehouses_all' || // Skip NYC MapPLUTO Warehouses array (handled separately for map drawing)
+    key === 'nyc_mappluto_hotels_all' || // Skip NYC MapPLUTO Hotels array (handled separately for map drawing)
+    key === 'nyc_mappluto_auto_commercial_all' || // Skip NYC MapPLUTO Auto Commercial array (handled separately for map drawing)
+    key === 'nyc_mappluto_large_commercial_all' || // Skip NYC MapPLUTO Large Commercial array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -20032,6 +20040,243 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing NYC MapPLUTO Tax Lots:', error);
       }
 
+      // Draw NYC MapPLUTO Commercial + Mixed Use Tax Lots as polygons on the map
+      try {
+        if (enrichments.nyc_mappluto_commercial_mixed_use_all && Array.isArray(enrichments.nyc_mappluto_commercial_mixed_use_all)) {
+          let taxLotCount = 0;
+          enrichments.nyc_mappluto_commercial_mixed_use_all.forEach((taxLot: any) => {
+            if (taxLot.geometry && taxLot.geometry.rings) {
+              try {
+                const rings = taxLot.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('NYC MapPLUTO Commercial + Mixed Use tax lot polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = taxLot.isContaining;
+                  const color = isContaining ? '#10b981' : '#34d399'; // Green for commercial/mixed use lots
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+                  
+                  const bbl = taxLot.bbl || taxLot.BBL || taxLot.bbl || null;
+                  const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || null;
+                  const borough = taxLot.borough || taxLot.Borough || taxLot.BOROUGH || null;
+                  const block = taxLot.block || taxLot.Block || taxLot.BLOCK || null;
+                  const lot = taxLot.lot || taxLot.Lot || taxLot.LOT || null;
+                  const ownerName = taxLot.ownerName || taxLot.OwnerName || taxLot.OWNERNAME || null;
+                  const landUse = taxLot.landUse || taxLot.LandUse || taxLot.LANDUSE || null;
+                  const yearBuilt = taxLot.yearBuilt || taxLot.YearBuilt || taxLot.YEARBUILT || null;
+                  const bldgClass = taxLot.bldgClass || taxLot.BldgClass || taxLot.BLDGCLASS || null;
+                  const lotArea = taxLot.lotArea || taxLot.LotArea || taxLot.LOTAREA || null;
+                  const bldgArea = taxLot.bldgArea || taxLot.BldgArea || taxLot.BLDGAREA || null;
+                  const numBldgs = taxLot.numBldgs || taxLot.NumBldgs || taxLot.NUMBLDGS || null;
+                  const numFloors = taxLot.numFloors || taxLot.NumFloors || taxLot.NUMFLOORS || null;
+                  const unitsRes = taxLot.unitsRes || taxLot.UnitsRes || taxLot.UNITSRES || null;
+                  const unitsTotal = taxLot.unitsTotal || taxLot.UnitsTotal || taxLot.UNITSTOTAL || null;
+                  const assessLand = taxLot.assessLand || taxLot.AssessLand || taxLot.ASSESSLAND || null;
+                  const assessTot = taxLot.assessTot || taxLot.AssessTot || taxLot.ASSESSTOT || null;
+                  const zoneDist1 = taxLot.zoneDist1 || taxLot.ZoneDist1 || taxLot.ZONEDIST1 || null;
+                  const zipCode = taxLot.zipCode || taxLot.ZipCode || taxLot.ZIPCODE || null;
+                  const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${isContaining ? '🏪 Containing Commercial/Mixed Use Lot' : '🏪 Nearby Commercial/Mixed Use Lot'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${bbl ? `<div><strong>BBL:</strong> ${bbl}</div>` : ''}
+                        ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                        ${borough ? `<div><strong>Borough:</strong> ${borough}</div>` : ''}
+                        ${block ? `<div><strong>Block:</strong> ${block}</div>` : ''}
+                        ${lot ? `<div><strong>Lot:</strong> ${lot}</div>` : ''}
+                        ${zipCode ? `<div><strong>Zip Code:</strong> ${zipCode}</div>` : ''}
+                        ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
+                        ${landUse ? `<div><strong>Land Use:</strong> ${landUse} (Commercial/Mixed Use)</div>` : ''}
+                        ${yearBuilt ? `<div><strong>Year Built:</strong> ${yearBuilt}</div>` : ''}
+                        ${bldgClass ? `<div><strong>Building Class:</strong> ${bldgClass}</div>` : ''}
+                        ${lotArea !== null && lotArea !== undefined ? `<div><strong>Lot Area:</strong> ${lotArea.toLocaleString()} sq ft</div>` : ''}
+                        ${bldgArea !== null && bldgArea !== undefined ? `<div><strong>Building Area:</strong> ${bldgArea.toLocaleString()} sq ft</div>` : ''}
+                        ${numBldgs !== null && numBldgs !== undefined ? `<div><strong>Number of Buildings:</strong> ${numBldgs}</div>` : ''}
+                        ${numFloors ? `<div><strong>Number of Floors:</strong> ${numFloors}</div>` : ''}
+                        ${unitsRes !== null && unitsRes !== undefined ? `<div><strong>Residential Units:</strong> ${unitsRes}</div>` : ''}
+                        ${unitsTotal !== null && unitsTotal !== undefined ? `<div><strong>Total Units:</strong> ${unitsTotal}</div>` : ''}
+                        ${assessLand !== null && assessLand !== undefined ? `<div><strong>Assessed Land Value:</strong> $${assessLand.toLocaleString()}</div>` : ''}
+                        ${assessTot !== null && assessTot !== undefined ? `<div><strong>Total Assessed Value:</strong> $${assessTot.toLocaleString()}</div>` : ''}
+                        ${zoneDist1 ? `<div><strong>Zoning District:</strong> ${zoneDist1}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this commercial/mixed use lot</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                      <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                  `;
+                  
+                  // Add all tax lot attributes (excluding internal fields)
+                  const excludeFields = ['objectId', 'OBJECTID', 'objectid', 'geometry', 'distance_miles', 'FID', 'fid', 'GlobalID', 'GLOBALID', 'bbl', 'BBL', 'bbl', 'address', 'Address', 'ADDRESS', 'borough', 'Borough', 'BOROUGH', 'block', 'Block', 'BLOCK', 'lot', 'Lot', 'LOT', 'zipCode', 'ZipCode', 'ZIPCODE', 'ownerName', 'OwnerName', 'OWNERNAME', 'landUse', 'LandUse', 'LANDUSE', 'yearBuilt', 'YearBuilt', 'YEARBUILT', 'bldgClass', 'BldgClass', 'BLDGCLASS', 'lotArea', 'LotArea', 'LOTAREA', 'bldgArea', 'BldgArea', 'BLDGAREA', 'numBldgs', 'NumBldgs', 'NUMBLDGS', 'numFloors', 'NumFloors', 'NUMFLOORS', 'unitsRes', 'UnitsRes', 'UNITSRES', 'unitsTotal', 'UnitsTotal', 'UNITSTOTAL', 'assessLand', 'AssessLand', 'ASSESSLAND', 'assessTot', 'AssessTot', 'ASSESSTOT', 'zoneDist1', 'ZoneDist1', 'ZONEDIST1', 'isContaining'];
+                  Object.entries(taxLot).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      if (typeof value === 'object' && !Array.isArray(value)) {
+                        return;
+                      }
+                      const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                      popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                    }
+                  });
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent);
+                  polygon.addTo(primary);
+                  
+                  // Extend bounds to include polygon
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  taxLotCount++;
+                }
+              } catch (error) {
+                console.error('Error drawing NYC MapPLUTO Commercial + Mixed Use tax lot polygon:', error);
+              }
+            }
+          });
+          
+          if (taxLotCount > 0) {
+            if (!legendAccumulator['nyc_mappluto_commercial_mixed_use']) {
+              legendAccumulator['nyc_mappluto_commercial_mixed_use'] = {
+                icon: '🏪',
+                color: '#10b981',
+                title: 'NYC MapPLUTO Commercial + Mixed Use Lots',
+                count: 0
+              };
+            }
+            legendAccumulator['nyc_mappluto_commercial_mixed_use'].count += taxLotCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing NYC MapPLUTO Commercial + Mixed Use Tax Lots:', error);
+      }
+
+      // Helper function to draw NYC MapPLUTO filtered layers
+      const drawNYCMapPLUTOLayer = (enrichmentKey: string, layerId: string, title: string, color: string, icon: string) => {
+        try {
+          if (enrichments[enrichmentKey] && Array.isArray(enrichments[enrichmentKey])) {
+            let taxLotCount = 0;
+            enrichments[enrichmentKey].forEach((taxLot: any) => {
+              if (taxLot.geometry && taxLot.geometry.rings) {
+                try {
+                  const rings = taxLot.geometry.rings;
+                  if (rings && rings.length > 0) {
+                    const outerRing = rings[0];
+                    const latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                    
+                    if (latlngs.length < 3) {
+                      console.warn(`${title} polygon has less than 3 coordinates, skipping`);
+                      return;
+                    }
+                    
+                    const isContaining = taxLot.isContaining;
+                    const polygonColor = isContaining ? color : color.replace('rgb(', 'rgba(').replace(')', ', 0.6)');
+                    const weight = isContaining ? 3 : 2;
+                    const opacity = isContaining ? 0.8 : 0.5;
+                    
+                    const polygon = L.polygon(latlngs, {
+                      color: color,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.2
+                    });
+                    
+                    const bbl = taxLot.bbl || taxLot.BBL || taxLot.bbl || null;
+                    const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || null;
+                    const borough = taxLot.borough || taxLot.Borough || taxLot.BOROUGH || null;
+                    const block = taxLot.block || taxLot.Block || taxLot.BLOCK || null;
+                    const lot = taxLot.lot || taxLot.Lot || taxLot.LOT || null;
+                    const ownerName = taxLot.ownerName || taxLot.OwnerName || taxLot.OWNERNAME || null;
+                    const landUse = taxLot.landUse || taxLot.LandUse || taxLot.LANDUSE || null;
+                    const yearBuilt = taxLot.yearBuilt || taxLot.YearBuilt || taxLot.YEARBUILT || null;
+                    const bldgClass = taxLot.bldgClass || taxLot.BldgClass || taxLot.BLDGCLASS || null;
+                    const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles : 0;
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${isContaining ? `${icon} Containing ${title}` : `${icon} Nearby ${title}`}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${bbl ? `<div><strong>BBL:</strong> ${bbl}</div>` : ''}
+                          ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                          ${borough ? `<div><strong>Borough:</strong> ${borough}</div>` : ''}
+                          ${block ? `<div><strong>Block:</strong> ${block}</div>` : ''}
+                          ${lot ? `<div><strong>Lot:</strong> ${lot}</div>` : ''}
+                          ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
+                          ${landUse ? `<div><strong>Land Use:</strong> ${landUse}</div>` : ''}
+                          ${yearBuilt ? `<div><strong>Year Built:</strong> ${yearBuilt}</div>` : ''}
+                          ${bldgClass ? `<div><strong>Building Class:</strong> ${bldgClass}</div>` : ''}
+                          ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this lot</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polygon.bindPopup(popupContent);
+                    polygon.addTo(primary);
+                    
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+                    
+                    taxLotCount++;
+                  }
+                } catch (error) {
+                  console.error(`Error drawing ${title} polygon:`, error);
+                }
+              }
+            });
+            
+            if (taxLotCount > 0) {
+              if (!legendAccumulator[layerId]) {
+                legendAccumulator[layerId] = {
+                  icon: icon,
+                  color: color,
+                  title: title,
+                  count: 0
+                };
+              }
+              legendAccumulator[layerId].count += taxLotCount;
+            }
+          }
+        } catch (error) {
+          console.error(`Error processing ${title}:`, error);
+        }
+      };
+
+      // Draw all NYC MapPLUTO filtered commercial layers
+      drawNYCMapPLUTOLayer('nyc_mappluto_retail_all', 'nyc_mappluto_retail', 'NYC MapPLUTO Retail', '#ef4444', '🛍️');
+      drawNYCMapPLUTOLayer('nyc_mappluto_office_all', 'nyc_mappluto_office', 'NYC MapPLUTO Office', '#3b82f6', '🏢');
+      drawNYCMapPLUTOLayer('nyc_mappluto_industrial_all', 'nyc_mappluto_industrial', 'NYC MapPLUTO Industrial / Manufacturing', '#f59e0b', '🏭');
+      drawNYCMapPLUTOLayer('nyc_mappluto_warehouses_all', 'nyc_mappluto_warehouses', 'NYC MapPLUTO Warehouses', '#8b5cf6', '📦');
+      drawNYCMapPLUTOLayer('nyc_mappluto_hotels_all', 'nyc_mappluto_hotels', 'NYC MapPLUTO Hotels / Hospitality', '#ec4899', '🏨');
+      drawNYCMapPLUTOLayer('nyc_mappluto_auto_commercial_all', 'nyc_mappluto_auto_commercial', 'NYC MapPLUTO Auto-Related Commercial', '#14b8a6', '🚗');
+      drawNYCMapPLUTOLayer('nyc_mappluto_large_commercial_all', 'nyc_mappluto_large_commercial', 'NYC MapPLUTO Large Commercial Footprint', '#6366f1', '🏬');
+
       // Draw NYC Bike Routes as polylines on the map
       try {
         if (enrichments.nyc_bike_routes_all && Array.isArray(enrichments.nyc_bike_routes_all)) {
@@ -37551,7 +37796,12 @@ const MapView: React.FC<MapViewProps> = ({
       // NYC layers
       if (title.includes('bike route')) return 'nyc_bike_routes';
       if (title.includes('neighborhood')) return 'nyc_neighborhoods';
-      if (title.includes('tax lot') || title.includes('mappluto')) return 'nyc_mappluto';
+      if (title.includes('tax lot') || title.includes('mappluto')) {
+        if (title.includes('commercial') || title.includes('mixed use')) {
+          return 'nyc_mappluto_commercial_mixed_use';
+        }
+        return 'nyc_mappluto';
+      }
       // LA County layers
       if (title.includes('historic cultural monument')) return 'la_county_historic_cultural_monuments';
       if (title.includes('housing') && title.includes('lead')) return 'la_county_housing_lead_risk';
