@@ -2924,7 +2924,12 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'usgs_gov_congressional_district', label: 'USGS Congressional District', description: 'USGS Governmental Unit Boundaries - Congressional Districts (point-in-polygon and proximity up to 50 miles)', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'usgsgovunits', section: 'nationalmap' },
   { id: 'usgs_gov_county_equivalent', label: 'USGS County or Equivalent', description: 'USGS Governmental Unit Boundaries - Counties or Equivalents (point-in-polygon and proximity up to 50 miles)', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'usgsgovunits', section: 'nationalmap' },
   { id: 'usgs_gov_state_territory_small_scale', label: 'USGS State or Territory (Small-Scale)', description: 'USGS Governmental Unit Boundaries - States or Territories Small-Scale (point-in-polygon and proximity up to 50 miles)', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'usgsgovunits', section: 'nationalmap' },
-  { id: 'usgs_gov_state_territory_large_scale', label: 'USGS State or Territory (Large-Scale)', description: 'USGS Governmental Unit Boundaries - States or Territories Large-Scale (point-in-polygon and proximity up to 50 miles)', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'usgsgovunits', section: 'nationalmap' }
+  { id: 'usgs_gov_state_territory_large_scale', label: 'USGS State or Territory (Large-Scale)', description: 'USGS Governmental Unit Boundaries - States or Territories Large-Scale (point-in-polygon and proximity up to 50 miles)', isPOI: true, defaultRadius: 0, maxRadius: 50, category: 'usgsgovunits', section: 'nationalmap' },
+  
+  // City of Miami - Florida Open Data
+  { id: 'miami_business_fd_inspected', label: 'Business Location (FD Inspected)', description: 'City of Miami businesses with Fire Department Certificate of Occupancy (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
+  { id: 'miami_public_schools', label: 'Public Schools', description: 'City of Miami public school sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
+  { id: 'miami_water_bodies', label: 'Water Bodies', description: 'City of Miami water body polygons (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 0, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' }
 ];
 
 class POIConfigManager {

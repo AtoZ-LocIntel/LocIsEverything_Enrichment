@@ -441,6 +441,9 @@ import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCamera
 import { getNYCMapPLUTOData } from '../adapters/nycMapPLUTO';
 import { getScotlandGritterLocationsData } from '../adapters/scotlandTrunkRoadGritters';
 import { getScotlandTrunkRoadHeightData } from '../adapters/scotlandTrunkRoadHeight';
+import { getMiamiBusinessFDInspectedData } from '../adapters/miamiBusinessFDInspected';
+import { getMiamiPublicSchoolsData } from '../adapters/miamiPublicSchools';
+import { getMiamiWaterBodiesData } from '../adapters/miamiWaterBodies';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -8535,6 +8538,19 @@ export class EnrichmentService {
       // Scotland Transport - Trunk Road Network Height (proximity query, max 25 miles)
       case 'scotland_transport_trunk_road_height':
         return await this.getScotlandTrunkRoadHeight(lat, lon, radius);
+      
+      // City of Miami - Business Location (FD Inspected) (proximity query, max 25 miles)
+      case 'miami_business_fd_inspected':
+        return await this.getMiamiBusinessFDInspected(lat, lon, radius);
+      
+      // City of Miami - Public Schools (proximity query, max 25 miles)
+      case 'miami_public_schools':
+        return await this.getMiamiPublicSchools(lat, lon, radius);
+      
+      // City of Miami - Water Bodies (point-in-polygon and proximity query, max 25 miles)
+      case 'miami_water_bodies':
+        return await this.getMiamiWaterBodies(lat, lon, radius);
+      
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
       case 'uk_nspl_postcode_centroids':
@@ -13329,15 +13345,16 @@ export class EnrichmentService {
     // Add comprehensive logging to debug POI filter issues
     console.log(`🔍 Looking for OSM filters for: ${id}`);
     
-    if (id === "poi_hospitals") return ["amenity=hospital"];
+    // Hospitals: query both legacy amenity tagging and newer healthcare tagging
+    if (id === "poi_hospitals") return ["amenity=hospital", "healthcare=hospital"];
     if (id === "poi_parks") return ["leisure=park"];
     if (id === "poi_grocery") return ["shop=supermarket", "shop=convenience"];
     if (id === "poi_restaurants") return ["amenity=restaurant", "amenity=fast_food"];
     if (id === "poi_banks") return ["amenity=bank", "amenity=atm"];
     if (id === "poi_pharmacies") return ["shop=pharmacy", "amenity=pharmacy"];
     if (id === "poi_worship") return ["amenity=place_of_worship"];
-    if (id === "poi_doctors_clinics") return ["amenity=clinic", "amenity=doctors"];
-    if (id === "poi_dentists") return ["amenity=dentist"];
+    if (id === "poi_doctors_clinics") return ["amenity~doctors|clinic|hospital", "healthcare~doctor|clinic|centre|hospital"];
+    if (id === "poi_dentists") return ["amenity=dentist", "healthcare=dentist"];
     if (id === "poi_gyms") return ["leisure=fitness_centre", "leisure=gym"];
     
     // OSM Health & Wellness layers
@@ -13356,7 +13373,7 @@ export class EnrichmentService {
     if (id === "poi_police_stations") return ["amenity=police"];
     if (id === "poi_fire_stations") return ["amenity=fire_station"];
     
-    if (id === "poi_urgent_care") return ["amenity=clinic"];
+    if (id === "poi_urgent_care") return ["amenity=clinic", "healthcare=clinic", "healthcare=urgent_care"];
     if (id === "poi_golf_courses") return ["leisure=golf_course"];
     if (id === "poi_boat_ramps") return ["leisure=boat_ramp"];
     if (id === "poi_cafes_coffee") return ["amenity=cafe", "shop=coffee"];
@@ -13643,10 +13660,83 @@ out center;`;
         f.includes('ophthalmologist')
       );
       
+      // Special handling for doctors/clinics - use around: syntax with both amenity and healthcare tags
+      const isDoctorsClinicsQuery = filters.some(f => 
+        f.includes('amenity~') || 
+        f.includes('healthcare~') ||
+        (f.includes('amenity') && (f.includes('doctors') || f.includes('clinic'))) ||
+        (f.includes('healthcare') && (f.includes('doctor') || f.includes('clinic')))
+      );
+
+      // Special handling for hospitals - use around: syntax (radius-based) and include both tag systems
+      const isHospitalsQuery = filters.some(f =>
+        f === 'amenity=hospital' ||
+        f === 'healthcare=hospital' ||
+        f.includes('amenity=hospital') ||
+        f.includes('healthcare=hospital')
+      );
+
+      // Special handling for dentists - use around: syntax with both amenity and healthcare tags
+      const isDentistsQuery = filters.some(f =>
+        f === 'amenity=dentist' ||
+        f === 'healthcare=dentist' ||
+        f.includes('amenity=dentist') ||
+        f.includes('healthcare=dentist')
+      );
+
+      // Special handling for urgent care - use around: syntax with both amenity and healthcare tags
+      // Detect if this is specifically an urgent care query (has urgent_care tag)
+      const isUrgentCareQuery = filters.some(f => 
+        f === 'healthcare=urgent_care' || 
+        f.includes('healthcare=urgent_care')
+      );
+      
       let queryParts: string[] = [];
       const isAirportQuery = filters.some(f => f.startsWith('aeroway='));
       
-      if (isDentalVisionQuery) {
+      if (isDoctorsClinicsQuery) {
+        // Use around: syntax for radius-based queries (NOT bbox!)
+        // Convert radius from miles to meters for around: syntax
+        const radiusMeters = Math.round(radiusMiles * 1609.34);
+        // Query amenity-based medical facilities (nodes, ways, relations)
+        queryParts.push(`  node["amenity"~"doctors|clinic|hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["amenity"~"doctors|clinic|hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["amenity"~"doctors|clinic|hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        // Query healthcare-based medical facilities (nodes, ways, relations)
+        queryParts.push(`  node["healthcare"~"doctor|clinic|centre|hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["healthcare"~"doctor|clinic|centre|hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["healthcare"~"doctor|clinic|centre|hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+      } else if (isHospitalsQuery) {
+        // Use around: syntax for radius-based hospital queries (NOT bbox!)
+        const radiusMeters = Math.round(radiusMiles * 1609.34);
+        queryParts.push(`  node["amenity"="hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["amenity"="hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["amenity"="hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  node["healthcare"="hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["healthcare"="hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["healthcare"="hospital"](around:${radiusMeters}, ${lat}, ${lon});`);
+      } else if (isDentistsQuery) {
+        // Use around: syntax for radius-based dentist queries (NOT bbox!)
+        const radiusMeters = Math.round(radiusMiles * 1609.34);
+        queryParts.push(`  node["amenity"="dentist"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["amenity"="dentist"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["amenity"="dentist"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  node["healthcare"="dentist"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["healthcare"="dentist"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["healthcare"="dentist"](around:${radiusMeters}, ${lat}, ${lon});`);
+      } else if (isUrgentCareQuery) {
+        // Use around: syntax for radius-based urgent care queries (NOT bbox!)
+        const radiusMeters = Math.round(radiusMiles * 1609.34);
+        queryParts.push(`  node["amenity"="clinic"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["amenity"="clinic"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["amenity"="clinic"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  node["healthcare"="clinic"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["healthcare"="clinic"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["healthcare"="clinic"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  node["healthcare"="urgent_care"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  way["healthcare"="urgent_care"](around:${radiusMeters}, ${lat}, ${lon});`);
+        queryParts.push(`  relation["healthcare"="urgent_care"](around:${radiusMeters}, ${lat}, ${lon});`);
+      } else if (isDentalVisionQuery) {
         // Use advanced Overpass query with regex matching and multiple tag conditions
         queryParts.push(`  nwr["healthcare"="dentist"](${bbox});`);
         queryParts.push(`  nwr["healthcare"="orthodontist"](${bbox});`);
@@ -24580,6 +24670,184 @@ out center tags;`;
         scotland_transport_trunk_road_height_count: 0,
         scotland_transport_trunk_road_height_all: [],
         scotland_transport_trunk_road_height_summary: 'Error querying trunk road height segments'
+      };
+    }
+  }
+
+  private async getMiamiBusinessFDInspected(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`🏢 Fetching Miami Business Locations (FD Inspected) for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const businesses = await getMiamiBusinessFDInspectedData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (businesses.length === 0) {
+        result.miami_business_fd_inspected_count = 0;
+        result.miami_business_fd_inspected_all = [];
+        result.miami_business_fd_inspected_summary = `No businesses with Fire Department Certificate of Occupancy found${radius ? ` within ${radius} miles` : ''}.`;
+      } else {
+        result.miami_business_fd_inspected_count = businesses.length;
+        result.miami_business_fd_inspected_all = businesses.map((business: any) => {
+          return {
+            objectId: business.objectId,
+            businessId: business.businessId,
+            businessName: business.businessName,
+            businessAddress: business.businessAddress,
+            city: business.city,
+            stateCode: business.stateCode,
+            zipCode: business.zipCode,
+            squareFoot: business.squareFoot,
+            folioNumber: business.folioNumber,
+            fireZone90: business.fireZone90,
+            activity: business.activity,
+            activity2: business.activity2,
+            activity3: business.activity3,
+            activity4: business.activity4,
+            geometry: business.geometry, // Preserve full geometry object
+            distance_miles: business.distance_miles,
+            attributes: business.attributes
+          };
+        });
+        
+        // Sort by distance
+        result.miami_business_fd_inspected_all.sort((a: any, b: any) => {
+          const distA = a.distance_miles || Infinity;
+          const distB = b.distance_miles || Infinity;
+          return distA - distB;
+        });
+        
+        result.miami_business_fd_inspected_summary = `Found ${businesses.length} business${businesses.length !== 1 ? 'es' : ''} with Fire Department Certificate of Occupancy${radius ? ` within ${radius} miles` : ''}.`;
+      }
+
+      console.log(`✅ Miami Business FD Inspected data processed:`, {
+        totalCount: result.miami_business_fd_inspected_count
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Miami Business FD Inspected:', error);
+      return {
+        miami_business_fd_inspected_count: 0,
+        miami_business_fd_inspected_all: [],
+        miami_business_fd_inspected_summary: `Error querying business locations: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getMiamiPublicSchools(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`🎓 Fetching Miami Public Schools for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const schools = await getMiamiPublicSchoolsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (schools.length === 0) {
+        result.miami_public_schools_count = 0;
+        result.miami_public_schools_all = [];
+        result.miami_public_schools_summary = `No public schools found${radius ? ` within ${radius} miles` : ''}.`;
+      } else {
+        result.miami_public_schools_count = schools.length;
+        result.miami_public_schools_all = schools.map((school: any) => {
+          return {
+            objectId: school.objectId,
+            folio: school.folio,
+            schoolId: school.schoolId,
+            name: school.name,
+            campus: school.campus,
+            address: school.address,
+            unit: school.unit,
+            city: school.city,
+            zipCode: school.zipCode,
+            phone: school.phone,
+            email: school.email,
+            type: school.type,
+            grades: school.grades,
+            capacity: school.capacity,
+            enrollment: school.enrollment,
+            region: school.region,
+            lat: school.lat,
+            lon: school.lon,
+            geometry: school.geometry, // Preserve full geometry object
+            distance_miles: school.distance_miles,
+            attributes: school.attributes
+          };
+        });
+        
+        // Sort by distance
+        result.miami_public_schools_all.sort((a: any, b: any) => {
+          const distA = a.distance_miles || Infinity;
+          const distB = b.distance_miles || Infinity;
+          return distA - distB;
+        });
+        
+        result.miami_public_schools_summary = `Found ${schools.length} public school${schools.length !== 1 ? 's' : ''}${radius ? ` within ${radius} miles` : ''}.`;
+      }
+
+      console.log(`✅ Miami Public Schools data processed:`, {
+        totalCount: result.miami_public_schools_count
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Miami Public Schools:', error);
+      return {
+        miami_public_schools_count: 0,
+        miami_public_schools_all: [],
+        miami_public_schools_summary: `Error querying public schools: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getMiamiWaterBodies(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`💧 Fetching Miami Water Bodies for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const waterBodies = await getMiamiWaterBodiesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (waterBodies.length === 0) {
+        result.miami_water_bodies_count = 0;
+        result.miami_water_bodies_all = [];
+        result.miami_water_bodies_summary = `No water bodies found${radius ? ` within ${radius} miles` : ''}.`;
+      } else {
+        const containingCount = waterBodies.filter(wb => wb.isContaining).length;
+        result.miami_water_bodies_count = waterBodies.length;
+        result.miami_water_bodies_all = waterBodies.map((waterBody: any) => {
+          return {
+            objectId: waterBody.objectId,
+            water: waterBody.water,
+            type: waterBody.type,
+            lastUpdate: waterBody.lastUpdate,
+            shapeArea: waterBody.shapeArea,
+            shapeLength: waterBody.shapeLength,
+            geometry: waterBody.geometry, // Preserve full geometry object
+            distance_miles: waterBody.distance_miles,
+            isContaining: waterBody.isContaining,
+            attributes: waterBody.attributes
+          };
+        });
+        
+        result.miami_water_bodies_summary = `Found ${waterBodies.length} water body${waterBodies.length !== 1 ? 'ies' : ''}${containingCount > 0 ? ` (${containingCount} containing the point)` : ''}${radius ? ` within ${radius} miles` : ''}.`;
+      }
+
+      console.log(`✅ Miami Water Bodies data processed:`, {
+        totalCount: result.miami_water_bodies_count,
+        containingCount: waterBodies.filter(wb => wb.isContaining).length
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Miami Water Bodies:', error);
+      return {
+        miami_water_bodies_count: 0,
+        miami_water_bodies_all: [],
+        miami_water_bodies_summary: `Error querying water bodies: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

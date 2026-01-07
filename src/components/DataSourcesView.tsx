@@ -9128,6 +9128,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services-eu1.arcgis.com/2fd71P03WS9cosrs/ArcGIS/rest/services/Trunk_Road_Network_Height/FeatureServer/0"
+        },
+        {
+          name: "City of Miami - Business Locations (FD Inspected)",
+          description: "City of Miami businesses with Fire Department Certificate of Occupancy - proximity queries up to 25 miles",
+          coverage: "City of Miami, Florida",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/CvuPhqcTQpZPT9qY/arcgis/rest/services/Business_with_Fire_Department_Certificate_Occupancy/FeatureServer/0"
+        },
+        {
+          name: "City of Miami - Public Schools",
+          description: "City of Miami public school sites - proximity queries up to 25 miles",
+          coverage: "City of Miami, Florida",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/CvuPhqcTQpZPT9qY/arcgis/rest/services/School_Site/FeatureServer/0"
+        },
+        {
+          name: "City of Miami - Water Bodies",
+          description: "City of Miami water body polygons - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "City of Miami, Florida",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/CvuPhqcTQpZPT9qY/arcgis/rest/services/Water_Bodies_(Polygons)/FeatureServer/0"
         }
       ]
     },

@@ -777,8 +777,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // National Risk Index (NRI) annualized frequency layers should always be categorized as Natural Hazards
         // (tract keys contain "census" which would otherwise match Demographics & Census)
         category = 'Natural Hazards';
-      } else if (key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions') || key.includes('hurricane_evacuation_routes_hazards')) {
-        // Natural Hazards layers - check before other categories
+      } else if (key.includes('fema_nfhl_') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions') || key.includes('hurricane_evacuation_routes_hazards')) {
+        // Natural Hazards layers - check before other categories (including all FEMA NFHL layers)
         category = 'Natural Hazards';
       } else if (key.includes('elev') || key.includes('elevation')) {
         category = 'Elevation & Terrain';
@@ -790,8 +790,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'USGS National Map';
       } else if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_') || key.startsWith('dc_property_')) {
         category = 'District of Columbia';
-      } else if (key.includes('hurricane_evacuation_routes_hazards') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions')) {
-        // Natural Hazards layers - check before other categories to ensure proper categorization
+      } else if (key.includes('fema_nfhl_') || key.includes('hurricane_evacuation_routes_hazards') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions')) {
+        // Natural Hazards layers - check before other categories to ensure proper categorization (including all FEMA NFHL layers)
         category = 'Natural Hazards';
       } else if (key.includes('ireland_provinces') || key.includes('ireland_built_up_areas') || key.includes('ireland_small_areas') || key.includes('ireland_electoral_divisions') || key.includes('ireland_centres_of_population')) {
         category = 'Ireland Data';
@@ -817,7 +817,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Scotland Transport';
       } else if (key.includes('poi_gas_stations') || key.includes('transport') || key.includes('transit') || (key.includes('poi_') && (key.includes('bus') || key.includes('train') || key.includes('subway') || key.includes('metro') || key.includes('tram') || key.includes('monorail') || key.includes('aerialway') || key.includes('ferry') || key.includes('airport') || key.includes('taxi') || key.includes('bike') || key.includes('parking') || key.includes('charging')))) {
         category = 'Transportation';
-      } else if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
+      } else if (key.includes('fema_nfhl_') || key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';
@@ -871,6 +871,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Texas Education Agency';
       } else if (key.includes('wri_')) {
         category = 'World Resources Institute';
+      } else if (key.includes('miami_')) {
+        category = 'City of Miami';
       } else if (key.includes('houston_')) {
         category = 'Houston Data';
       } else if (key.includes('tx_')) {

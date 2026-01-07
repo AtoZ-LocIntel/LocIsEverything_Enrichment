@@ -801,14 +801,50 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'fl') {
-          // FL will have sub-categories (to be added later)
+          // Get all FL enrichments (filter POIs where section is 'fl')
+          const flPOIs = poiTypes.filter(poi => poi.section === 'fl');
+          
+          // Get Miami enrichments (when added, they will start with 'miami_' or have 'miami' in id/description)
+          const miamiPOIs = flPOIs.filter(poi => 
+            poi.id.startsWith('miami_') || 
+            poi.id.includes('miami') ||
+            poi.description.toLowerCase().includes('miami') ||
+            poi.label.toLowerCase().includes('miami')
+          );
+          
+          const miamiEnrichments = miamiPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define FL sub-categories
+          const flSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'city_of_miami',
+              title: 'City of Miami',
+              icon: <img src="/assets/Miami.webp" alt="City of Miami" className="w-full h-full object-cover rounded-full" onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/assets/Miami.webp';
+                target.onerror = () => {
+                  target.style.display = 'none';
+                };
+              }} />,
+              description: 'City of Miami open data layers',
+              enrichments: miamiEnrichments
+            }
+          ];
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // FL parent category has no direct enrichments
+            subCategories: flSubCategories
           };
         }
         
@@ -2982,6 +3018,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isEUSubCategory = activeModal === 'ireland';
               const isILSubCategory = activeModal?.startsWith('il_') || activeModal === 'chicago_data_portal';
               const isTXSubCategory = activeModal?.startsWith('tx_') || activeModal === 'houston_data_portal';
+              const isFLSubCategory = activeModal === 'city_of_miami';
               let category: EnrichmentCategory | undefined;
               
               if (isNHSubCategory) {
@@ -3089,6 +3126,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                   isTXSubCategory,
                   txCategoryFound: !!txCategory,
                   subCategories: txCategory?.subCategories?.map(sc => sc.id),
+                  foundCategory: category?.id,
+                  enrichmentsCount: category?.enrichments?.length
+                });
+              } else if (isFLSubCategory) {
+                // Find the FL category and get the sub-category
+                const flCategory = enrichmentCategories.find(c => c.id === 'fl');
+                category = flCategory?.subCategories?.find(sc => sc.id === activeModal);
+                console.log('🔍 FL Sub-Category Modal:', {
+                  activeModal,
+                  isFLSubCategory,
+                  flCategoryFound: !!flCategory,
+                  subCategories: flCategory?.subCategories?.map(sc => sc.id),
                   foundCategory: category?.id,
                   enrichmentsCount: category?.enrichments?.length
                 });

@@ -8484,6 +8484,80 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           `${maxHeight}m max height`, '', '', attributesJson, 'Scotland Transport'
         ]);
       });
+    } else if (key === 'miami_business_fd_inspected_all' && Array.isArray(value)) {
+      value.forEach((business: any) => {
+        const businessName = business.businessName || business.BusinessNa || business.business_name || 'Unknown Business';
+        const businessAddress = business.businessAddress || business.BusinessAd || business.business_address || '';
+        const city = business.city || business.City || '';
+        const zipCode = business.zipCode || business.ZipCode || business.zip_code || '';
+        const distance = business.distance_miles !== null && business.distance_miles !== undefined ? business.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...business };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = business.geometry?.y || business.lat || '';
+        const lon = business.geometry?.x || business.lon || '';
+        const addressLine = `${businessAddress}${city ? `, ${city}` : ''}${zipCode ? ` ${zipCode}` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'City of Miami',
+          (location.confidence || 'N/A').toString(), 'MIAMI_BUSINESS_FD_INSPECTED',
+          `🏢 ${businessName}`, lat, lon, distance,
+          `Business Location (FD Inspected) (${distance} miles)`,
+          addressLine || businessName, '', '', attributesJson, 'City of Miami'
+        ]);
+      });
+    } else if (key === 'miami_public_schools_all' && Array.isArray(value)) {
+      value.forEach((school: any) => {
+        const name = school.name || school.NAME || school.Name || 'Unknown School';
+        const address = school.address || school.ADDRESS || school.Address || '';
+        const city = school.city || school.CITY || school.City || '';
+        const zipCode = school.zipCode || school.ZIPCODE || school.zip_code || '';
+        const phone = school.phone || school.PHONE || school.Phone || '';
+        const distance = school.distance_miles !== null && school.distance_miles !== undefined ? school.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...school };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = school.geometry?.y || school.lat || '';
+        const lon = school.geometry?.x || school.lon || '';
+        const addressLine = `${address}${city ? `, ${city}` : ''}${zipCode ? ` ${zipCode}` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'City of Miami',
+          (location.confidence || 'N/A').toString(), 'MIAMI_PUBLIC_SCHOOLS',
+          `🎓 ${name}`, lat, lon, distance,
+          `Public School (${distance} miles)`,
+          addressLine || name, phone || '', '', attributesJson, 'City of Miami'
+        ]);
+      });
+    } else if (key === 'miami_water_bodies_all' && Array.isArray(value)) {
+      value.forEach((waterBody: any) => {
+        const type = waterBody.type || waterBody.TYPE || waterBody.Type || 'Water Body';
+        const shapeArea = waterBody.shapeArea !== null && waterBody.shapeArea !== undefined ? waterBody.shapeArea : null;
+        const isContaining = waterBody.isContaining || false;
+        const distance = waterBody.distance_miles !== null && waterBody.distance_miles !== undefined ? waterBody.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...waterBody };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        // For polygons, use centroid or first coordinate
+        let lat = '';
+        let lon = '';
+        if (waterBody.geometry && waterBody.geometry.rings && waterBody.geometry.rings.length > 0) {
+          const firstRing = waterBody.geometry.rings[0];
+          if (firstRing && firstRing.length > 0) {
+            lon = firstRing[0][0]?.toString() || '';
+            lat = firstRing[0][1]?.toString() || '';
+          }
+        }
+        const waterBodyInfo = `${type}${shapeArea !== null ? ` - Area: ${shapeArea.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}${isContaining ? ' (Containing)' : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'City of Miami',
+          (location.confidence || 'N/A').toString(), 'MIAMI_WATER_BODIES',
+          `💧 ${waterBodyInfo}`, lat || location.lat.toString(), lon || location.lon.toString(), distance,
+          `Water Body (${isContaining ? 'containing' : distance + ' miles'})`,
+          type, '', '', attributesJson, 'City of Miami'
+        ]);
+      });
     } else if (key === 'nyc_bike_routes_all' && Array.isArray(value)) {
       value.forEach((route: any) => {
         const routeName = route.name || route.NAME || route.Name || route.ROUTE_NAME || route.route_name || 'Unknown Route';

@@ -2437,6 +2437,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nyc_mappluto_residential_all' || // Skip NYC MapPLUTO Residential array (handled separately for map drawing)
     key === 'scotland_transport_gritter_locations_all' || // Skip Scotland Gritter Locations array (handled separately for map drawing)
     key === 'scotland_transport_trunk_road_height_all' || // Skip Scotland Trunk Road Height array (handled separately for map drawing)
+    key === 'miami_business_fd_inspected_all' || // Skip Miami Business FD Inspected array (handled separately for map drawing)
+    key === 'miami_public_schools_all' || // Skip Miami Public Schools array (handled separately for map drawing)
+    key === 'miami_water_bodies_all' || // Skip Miami Water Bodies array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -2703,7 +2706,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     if (key.includes('crime') || key.includes('safety')) return 'Safety & Crime';
     if (key.includes('transport') || key.includes('transit')) return 'Transportation';
     if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) return 'Points of Interest Nearby';
-    if (key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions')) return 'Natural Hazards';
+    if (key.includes('fema_nfhl_') || key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions')) return 'Natural Hazards';
     if (key.includes('poi_epa_') || key.includes('epa_') || key.includes('tri_')) return 'Human Caused Hazards';
     if (key.includes('padus_')) return 'Public Lands & Protected Areas';
     if (key.includes('walkability')) return 'Livability & Walkability';
@@ -20505,6 +20508,254 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Scotland Trunk Road Height:', error);
+      }
+
+      // Draw Miami Business Locations (FD Inspected) as points on the map
+      try {
+        if (enrichments.miami_business_fd_inspected_all && Array.isArray(enrichments.miami_business_fd_inspected_all)) {
+          let businessCount = 0;
+          enrichments.miami_business_fd_inspected_all.forEach((business: any) => {
+            if (business.geometry && typeof business.geometry.x === 'number' && typeof business.geometry.y === 'number') {
+              try {
+                const lat = business.geometry.y;
+                const lon = business.geometry.x;
+                const distance = business.distance_miles !== null && business.distance_miles !== undefined ? business.distance_miles : 0;
+                
+                const businessName = business.businessName || business.BusinessNa || business.business_name || null;
+                const businessAddress = business.businessAddress || business.BusinessAd || business.business_address || null;
+                const city = business.city || business.City || null;
+                const zipCode = business.zipCode || business.ZipCode || business.zip_code || null;
+                const activity = business.activity || business.ACTIVITY || null;
+                const fireZone90 = business.fireZone90 || business.FireZone90 || business.fire_zone_90 || null;
+                const squareFoot = business.squareFoot !== null && business.squareFoot !== undefined ? business.squareFoot : null;
+                
+                // Create custom icon matching legend (🏢 emoji with blue color)
+                const isMobile = window.innerWidth < 768;
+                const businessIcon = createPOIIcon('🏢', '#3b82f6', isMobile);
+                
+                // Create marker with custom icon
+                const marker = L.marker([lat, lon], {
+                  icon: businessIcon
+                });
+                
+                // Build popup content with all available information
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏢 Business Location (FD Inspected)
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${businessName ? `<div style="margin-bottom: 4px;"><strong>Business Name:</strong> ${businessName}</div>` : ''}
+                      ${businessAddress ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${businessAddress}</div>` : ''}
+                      ${city ? `<div style="margin-bottom: 4px;"><strong>City:</strong> ${city}</div>` : ''}
+                      ${zipCode ? `<div style="margin-bottom: 4px;"><strong>Zip Code:</strong> ${zipCode}</div>` : ''}
+                      ${activity ? `<div style="margin-bottom: 4px;"><strong>Activity:</strong> ${activity}</div>` : ''}
+                      ${fireZone90 ? `<div style="margin-bottom: 4px;"><strong>Fire Zone:</strong> ${fireZone90}</div>` : ''}
+                      ${squareFoot !== null && squareFoot !== 0 ? `<div style="margin-bottom: 4px;"><strong>Square Feet:</strong> ${squareFoot.toLocaleString()}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+                
+                marker.addTo(poi);
+                businessCount++;
+              } catch (error: any) {
+                console.error('Error processing Miami Business FD Inspected point:', error);
+              }
+            }
+          });
+          
+          if (businessCount > 0) {
+            if (!legendAccumulator['miami_business_fd_inspected']) {
+              legendAccumulator['miami_business_fd_inspected'] = {
+                icon: '🏢',
+                color: '#3b82f6',
+                title: 'Miami Business Locations (FD Inspected)',
+                count: 0
+              };
+            }
+            legendAccumulator['miami_business_fd_inspected'].count += businessCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Miami Business FD Inspected:', error);
+      }
+
+      // Draw Miami Public Schools as points on the map
+      try {
+        if (enrichments.miami_public_schools_all && Array.isArray(enrichments.miami_public_schools_all)) {
+          let schoolCount = 0;
+          enrichments.miami_public_schools_all.forEach((school: any) => {
+            if (school.geometry && typeof school.geometry.x === 'number' && typeof school.geometry.y === 'number') {
+              try {
+                const lat = school.geometry.y;
+                const lon = school.geometry.x;
+                const distance = school.distance_miles !== null && school.distance_miles !== undefined ? school.distance_miles : 0;
+                
+                const name = school.name || school.NAME || school.Name || null;
+                const address = school.address || school.ADDRESS || school.Address || null;
+                const city = school.city || school.CITY || school.City || null;
+                const zipCode = school.zipCode || school.ZIPCODE || school.zip_code || null;
+                const phone = school.phone || school.PHONE || school.Phone || null;
+                const type = school.type || school.TYPE || school.Type || null;
+                const grades = school.grades || school.GRADES || school.Grades || null;
+                const capacity = school.capacity !== null && school.capacity !== undefined ? school.capacity : null;
+                const enrollment = school.enrollment !== null && school.enrollment !== undefined ? school.enrollment : null;
+                const region = school.region || school.REGION || school.Region || null;
+                
+                // Create custom icon matching legend (🎓 emoji with purple/blue color)
+                const isMobile = window.innerWidth < 768;
+                const schoolIcon = createPOIIcon('🎓', '#8b5cf6', isMobile);
+                
+                // Create marker with custom icon
+                const marker = L.marker([lat, lon], {
+                  icon: schoolIcon
+                });
+                
+                // Build popup content with all available information
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🎓 ${name || 'Public School'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${address}${city ? `, ${city}` : ''}${zipCode ? ` ${zipCode}` : ''}</div>` : ''}
+                      ${phone ? `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phone}</div>` : ''}
+                      ${type ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${type}</div>` : ''}
+                      ${grades ? `<div style="margin-bottom: 4px;"><strong>Grades:</strong> ${grades}</div>` : ''}
+                      ${capacity !== null && capacity !== 0 ? `<div style="margin-bottom: 4px;"><strong>Capacity:</strong> ${capacity.toLocaleString()}</div>` : ''}
+                      ${enrollment !== null && enrollment !== 0 ? `<div style="margin-bottom: 4px;"><strong>Enrollment:</strong> ${enrollment.toLocaleString()}</div>` : ''}
+                      ${region ? `<div style="margin-bottom: 4px;"><strong>Region:</strong> ${region}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+                
+                marker.addTo(poi);
+                schoolCount++;
+              } catch (error: any) {
+                console.error('Error processing Miami Public School point:', error);
+              }
+            }
+          });
+          
+          if (schoolCount > 0) {
+            if (!legendAccumulator['miami_public_schools']) {
+              legendAccumulator['miami_public_schools'] = {
+                icon: '🎓',
+                color: '#8b5cf6',
+                title: 'Miami Public Schools',
+                count: 0
+              };
+            }
+            legendAccumulator['miami_public_schools'].count += schoolCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Miami Public Schools:', error);
+      }
+
+      // Draw Miami Water Bodies as polygons on the map
+      try {
+        if (enrichments.miami_water_bodies_all && Array.isArray(enrichments.miami_water_bodies_all)) {
+          let waterBodyCount = 0;
+          enrichments.miami_water_bodies_all.forEach((waterBody: any) => {
+            if (waterBody.geometry && waterBody.geometry.rings) {
+              try {
+                const rings = waterBody.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length < 3) {
+                    console.warn('Miami Water Body polygon has less than 3 coordinates, skipping');
+                    return;
+                  }
+                  
+                  const isContaining = waterBody.isContaining;
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+                  
+                  const polygon = L.polygon(latlngs, {
+                    color: '#0ea5e9',
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: '#0ea5e9',
+                    fillOpacity: 0.2
+                  });
+                  
+                  const type = waterBody.type || waterBody.TYPE || waterBody.Type || null;
+                  const shapeArea = waterBody.shapeArea !== null && waterBody.shapeArea !== undefined ? waterBody.shapeArea : null;
+                  const shapeLength = waterBody.shapeLength !== null && waterBody.shapeLength !== undefined ? waterBody.shapeLength : null;
+                  const lastUpdate = waterBody.lastUpdate || waterBody.LAST_UPDAT || waterBody.LastUpdate || null;
+                  const distance = waterBody.distance_miles !== null && waterBody.distance_miles !== undefined ? waterBody.distance_miles : 0;
+                  
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        💧 ${isContaining ? 'Containing Water Body' : 'Nearby Water Body'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${type ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${type}</div>` : ''}
+                        ${shapeArea !== null ? `<div style="margin-bottom: 4px;"><strong>Area:</strong> ${shapeArea.toLocaleString(undefined, { maximumFractionDigits: 2 })} sq units</div>` : ''}
+                        ${shapeLength !== null ? `<div style="margin-bottom: 4px;"><strong>Perimeter:</strong> ${shapeLength.toLocaleString(undefined, { maximumFractionDigits: 2 })} units</div>` : ''}
+                        ${lastUpdate ? `<div style="margin-bottom: 4px;"><strong>Last Update:</strong> ${lastUpdate}</div>` : ''}
+                        ${isContaining ? `<div style="color: #059669; font-weight: 600; margin-top: 8px;">📍 Location is within this water body</div>` : ''}
+                        ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  
+                  // Enable popup to open on click
+                  polygon.on('click', function(this: L.Polygon) {
+                    this.openPopup();
+                  });
+                  
+                  polygon.addTo(primary);
+                  
+                  const polygonBounds = L.latLngBounds(latlngs);
+                  bounds.extend(polygonBounds);
+                  
+                  waterBodyCount++;
+                }
+              } catch (error: any) {
+                console.error('Error processing Miami Water Body polygon:', error);
+              }
+            }
+          });
+          
+          if (waterBodyCount > 0) {
+            if (!legendAccumulator['miami_water_bodies']) {
+              legendAccumulator['miami_water_bodies'] = {
+                icon: '💧',
+                color: '#0ea5e9',
+                title: 'Miami Water Bodies',
+                count: 0
+              };
+            }
+            legendAccumulator['miami_water_bodies'].count += waterBodyCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Miami Water Bodies:', error);
       }
 
       // Draw NYC Bike Routes as polylines on the map
