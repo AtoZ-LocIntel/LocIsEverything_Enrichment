@@ -20193,7 +20193,6 @@ const MapView: React.FC<MapViewProps> = ({
                     }
                     
                     const isContaining = taxLot.isContaining;
-                    const polygonColor = isContaining ? color : color.replace('rgb(', 'rgba(').replace(')', ', 0.6)');
                     const weight = isContaining ? 3 : 2;
                     const opacity = isContaining ? 0.8 : 0.5;
                     
