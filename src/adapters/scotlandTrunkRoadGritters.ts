@@ -21,7 +21,12 @@ export interface ScotlandGritterTrailInfo {
   objectId: string | null;
   vehicleId: string | null;
   vehicleName: string | null;
-  trailLength: number | null;
+  status: string | null;
+  ageCategory: number | null;
+  heading: number | null;
+  speed: number | null;
+  fetchTimestamp: string | null;
+  sourceTimestamp: string | null;
   attributes: Record<string, any>;
   geometry?: any; // ESRI geometry for drawing on map
   distance_miles?: number; // For proximity queries
@@ -297,9 +302,17 @@ export async function getScotlandGritterTrailsData(
           // Note: This is different from polylines - each feature is a single point representing a trail location
           
           const objectId = attributes.OBJECTID || attributes.objectid || attributes.FID || null;
-          const vehicleId = attributes.VehicleID || attributes.vehicleId || attributes.vehicle_id || attributes.VEHICLE_ID || null;
-          const vehicleName = attributes.VehicleName || attributes.vehicleName || attributes.vehicle_name || attributes.VEHICLE_NAME || null;
-          const trailLength = attributes.TrailLength || attributes.trailLength || attributes.trail_length || attributes.TRAIL_LENGTH || null;
+          const vehicleId = attributes.REGNO || attributes.regno || attributes.RegNo || attributes.VehicleID || attributes.vehicleId || attributes.vehicle_id || attributes.VEHICLE_ID || null;
+          const vehicleName = attributes.REGNO || attributes.regno || attributes.RegNo || attributes.VehicleName || attributes.vehicleName || attributes.vehicle_name || attributes.VEHICLE_NAME || null;
+          const status: string | null = attributes.STATUS || attributes.status || attributes.Status || null;
+          const ageCategory: number | null = attributes.AGE_CATEGORY !== null && attributes.AGE_CATEGORY !== undefined ? attributes.AGE_CATEGORY :
+                            attributes.age_category !== null && attributes.age_category !== undefined ? attributes.age_category : null;
+          const heading: number | null = attributes.HEADING !== null && attributes.HEADING !== undefined ? attributes.HEADING :
+                         attributes.heading !== null && attributes.heading !== undefined ? attributes.heading : null;
+          const speed: number | null = attributes.SPEED !== null && attributes.SPEED !== undefined ? attributes.SPEED :
+                       attributes.speed !== null && attributes.speed !== undefined ? attributes.speed : null;
+          const fetchTimestamp: string | null = attributes.FETCH_TS || attributes.fetch_ts || attributes.FetchTimestamp || null;
+          const sourceTimestamp: string | null = attributes.SOURCE_TS || attributes.source_ts || attributes.SourceTimestamp || null;
           
           // Calculate distance to point (this is a point layer, not polyline)
           let distance = radius || 0;

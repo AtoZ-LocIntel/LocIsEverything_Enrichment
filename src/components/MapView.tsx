@@ -20328,7 +20328,7 @@ const MapView: React.FC<MapViewProps> = ({
                 });
                 
                 // Enable popup to open on click
-                marker.on('click', function() {
+                marker.on('click', function(this: L.Marker) {
                   this.openPopup();
                 });
                 
@@ -20471,7 +20471,7 @@ const MapView: React.FC<MapViewProps> = ({
                     });
                     
                     // Enable popup to open on click
-                    polyline.on('click', function() {
+                    polyline.on('click', function(this: L.Polyline) {
                       this.openPopup();
                     });
                     
