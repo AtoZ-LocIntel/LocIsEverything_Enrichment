@@ -9105,13 +9105,29 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/LSOA_2021_EW_BSC_V4_RUC/FeatureServer/0"
       },
-      {
-        name: "European Electoral Regions (Dec 2018)",
-        description: "European Electoral Regions December 2018 Boundaries (United Kingdom) - point-in-polygon and proximity queries up to 25 miles",
-        coverage: "United Kingdom",
-        accuracy: "Very High",
-        cost: "Free",
-        url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/European_Electoral_Regions_Dec_2018_FCB_UK_2022/FeatureServer/0"
+        {
+          name: "European Electoral Regions (Dec 2018)",
+          description: "European Electoral Regions December 2018 Boundaries (United Kingdom) - point-in-polygon and proximity queries up to 25 miles",
+          coverage: "United Kingdom",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/European_Electoral_Regions_Dec_2018_FCB_UK_2022/FeatureServer/0"
+        },
+        {
+          name: "Scotland Trunk Road Gritter - Vehicle Locations",
+          description: "Scotland Transport - Trunk Road Gritter Vehicle Locations - proximity queries up to 25 miles",
+          coverage: "Scotland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/2fd71P03WS9cosrs/ArcGIS/rest/services/TSWT_Vehicles_Live_WGT2/FeatureServer/1"
+        },
+        {
+          name: "Scotland Trunk Road Network Height",
+          description: "Scotland Transport - Trunk Road Network Height segments with height measurements - proximity queries up to 25 miles",
+          coverage: "Scotland",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services-eu1.arcgis.com/2fd71P03WS9cosrs/ArcGIS/rest/services/Trunk_Road_Network_Height/FeatureServer/0"
         }
       ]
     },

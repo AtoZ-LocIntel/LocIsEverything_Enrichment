@@ -400,6 +400,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Ireland Data';
     }
     
+    // Scotland Transport
+    if (key.includes('scotland_transport_gritter') || key.includes('scotland_transport_trunk_road_height')) {
+      return 'Scotland Transport';
+    }
+    
     // UK Open Data (UK Office for National Statistics)
     if (key.startsWith('uk_')) {
       return 'UK Open Data';

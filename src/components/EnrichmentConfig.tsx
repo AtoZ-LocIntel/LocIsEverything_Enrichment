@@ -1163,6 +1163,21 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             category: poi.category
           }));
           
+          // Get Scotland Transport enrichments (filter POIs where section is 'uk' and category is 'scotland_transport' or id starts with 'scotland_transport_')
+          const scotlandTransportPOIs = poiTypes.filter(poi => 
+            poi.section === 'uk' && 
+            (poi.category === 'scotland_transport' || poi.id.startsWith('scotland_transport_') || poi.subCategory === 'Scotland Transport')
+          );
+          
+          const scotlandTransportEnrichments = scotlandTransportPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
           // Define UK sub-categories (organized by data source)
           const ukSubCategories: EnrichmentCategory[] = [
             {
@@ -1185,6 +1200,28 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               ),
               description: 'UK Office for National Statistics data layers',
               enrichments: ukstatsEnrichments
+            },
+            {
+              id: 'scotland_transport',
+              title: 'Scotland Transport',
+              icon: (
+                <img
+                  src="/assets/scotland_transport.webp"
+                  alt="Scotland Transport"
+                  className="w-full h-full object-cover rounded-full"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    // Try alternative case variations if the file doesn't load
+                    if (img.src.includes('/assets/scotland_transport.webp')) {
+                      img.src = '/assets/Scotland_Transport.webp';
+                    } else if (img.src.includes('/assets/Scotland_Transport.webp')) {
+                      img.src = '/assets/SCOTLAND_TRANSPORT.webp';
+                    }
+                  }}
+                />
+              ),
+              description: 'Scotland Transport data layers',
+              enrichments: scotlandTransportEnrichments
             }
           ];
           

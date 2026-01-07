@@ -439,6 +439,8 @@ import { getChicagoTrafficCrashesData } from '../adapters/chicagoTrafficCrashes'
 import { getChicagoSpeedCamerasData } from '../adapters/chicagoSpeedCameras';
 import { getChicagoRedLightCamerasData } from '../adapters/chicagoRedLightCameras';
 import { getNYCMapPLUTOData } from '../adapters/nycMapPLUTO';
+import { getScotlandGritterLocationsData } from '../adapters/scotlandTrunkRoadGritters';
+import { getScotlandTrunkRoadHeightData } from '../adapters/scotlandTrunkRoadHeight';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -6501,6 +6503,10 @@ export class EnrichmentService {
       case 'nyc_mappluto_large_commercial':
         return await this.getNYCMapPLUTOLargeCommercial(lat, lon, radius);
       
+      // NYC MapPLUTO Residential - Point-in-polygon and proximity query (max 1 mile)
+      case 'nyc_mappluto_residential':
+        return await this.getNYCMapPLUTOResidential(lat, lon, radius);
+      
       // NYC Bike Routes - Proximity query (max 5 miles)
       case 'nyc_bike_routes':
         return await this.getNYCBikeRoutes(lat, lon, radius);
@@ -8521,6 +8527,14 @@ export class EnrichmentService {
         return await this.getUKPoliceForceAreas(lat, lon, radius);
       case 'uk_european_electoral_regions':
         return await this.getUKEuropeanElectoralRegions(lat, lon, radius);
+      
+      // Scotland Transport - Gritter Vehicle Locations (proximity query, max 25 miles)
+      case 'scotland_transport_gritter_locations':
+        return await this.getScotlandGritterLocations(lat, lon, radius);
+      
+      // Scotland Transport - Trunk Road Network Height (proximity query, max 25 miles)
+      case 'scotland_transport_trunk_road_height':
+        return await this.getScotlandTrunkRoadHeight(lat, lon, radius);
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
       case 'uk_nspl_postcode_centroids':
@@ -18998,6 +19012,13 @@ out center tags;`;
     return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_large_commercial', 'Large Commercial Footprint');
   }
 
+  private async getNYCMapPLUTOResidential(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    // Residential: LandUse IN ('01','02','03') AND ComArea = 0
+    // LandUse codes: 01 (One & Two Family), 02 (Multi-Family Walk-Up), 03 (Multi-Family Elevator)
+    const whereClause = "LandUse IN ('01','02','03') AND ComArea = 0";
+    return await this.getNYCMapPLUTOFiltered(lat, lon, radius, whereClause, 'nyc_mappluto_residential', 'Residential');
+  }
+
   private async getNYCBikeRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🚴 Fetching NYC Bike Routes data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -24439,6 +24460,126 @@ out center tags;`;
         uk_european_electoral_regions_nearby: [],
         uk_european_electoral_regions_all: [],
         uk_european_electoral_regions_summary: 'Error querying European Electoral Regions'
+      };
+    }
+  }
+
+  private async getScotlandGritterLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`🚛 Fetching Scotland Gritter Vehicle Locations for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const locations = await getScotlandGritterLocationsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (locations.length === 0) {
+        result.scotland_transport_gritter_locations_count = 0;
+        result.scotland_transport_gritter_locations_all = [];
+        result.scotland_transport_gritter_locations_summary = `No gritter vehicle locations found${radius ? ` within ${radius} miles` : ''}.`;
+      } else {
+        result.scotland_transport_gritter_locations_count = locations.length;
+        result.scotland_transport_gritter_locations_all = locations.map(location => ({
+          ...location.attributes,
+          objectId: location.objectId,
+          vehicleId: location.vehicleId,
+          vehicleName: location.vehicleName,
+          status: location.status,
+          lastUpdate: location.lastUpdate,
+          geometry: location.geometry,
+          distance_miles: location.distance_miles
+        }));
+        
+        // Sort by distance
+        result.scotland_transport_gritter_locations_all.sort((a: any, b: any) => {
+          const distA = a.distance_miles || Infinity;
+          const distB = b.distance_miles || Infinity;
+          return distA - distB;
+        });
+        
+        result.scotland_transport_gritter_locations_summary = `Found ${locations.length} gritter vehicle location(s)${radius ? ` within ${radius} miles` : ''}.`;
+      }
+      
+      console.log(`✅ Scotland Gritter Locations data processed:`, {
+        totalCount: result.scotland_transport_gritter_locations_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Scotland Gritter Locations data:', error);
+      return {
+        scotland_transport_gritter_locations_count: 0,
+        scotland_transport_gritter_locations_all: [],
+        scotland_transport_gritter_locations_summary: 'Error querying gritter vehicle locations'
+      };
+    }
+  }
+
+  private async getScotlandTrunkRoadHeight(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`🛣️ Fetching Scotland Trunk Road Network Height for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const roadSegments = await getScotlandTrunkRoadHeightData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (roadSegments.length === 0) {
+        result.scotland_transport_trunk_road_height_count = 0;
+        result.scotland_transport_trunk_road_height_all = [];
+        result.scotland_transport_trunk_road_height_summary = `No trunk road height segments found${radius ? ` within ${radius} miles` : ''}.`;
+      } else {
+        result.scotland_transport_trunk_road_height_count = roadSegments.length;
+        result.scotland_transport_trunk_road_height_all = roadSegments.map((segment: any) => {
+          // Log geometry for debugging
+          console.log('🛣️ Road segment geometry in service:', {
+            hasGeometry: !!segment.geometry,
+            hasPaths: !!segment.geometry?.paths,
+            pathsLength: segment.geometry?.paths?.length,
+            firstPathLength: segment.geometry?.paths?.[0]?.length,
+            geometryType: segment.geometry?.type || 'unknown',
+            geometryKeys: segment.geometry ? Object.keys(segment.geometry) : []
+          });
+          
+          // Extract attributes but exclude geometry if it exists (we want the main geometry, not from attributes)
+          const { geometry: attrGeometry, ...attributesWithoutGeometry } = segment.attributes || {};
+          
+          return {
+            ...attributesWithoutGeometry, // Spread attributes first (excluding any geometry property)
+            objectId: segment.objectId,
+            maxHeight: segment.maxHeight,
+            minHeight: segment.minHeight,
+            meanHeight: segment.meanHeight,
+            meanHeightGrouped: segment.meanHeightGrouped,
+            maxHeightGrouped: segment.maxHeightGrouped,
+            symbology: segment.symbology,
+            shapeLength: segment.shapeLength,
+            geometry: segment.geometry, // Preserve full geometry object with paths
+            distance_miles: segment.distance_miles
+          };
+        });
+        
+        // Sort by distance
+        result.scotland_transport_trunk_road_height_all.sort((a: any, b: any) => {
+          const distA = a.distance_miles || Infinity;
+          const distB = b.distance_miles || Infinity;
+          return distA - distB;
+        });
+        
+        result.scotland_transport_trunk_road_height_summary = `Found ${roadSegments.length} trunk road height segment(s)${radius ? ` within ${radius} miles` : ''}.`;
+      }
+      
+      console.log(`✅ Scotland Trunk Road Height data processed:`, {
+        totalCount: result.scotland_transport_trunk_road_height_count
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Scotland Trunk Road Height data:', error);
+      return {
+        scotland_transport_trunk_road_height_count: 0,
+        scotland_transport_trunk_road_height_all: [],
+        scotland_transport_trunk_road_height_summary: 'Error querying trunk road height segments'
       };
     }
   }

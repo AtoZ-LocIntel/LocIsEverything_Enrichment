@@ -2434,6 +2434,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nyc_mappluto_hotels_all' || // Skip NYC MapPLUTO Hotels array (handled separately for map drawing)
     key === 'nyc_mappluto_auto_commercial_all' || // Skip NYC MapPLUTO Auto Commercial array (handled separately for map drawing)
     key === 'nyc_mappluto_large_commercial_all' || // Skip NYC MapPLUTO Large Commercial array (handled separately for map drawing)
+    key === 'nyc_mappluto_residential_all' || // Skip NYC MapPLUTO Residential array (handled separately for map drawing)
+    key === 'scotland_transport_gritter_locations_all' || // Skip Scotland Gritter Locations array (handled separately for map drawing)
+    key === 'scotland_transport_trunk_road_height_all' || // Skip Scotland Trunk Road Height array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -20275,6 +20278,234 @@ const MapView: React.FC<MapViewProps> = ({
       drawNYCMapPLUTOLayer('nyc_mappluto_hotels_all', 'nyc_mappluto_hotels', 'NYC MapPLUTO Hotels / Hospitality', '#ec4899', '🏨');
       drawNYCMapPLUTOLayer('nyc_mappluto_auto_commercial_all', 'nyc_mappluto_auto_commercial', 'NYC MapPLUTO Auto-Related Commercial', '#14b8a6', '🚗');
       drawNYCMapPLUTOLayer('nyc_mappluto_large_commercial_all', 'nyc_mappluto_large_commercial', 'NYC MapPLUTO Large Commercial Footprint', '#6366f1', '🏬');
+      drawNYCMapPLUTOLayer('nyc_mappluto_residential_all', 'nyc_mappluto_residential', 'NYC MapPLUTO Residential', '#22c55e', '🏠');
+
+      // Draw Scotland Gritter Vehicle Locations as points on the map
+      try {
+        if (enrichments.scotland_transport_gritter_locations_all && Array.isArray(enrichments.scotland_transport_gritter_locations_all)) {
+          let locationCount = 0;
+          enrichments.scotland_transport_gritter_locations_all.forEach((location: any) => {
+            if (location.geometry && typeof location.geometry.x === 'number' && typeof location.geometry.y === 'number') {
+              try {
+                const lat = location.geometry.y;
+                const lon = location.geometry.x;
+                const distance = location.distance_miles !== null && location.distance_miles !== undefined ? location.distance_miles : 0;
+                
+                const vehicleId = location.vehicleId || location.VehicleID || location.vehicle_id || null;
+                const vehicleName = location.vehicleName || location.VehicleName || location.vehicle_name || null;
+                const status = location.status || location.Status || location.STATUS || null;
+                const lastUpdate = location.lastUpdate || location.LastUpdate || location.last_update || null;
+                
+                // Create custom icon matching legend (🚛 emoji with orange color #f59e0b)
+                const isMobile = window.innerWidth < 768;
+                const gritterIcon = createPOIIcon('🚛', '#f59e0b', isMobile);
+                
+                // Create marker with custom icon (matches legend symbol 🚛)
+                const marker = L.marker([lat, lon], {
+                  icon: gritterIcon
+                });
+                
+                // Build popup content with all available information
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚛 Gritter Vehicle Location
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${vehicleId ? `<div style="margin-bottom: 4px;"><strong>Vehicle ID:</strong> ${vehicleId}</div>` : ''}
+                      ${vehicleName ? `<div style="margin-bottom: 4px;"><strong>Vehicle Name:</strong> ${vehicleName}</div>` : ''}
+                      ${status ? `<div style="margin-bottom: 4px;"><strong>Status:</strong> ${status}</div>` : ''}
+                      ${lastUpdate ? `<div style="margin-bottom: 4px;"><strong>Last Update:</strong> ${lastUpdate}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                // Bind popup and ensure it opens on click
+                marker.bindPopup(popupContent, {
+                  maxWidth: 400,
+                  className: 'gritter-location-popup'
+                });
+                
+                // Enable popup to open on click
+                marker.on('click', function() {
+                  this.openPopup();
+                });
+                
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                locationCount++;
+              } catch (error) {
+                console.error('Error drawing Scotland Gritter Location marker:', error);
+              }
+            }
+          });
+          
+          if (locationCount > 0) {
+            if (!legendAccumulator['scotland_transport_gritter_locations']) {
+              legendAccumulator['scotland_transport_gritter_locations'] = {
+                icon: '🚛',
+                color: '#f59e0b',
+                title: 'Scotland Gritter Vehicle Locations',
+                count: 0
+              };
+            }
+            legendAccumulator['scotland_transport_gritter_locations'].count += locationCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Scotland Gritter Locations:', error);
+      }
+
+      // Draw Scotland Trunk Road Network Height as polylines on the map
+      try {
+        if (enrichments.scotland_transport_trunk_road_height_all && Array.isArray(enrichments.scotland_transport_trunk_road_height_all)) {
+          console.log(`🛣️ Drawing ${enrichments.scotland_transport_trunk_road_height_all.length} trunk road height segment(s)`);
+          let segmentCount = 0;
+          enrichments.scotland_transport_trunk_road_height_all.forEach((segment: any, segmentIndex: number) => {
+            console.log(`🛣️ Road segment data [Segment ${segmentIndex}]:`, {
+              hasGeometry: !!segment.geometry,
+              geometryType: segment.geometry?.type,
+              geometryKeys: segment.geometry ? Object.keys(segment.geometry) : [],
+              hasPaths: !!segment.geometry?.paths,
+              pathsLength: segment.geometry?.paths?.length,
+              hasRings: !!segment.geometry?.rings,
+              hasCoordinates: !!segment.geometry?.coordinates,
+              maxHeight: segment.maxHeight,
+              meanHeight: segment.meanHeight
+            });
+            
+            // Check for geometry in various formats
+            let paths = null;
+            if (segment.geometry) {
+              if (segment.geometry.paths) {
+                // ESRI polyline format with paths array
+                paths = segment.geometry.paths;
+              } else if (segment.geometry.coordinates) {
+                // GeoJSON format
+                paths = [segment.geometry.coordinates];
+              } else if (segment.geometry.rings) {
+                // Polygon rings (shouldn't happen for roads, but handle it)
+                paths = segment.geometry.rings;
+              } else if (segment.geometry.x !== undefined && segment.geometry.y !== undefined) {
+                // Point geometry - this shouldn't happen for roads, but if it does, skip it
+                console.warn(`🛣️ Road segment ${segmentIndex} has point geometry instead of polyline - skipping.`);
+                return; // Skip point geometry for roads
+              }
+            }
+            
+            if (paths && Array.isArray(paths) && paths.length > 0) {
+              try {
+                console.log(`🛣️ Processing ${paths.length} path(s) for road segment`);
+                // Process each path in the polyline (roads can have multiple paths)
+                paths.forEach((path: number[][], pathIndex: number) => {
+                  try {
+                    console.log(`🛣️ Path ${pathIndex}: ${path.length} coordinates, first coord:`, path[0]);
+                    
+                    if (!path || !Array.isArray(path) || path.length === 0) {
+                      console.warn(`🛣️ Path ${pathIndex} is empty or invalid`);
+                      return;
+                    }
+                    
+                    const latlngs = path.map((coord: number[], coordIndex: number) => {
+                      // ESRI coordinates: [x, y] where x is longitude, y is latitude (after outSR=4326)
+                      // Leaflet expects [lat, lon]
+                      if (!coord || !Array.isArray(coord)) {
+                        console.warn(`🛣️ Coordinate ${coordIndex} in path ${pathIndex} is invalid:`, coord);
+                        return null;
+                      }
+                      if (coord.length >= 2) {
+                        const lat = coord[1];
+                        const lon = coord[0];
+                        if (typeof lat === 'number' && typeof lon === 'number' && !isNaN(lat) && !isNaN(lon)) {
+                          return [lat, lon] as [number, number];
+                        } else {
+                          console.warn(`🛣️ Coordinate ${coordIndex} has invalid numbers:`, { lat, lon });
+                        }
+                      }
+                      return null;
+                    }).filter((coord): coord is [number, number] => coord !== null);
+                    
+                    console.log(`🛣️ Path ${pathIndex}: Converted ${latlngs.length} valid coordinates from ${path.length} total`);
+                    
+                    if (latlngs.length < 2) {
+                      console.warn('🛣️ Road segment polyline has less than 2 coordinates, skipping');
+                      return;
+                    }
+                    
+                    const distance = segment.distance_miles !== null && segment.distance_miles !== undefined ? segment.distance_miles : 0;
+                    const maxHeight = segment.maxHeight !== null && segment.maxHeight !== undefined ? segment.maxHeight : null;
+                    const minHeight = segment.minHeight !== null && segment.minHeight !== undefined ? segment.minHeight : null;
+                    const meanHeight = segment.meanHeight !== null && segment.meanHeight !== undefined ? segment.meanHeight : null;
+                    const meanHeightGrouped = segment.meanHeightGrouped || segment.MEAN_H_G || null;
+                    const maxHeightGrouped = segment.maxHeightGrouped || segment.MAX_H_G || null;
+                    const shapeLength = segment.shapeLength || segment.Shape__Length || null;
+                    
+                    // Draw polyline (matches legend color #f59e0b for Scotland Transport)
+                    const polyline = L.polyline(latlngs, {
+                      color: '#f59e0b',
+                      weight: 3,
+                      opacity: 0.7
+                    });
+                    
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          🛣️ Trunk Road Network Height
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                          ${maxHeight !== null ? `<div><strong>Max Height:</strong> ${maxHeight} m</div>` : ''}
+                          ${minHeight !== null ? `<div><strong>Min Height:</strong> ${minHeight} m</div>` : ''}
+                          ${meanHeight !== null ? `<div><strong>Mean Height:</strong> ${meanHeight} m</div>` : ''}
+                          ${meanHeightGrouped ? `<div><strong>Mean Height Grouped:</strong> ${meanHeightGrouped}</div>` : ''}
+                          ${maxHeightGrouped ? `<div><strong>Max Height Grouped:</strong> ${maxHeightGrouped}</div>` : ''}
+                          ${shapeLength !== null ? `<div><strong>Segment Length:</strong> ${shapeLength.toLocaleString(undefined, { maximumFractionDigits: 2 })} m</div>` : ''}
+                          ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, {
+                      maxWidth: 400,
+                      className: 'trunk-road-height-popup'
+                    });
+                    
+                    // Enable popup to open on click
+                    polyline.on('click', function() {
+                      this.openPopup();
+                    });
+                    
+                    polyline.addTo(primary);
+                    
+                    const polylineBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polylineBounds);
+                    
+                    segmentCount++;
+                  } catch (error) {
+                    console.error('Error drawing Scotland Trunk Road Height path:', error);
+                  }
+                });
+              } catch (error) {
+                console.error('Error processing Scotland Trunk Road Height paths:', error);
+              }
+            }
+          });
+          
+          if (segmentCount > 0) {
+            if (!legendAccumulator['scotland_transport_trunk_road_height']) {
+              legendAccumulator['scotland_transport_trunk_road_height'] = {
+                icon: '🛣️',
+                color: '#f59e0b',
+                title: 'Scotland Trunk Road Network Height',
+                count: 0
+              };
+            }
+            legendAccumulator['scotland_transport_trunk_road_height'].count += segmentCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Scotland Trunk Road Height:', error);
+      }
 
       // Draw NYC Bike Routes as polylines on the map
       try {

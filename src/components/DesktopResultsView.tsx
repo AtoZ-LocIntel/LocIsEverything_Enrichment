@@ -813,6 +813,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Healthcare';
       } else if (key.includes('crime') || key.includes('safety')) {
         category = 'Safety & Crime';
+      } else if (key.includes('scotland_transport_gritter') || key.includes('scotland_transport_trunk_road_height')) {
+        category = 'Scotland Transport';
       } else if (key.includes('poi_gas_stations') || key.includes('transport') || key.includes('transit') || (key.includes('poi_') && (key.includes('bus') || key.includes('train') || key.includes('subway') || key.includes('metro') || key.includes('tram') || key.includes('monorail') || key.includes('aerialway') || key.includes('ferry') || key.includes('airport') || key.includes('taxi') || key.includes('bike') || key.includes('parking') || key.includes('charging')))) {
         category = 'Transportation';
       } else if (key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {

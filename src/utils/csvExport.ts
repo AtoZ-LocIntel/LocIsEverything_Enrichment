@@ -586,6 +586,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nyc_mappluto_hotels_all' ||
         key === 'nyc_mappluto_auto_commercial_all' ||
         key === 'nyc_mappluto_large_commercial_all' ||
+        key === 'nyc_mappluto_residential_all' ||
         key === 'nyc_bike_routes_all' ||
         key === 'nyc_neighborhoods_all' ||
         key === 'nyc_zoning_districts_all' ||
@@ -8416,6 +8417,71 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
           taxLot.isContaining ? 'Within Large Commercial Lot' : `Nearby Large Commercial Lot (${distance} miles)`,
           address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'nyc_mappluto_residential_all' && Array.isArray(value)) {
+      value.forEach((taxLot: any) => {
+        const bbl = taxLot.bbl || taxLot.BBL || 'Unknown';
+        const address = taxLot.address || taxLot.Address || taxLot.ADDRESS || '';
+        const distance = taxLot.distance_miles !== null && taxLot.distance_miles !== undefined ? taxLot.distance_miles.toFixed(2) : (taxLot.isContaining ? '0.00' : '');
+        const allAttributes = { ...taxLot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'New York City',
+          (location.confidence || 'N/A').toString(), 'NYC_MAPPLUTO_RESIDENTIAL',
+          `${bbl}${address ? ` - ${address}` : ''}`, '', '', distance,
+          taxLot.isContaining ? 'Within Residential Lot' : `Nearby Residential Lot (${distance} miles)`,
+          address || bbl, '', '', attributesJson, 'NYC Department of City Planning'
+        ]);
+      });
+    } else if (key === 'scotland_transport_gritter_locations_all' && Array.isArray(value)) {
+      value.forEach((location: any) => {
+        const vehicleId = location.vehicleId || location.VehicleID || location.vehicle_id || 'Unknown';
+        const vehicleName = location.vehicleName || location.VehicleName || location.vehicle_name || '';
+        const distance = location.distance_miles !== null && location.distance_miles !== undefined ? location.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...location };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = location.geometry?.y || location.lat || '';
+        const lon = location.geometry?.x || location.lon || '';
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'Scotland',
+          (location.confidence || 'N/A').toString(), 'SCOTLAND_GRITTER_LOCATION',
+          `${vehicleId}${vehicleName ? ` - ${vehicleName}` : ''}`, lat, lon, distance,
+          `Gritter Vehicle Location (${distance} miles)`,
+          vehicleName || vehicleId, '', '', attributesJson, 'Scotland Transport'
+        ]);
+      });
+    } else if (key === 'scotland_transport_trunk_road_height_all' && Array.isArray(value)) {
+      value.forEach((segment: any) => {
+        const maxHeight = segment.maxHeight !== null && segment.maxHeight !== undefined ? segment.maxHeight : 'N/A';
+        const meanHeight = segment.meanHeight !== null && segment.meanHeight !== undefined ? segment.meanHeight : 'N/A';
+        const distance = segment.distance_miles !== null && segment.distance_miles !== undefined ? segment.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...segment };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        // For polylines, use first coordinate or centroid
+        let lat = '';
+        let lon = '';
+        if (segment.geometry && segment.geometry.paths && segment.geometry.paths.length > 0) {
+          const firstPath = segment.geometry.paths[0];
+          if (firstPath && firstPath.length > 0) {
+            lon = firstPath[0][0]?.toString() || '';
+            lat = firstPath[0][1]?.toString() || '';
+          }
+        }
+        const heightInfo = `Max: ${maxHeight}m, Mean: ${meanHeight}m`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'Scotland',
+          (location.confidence || 'N/A').toString(), 'SCOTLAND_TRUNK_ROAD_HEIGHT',
+          heightInfo, lat, lon, distance,
+          `Trunk Road Height Segment (${distance} miles)`,
+          `${maxHeight}m max height`, '', '', attributesJson, 'Scotland Transport'
         ]);
       });
     } else if (key === 'nyc_bike_routes_all' && Array.isArray(value)) {
