@@ -2929,6 +2929,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // City of Miami - Florida Open Data
   { id: 'miami_business_fd_inspected', label: 'Business Location (FD Inspected)', description: 'City of Miami businesses with Fire Department Certificate of Occupancy (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
   { id: 'miami_public_schools', label: 'Public Schools', description: 'City of Miami public school sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
+  { id: 'miami_private_schools', label: 'Private Schools', description: 'City of Miami private school sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
   { id: 'miami_water_bodies', label: 'Water Bodies', description: 'City of Miami water body polygons (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 0, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' }
 ];
 

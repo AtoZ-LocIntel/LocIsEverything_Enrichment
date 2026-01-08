@@ -443,6 +443,7 @@ import { getScotlandGritterLocationsData } from '../adapters/scotlandTrunkRoadGr
 import { getScotlandTrunkRoadHeightData } from '../adapters/scotlandTrunkRoadHeight';
 import { getMiamiBusinessFDInspectedData } from '../adapters/miamiBusinessFDInspected';
 import { getMiamiPublicSchoolsData } from '../adapters/miamiPublicSchools';
+import { getMiamiPrivateSchoolsData } from '../adapters/miamiPrivateSchools';
 import { getMiamiWaterBodiesData } from '../adapters/miamiWaterBodies';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
@@ -8546,6 +8547,10 @@ export class EnrichmentService {
       // City of Miami - Public Schools (proximity query, max 25 miles)
       case 'miami_public_schools':
         return await this.getMiamiPublicSchools(lat, lon, radius);
+      
+      // City of Miami - Private Schools (proximity query, max 25 miles)
+      case 'miami_private_schools':
+        return await this.getMiamiPrivateSchools(lat, lon, radius);
       
       // City of Miami - Water Bodies (point-in-polygon and proximity query, max 25 miles)
       case 'miami_water_bodies':
@@ -24798,6 +24803,75 @@ out center tags;`;
         miami_public_schools_count: 0,
         miami_public_schools_all: [],
         miami_public_schools_summary: `Error querying public schools: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getMiamiPrivateSchools(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`🎓 Fetching Miami Private Schools for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const schools = await getMiamiPrivateSchoolsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (schools.length === 0) {
+        result.miami_private_schools_count = 0;
+        result.miami_private_schools_all = [];
+        result.miami_private_schools_summary = `No private schools found${radius ? ` within ${radius} miles` : ''}.`;
+      } else {
+        result.miami_private_schools_count = schools.length;
+        result.miami_private_schools_all = schools.map((school: any) => {
+          return {
+            objectId: school.objectId,
+            folio: school.folio,
+            name: school.name,
+            address: school.address,
+            unit: school.unit,
+            city: school.city,
+            zipCode: school.zipCode,
+            phone: school.phone,
+            email: school.email,
+            directorName: school.directorName,
+            yearEstablished: school.yearEstablished,
+            type: school.type,
+            gradeLevel: school.gradeLevel,
+            coed: school.coed,
+            stateRegisteredFlag: school.stateRegisteredFlag,
+            childcareId: school.childcareId,
+            enrollment: school.enrollment,
+            status: school.status,
+            website: school.website,
+            lat: school.lat,
+            lon: school.lon,
+            geometry: school.geometry, // Preserve full geometry object
+            distance_miles: school.distance_miles,
+            attributes: school.attributes
+          };
+        });
+        
+        // Sort by distance
+        result.miami_private_schools_all.sort((a: any, b: any) => {
+          const distA = a.distance_miles || Infinity;
+          const distB = b.distance_miles || Infinity;
+          return distA - distB;
+        });
+        
+        result.miami_private_schools_summary = `Found ${schools.length} private school${schools.length !== 1 ? 's' : ''}${radius ? ` within ${radius} miles` : ''}.`;
+      }
+
+      console.log(`✅ Miami Private Schools data processed:`, {
+        totalCount: result.miami_private_schools_count
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching Miami Private Schools:', error);
+      return {
+        miami_private_schools_count: 0,
+        miami_private_schools_all: [],
+        miami_private_schools_summary: `Error querying private schools: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

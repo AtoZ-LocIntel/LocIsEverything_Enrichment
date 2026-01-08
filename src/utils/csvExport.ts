@@ -40,6 +40,11 @@ export const exportEnrichmentResultsToCSV = (results: EnrichmentResult[]): void 
   const allHeaders = headers;
   
   const rows: string[][] = [];
+  
+  // Track exported schools and businesses across ALL results to prevent duplicates
+  const exportedPrivateSchoolIds = new Set<string>();
+  const exportedPublicSchoolIds = new Set<string>();
+  const exportedBusinessIds = new Set<string>();
 
   results.forEach(result => {
     console.log(`🔍 Processing result for ${result.location.name}`);
@@ -51,7 +56,7 @@ export const exportEnrichmentResultsToCSV = (results: EnrichmentResult[]): void 
     addSummaryDataRows(result, rows);
     
     // Add POI data rows
-    addPOIDataRows(result, rows);
+    addPOIDataRows(result, rows, exportedPrivateSchoolIds, exportedPublicSchoolIds, exportedBusinessIds);
   });
 
   console.log(`📊 CSV will contain ${rows.length} rows with headers:`, allHeaders);
@@ -885,7 +890,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
   });
 };
 
-const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
+const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPrivateSchoolIds: Set<string>, exportedPublicSchoolIds: Set<string>, exportedBusinessIds: Set<string>): void => {
   const { location, enrichments } = result;
 
   // Add all POI data as individual rows
@@ -8486,6 +8491,15 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       });
     } else if (key === 'miami_business_fd_inspected_all' && Array.isArray(value)) {
       value.forEach((business: any) => {
+        // Deduplicate: use objectId or coordinates to track exported businesses
+        const businessId = business.objectId ? String(business.objectId) : 
+                        (business.geometry && typeof business.geometry.x === 'number' && typeof business.geometry.y === 'number') ?
+                        `${business.geometry.x.toFixed(6)}_${business.geometry.y.toFixed(6)}` : null;
+        if (businessId && exportedBusinessIds.has(businessId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (businessId) exportedBusinessIds.add(businessId);
+        
         const businessName = business.businessName || business.BusinessNa || business.business_name || 'Unknown Business';
         const businessAddress = business.businessAddress || business.BusinessAd || business.business_address || '';
         const city = business.city || business.City || '';
@@ -8508,6 +8522,15 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
       });
     } else if (key === 'miami_public_schools_all' && Array.isArray(value)) {
       value.forEach((school: any) => {
+        // Deduplicate: use objectId or coordinates to track exported schools
+        const schoolId = school.objectId ? String(school.objectId) : 
+                        (school.geometry && typeof school.geometry.x === 'number' && typeof school.geometry.y === 'number') ?
+                        `${school.geometry.x.toFixed(6)}_${school.geometry.y.toFixed(6)}` : null;
+        if (schoolId && exportedPublicSchoolIds.has(schoolId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (schoolId) exportedPublicSchoolIds.add(schoolId);
+        
         const name = school.name || school.NAME || school.Name || 'Unknown School';
         const address = school.address || school.ADDRESS || school.Address || '';
         const city = school.city || school.CITY || school.City || '';
@@ -8527,6 +8550,39 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][]): void => {
           `🎓 ${name}`, lat, lon, distance,
           `Public School (${distance} miles)`,
           addressLine || name, phone || '', '', attributesJson, 'City of Miami'
+        ]);
+      });
+    } else if (key === 'miami_private_schools_all' && Array.isArray(value)) {
+      value.forEach((school: any) => {
+        // Deduplicate: use objectId or coordinates to track exported schools
+        const schoolId = school.objectId ? String(school.objectId) : 
+                        (school.geometry && typeof school.geometry.x === 'number' && typeof school.geometry.y === 'number') ?
+                        `${school.geometry.x.toFixed(6)}_${school.geometry.y.toFixed(6)}` : null;
+        if (schoolId && exportedPrivateSchoolIds.has(schoolId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (schoolId) exportedPrivateSchoolIds.add(schoolId);
+        
+        const name = school.name || school.NAME || school.Name || 'Unknown School';
+        const address = school.address || school.ADDRESS || school.Address || '';
+        const city = school.city || school.CITY || school.City || '';
+        const zipCode = school.zipCode || school.ZIPCODE || school.zip_code || '';
+        const phone = school.phone || school.PHONE || school.Phone || '';
+        const website = school.website || school.WEBSITE || school.Website || '';
+        const distance = school.distance_miles !== null && school.distance_miles !== undefined ? school.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...school };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = school.geometry?.y || school.lat || '';
+        const lon = school.geometry?.x || school.lon || '';
+        const addressLine = `${address}${city ? `, ${city}` : ''}${zipCode ? ` ${zipCode}` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'City of Miami',
+          (location.confidence || 'N/A').toString(), 'MIAMI_PRIVATE_SCHOOLS',
+          `🏫 ${name}`, lat, lon, distance,
+          `Private School (${distance} miles)`,
+          addressLine || name, phone || '', website || '', attributesJson, 'City of Miami'
         ]);
       });
     } else if (key === 'miami_water_bodies_all' && Array.isArray(value)) {

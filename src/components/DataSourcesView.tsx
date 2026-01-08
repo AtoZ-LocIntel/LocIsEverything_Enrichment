@@ -9146,6 +9146,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/CvuPhqcTQpZPT9qY/arcgis/rest/services/School_Site/FeatureServer/0"
         },
         {
+          name: "City of Miami - Private Schools",
+          description: "City of Miami private school sites - proximity queries up to 25 miles",
+          coverage: "City of Miami, Florida",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/CvuPhqcTQpZPT9qY/arcgis/rest/services/Private_School/FeatureServer/0"
+        },
+        {
           name: "City of Miami - Water Bodies",
           description: "City of Miami water body polygons - point-in-polygon and proximity queries up to 25 miles",
           coverage: "City of Miami, Florida",

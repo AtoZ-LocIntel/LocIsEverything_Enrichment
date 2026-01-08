@@ -2439,6 +2439,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'scotland_transport_trunk_road_height_all' || // Skip Scotland Trunk Road Height array (handled separately for map drawing)
     key === 'miami_business_fd_inspected_all' || // Skip Miami Business FD Inspected array (handled separately for map drawing)
     key === 'miami_public_schools_all' || // Skip Miami Public Schools array (handled separately for map drawing)
+    key === 'miami_private_schools_all' || // Skip Miami Private Schools array (handled separately for map drawing)
     key === 'miami_water_bodies_all' || // Skip Miami Water Bodies array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
@@ -4517,6 +4518,16 @@ const MapView: React.FC<MapViewProps> = ({
         resetColorTracking();
         const bounds = L.latLngBounds([]);
         const legendAccumulator: Record<string, LegendItem> = {};
+        
+        // Track drawn schools and businesses across ALL results to prevent duplicates
+        const drawnPrivateSchoolIds = new Set<string>();
+        const drawnPublicSchoolIds = new Set<string>();
+        const drawnBusinessIds = new Set<string>();
+        
+        // Track total counts of unique schools and businesses drawn (not per result)
+        let totalPublicSchoolCount = 0;
+        let totalPrivateSchoolCount = 0;
+        let totalBusinessCount = 0;
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -20516,6 +20527,13 @@ const MapView: React.FC<MapViewProps> = ({
           let businessCount = 0;
           enrichments.miami_business_fd_inspected_all.forEach((business: any) => {
             if (business.geometry && typeof business.geometry.x === 'number' && typeof business.geometry.y === 'number') {
+              // Use objectId as primary key, fallback to coordinates - check across ALL results
+              const businessId = business.objectId ? String(business.objectId) : `${business.geometry.x.toFixed(6)}_${business.geometry.y.toFixed(6)}`;
+              if (drawnBusinessIds.has(businessId)) {
+                return; // Skip - already drawn from a previous result
+              }
+              drawnBusinessIds.add(businessId);
+              
               try {
                 const lat = business.geometry.y;
                 const lon = business.geometry.x;
@@ -20572,17 +20590,8 @@ const MapView: React.FC<MapViewProps> = ({
             }
           });
           
-          if (businessCount > 0) {
-            if (!legendAccumulator['miami_business_fd_inspected']) {
-              legendAccumulator['miami_business_fd_inspected'] = {
-                icon: '🏢',
-                color: '#3b82f6',
-                title: 'Miami Business Locations (FD Inspected)',
-                count: 0
-              };
-            }
-            legendAccumulator['miami_business_fd_inspected'].count += businessCount;
-          }
+          // Accumulate total unique businesses drawn across all results
+          totalBusinessCount += businessCount;
         }
       } catch (error) {
         console.error('Error processing Miami Business FD Inspected:', error);
@@ -20594,6 +20603,13 @@ const MapView: React.FC<MapViewProps> = ({
           let schoolCount = 0;
           enrichments.miami_public_schools_all.forEach((school: any) => {
             if (school.geometry && typeof school.geometry.x === 'number' && typeof school.geometry.y === 'number') {
+              // Use objectId as primary key, fallback to coordinates - check across ALL results
+              const schoolId = school.objectId ? String(school.objectId) : `${school.geometry.x.toFixed(6)}_${school.geometry.y.toFixed(6)}`;
+              if (drawnPublicSchoolIds.has(schoolId)) {
+                return; // Skip - already drawn from a previous result
+              }
+              drawnPublicSchoolIds.add(schoolId);
+              
               try {
                 const lat = school.geometry.y;
                 const lon = school.geometry.x;
@@ -20653,20 +20669,94 @@ const MapView: React.FC<MapViewProps> = ({
             }
           });
           
-          if (schoolCount > 0) {
-            if (!legendAccumulator['miami_public_schools']) {
-              legendAccumulator['miami_public_schools'] = {
-                icon: '🎓',
-                color: '#8b5cf6',
-                title: 'Miami Public Schools',
-                count: 0
-              };
-            }
-            legendAccumulator['miami_public_schools'].count += schoolCount;
-          }
+          // Accumulate total unique schools drawn across all results
+          totalPublicSchoolCount += schoolCount;
         }
       } catch (error) {
         console.error('Error processing Miami Public Schools:', error);
+      }
+
+      // Draw Miami Private Schools as points on the map
+      try {
+        if (enrichments.miami_private_schools_all && Array.isArray(enrichments.miami_private_schools_all)) {
+          let schoolCount = 0;
+          enrichments.miami_private_schools_all.forEach((school: any) => {
+            if (school.geometry && typeof school.geometry.x === 'number' && typeof school.geometry.y === 'number') {
+              // Use objectId as primary key, fallback to coordinates - check across ALL results
+              const schoolId = school.objectId ? String(school.objectId) : `${school.geometry.x.toFixed(6)}_${school.geometry.y.toFixed(6)}`;
+              if (drawnPrivateSchoolIds.has(schoolId)) {
+                return; // Skip - already drawn from a previous result
+              }
+              drawnPrivateSchoolIds.add(schoolId);
+              
+              try {
+                const lat = school.geometry.y;
+                const lon = school.geometry.x;
+                const distance = school.distance_miles !== null && school.distance_miles !== undefined ? school.distance_miles : 0;
+                
+                const name = school.name || school.NAME || school.Name || null;
+                const address = school.address || school.ADDRESS || school.Address || null;
+                const city = school.city || school.CITY || school.City || null;
+                const zipCode = school.zipCode || school.ZIPCODE || school.zip_code || null;
+                const phone = school.phone || school.PHONE || school.Phone || null;
+                const type = school.type || school.TYPE || school.Type || null;
+                const gradeLevel = school.gradeLevel || school.GRDLEVEL || school.Grades || null;
+                const enrollment = school.enrollment !== null && school.enrollment !== undefined ? school.enrollment : null;
+                const status = school.status || school.STATUS || school.Status || null;
+                const website = school.website || school.WEBSITE || school.Website || null;
+                const directorName = school.directorName || school.DIRCTNAME || school.DirectorName || null;
+                const yearEstablished = school.yearEstablished || school.YEARESTB || school.YearEstablished || null;
+                
+                // Create custom icon matching legend (🏫 emoji with different color to distinguish from public schools)
+                const isMobile = window.innerWidth < 768;
+                const schoolIcon = createPOIIcon('🏫', '#a855f7', isMobile);
+                
+                // Create marker with custom icon
+                const marker = L.marker([lat, lon], {
+                  icon: schoolIcon
+                });
+                
+                // Build popup content with all available information
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏫 ${name || 'Private School'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${address}${city ? `, ${city}` : ''}${zipCode ? ` ${zipCode}` : ''}</div>` : ''}
+                      ${phone ? `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phone}</div>` : ''}
+                      ${website ? `<div style="margin-bottom: 4px;"><strong>Website:</strong> <a href="${website}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${website}</a></div>` : ''}
+                      ${type ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${type}</div>` : ''}
+                      ${gradeLevel ? `<div style="margin-bottom: 4px;"><strong>Grade Level:</strong> ${gradeLevel}</div>` : ''}
+                      ${enrollment !== null && enrollment !== 0 ? `<div style="margin-bottom: 4px;"><strong>Enrollment:</strong> ${enrollment.toLocaleString()}</div>` : ''}
+                      ${status ? `<div style="margin-bottom: 4px;"><strong>Status:</strong> ${status}</div>` : ''}
+                      ${directorName ? `<div style="margin-bottom: 4px;"><strong>Director:</strong> ${directorName}</div>` : ''}
+                      ${yearEstablished ? `<div style="margin-bottom: 4px;"><strong>Year Established:</strong> ${yearEstablished}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+                
+                marker.addTo(poi);
+                schoolCount++;
+              } catch (error: any) {
+                console.error('Error processing Miami Private School point:', error);
+              }
+            }
+          });
+          
+          // Accumulate total unique schools drawn across all results
+          totalPrivateSchoolCount += schoolCount;
+        }
+      } catch (error) {
+        console.error('Error processing Miami Private Schools:', error);
       }
 
       // Draw Miami Water Bodies as polygons on the map
@@ -37468,6 +37558,32 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
     }); // Close results.forEach
+
+        // Set Miami schools and businesses legend items AFTER all results are processed, using total unique counts
+        if (totalPublicSchoolCount > 0) {
+          legendAccumulator['miami_public_schools'] = {
+            icon: '🎓',
+            color: '#8b5cf6',
+            title: 'Miami Public Schools',
+            count: totalPublicSchoolCount
+          };
+        }
+        if (totalPrivateSchoolCount > 0) {
+          legendAccumulator['miami_private_schools'] = {
+            icon: '🏫',
+            color: '#a855f7',
+            title: 'Miami Private Schools',
+            count: totalPrivateSchoolCount
+          };
+        }
+        if (totalBusinessCount > 0) {
+          legendAccumulator['miami_business_fd_inspected'] = {
+            icon: '🏢',
+            color: '#3b82f6',
+            title: 'Miami Business Locations (FD Inspected)',
+            count: totalBusinessCount
+          };
+        }
 
         console.log('🗺️ STEP 2: Finished drawing all features, setting legend items');
         
