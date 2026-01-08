@@ -9154,6 +9154,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/CvuPhqcTQpZPT9qY/arcgis/rest/services/Private_School/FeatureServer/0"
         },
         {
+          name: "FLDOT - Bike Routes",
+          description: "Florida Department of Transportation bike routes - proximity queries up to 50 miles",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/USBikeRoutesFlorida/FeatureServer/0"
+        },
+        {
+          name: "FLDOT - Real-Time Traffic Volume and Speed All Intervals All Directions TDA",
+          description: "Florida Department of Transportation real-time traffic volume and speed monitoring points - All Intervals All Directions TDA (proximity queries up to 10 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Real_Time_Traffic_Volume_and_Speed_All_Intervals_All_Directions_TDA/FeatureServer/0"
+        },
+        {
           name: "City of Miami - Water Bodies",
           description: "City of Miami water body polygons - point-in-polygon and proximity queries up to 25 miles",
           coverage: "City of Miami, Florida",

@@ -2441,6 +2441,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'miami_public_schools_all' || // Skip Miami Public Schools array (handled separately for map drawing)
     key === 'miami_private_schools_all' || // Skip Miami Private Schools array (handled separately for map drawing)
     key === 'miami_water_bodies_all' || // Skip Miami Water Bodies array (handled separately for map drawing)
+    key === 'fldot_bike_routes_all' || // Skip FLDOT Bike Routes array (handled separately for map drawing)
+    key === 'fldot_real_time_traffic_all' || // Skip FLDOT Real-Time Traffic array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -4523,11 +4525,14 @@ const MapView: React.FC<MapViewProps> = ({
         const drawnPrivateSchoolIds = new Set<string>();
         const drawnPublicSchoolIds = new Set<string>();
         const drawnBusinessIds = new Set<string>();
+        const drawnTrafficIds = new Set<string>();
         
-        // Track total counts of unique schools and businesses drawn (not per result)
+        // Track total counts of unique schools, businesses, routes, and traffic points drawn (not per result)
         let totalPublicSchoolCount = 0;
         let totalPrivateSchoolCount = 0;
         let totalBusinessCount = 0;
+        let totalBikeRouteCount = 0;
+        let totalTrafficPointCount = 0;
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -20757,6 +20762,171 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Miami Private Schools:', error);
+      }
+
+      // Draw FLDOT Real-Time Traffic points on the map
+      try {
+        if (enrichments.fldot_real_time_traffic_all && Array.isArray(enrichments.fldot_real_time_traffic_all)) {
+          enrichments.fldot_real_time_traffic_all.forEach((point: any) => {
+            // Deduplicate: use cosite as unique identifier (already deduplicated in adapter, but check across all results)
+            const trafficId = point.cosite ? String(point.cosite) :
+              (point.latitude && point.longitude) ?
+              `${point.latitude.toFixed(6)}_${point.longitude.toFixed(6)}` :
+              point.objectId ? String(point.objectId) : null;
+            
+            if (trafficId && drawnTrafficIds.has(trafficId)) {
+              return; // Skip - already drawn
+            }
+            if (trafficId) drawnTrafficIds.add(trafficId);
+            
+            const lat = point.latitude || point.lat || (point.geometry && point.geometry.y);
+            const lon = point.longitude || point.lon || (point.geometry && point.geometry.x);
+            
+            if (lat && lon) {
+              try {
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚦', '#ef4444', isMobile)
+                });
+                
+                const localName = point.localName || point.LOCALNAM || '';
+                const countyName = point.countyName || point.COUNTYNM || '';
+                const direction = point.direction || point.DIRECTION || '';
+                const currentVolume = point.currentVolume !== null && point.currentVolume !== undefined ? point.currentVolume : point.CURVOL;
+                const averageVolume = point.averageVolume !== null && point.averageVolume !== undefined ? point.averageVolume : point.HAVGVOL;
+                const percentDiffText = point.percentDiffText || point.PCTDIFTX || '';
+                const currentAvgSpeed = point.currentAvgSpeed !== null && point.currentAvgSpeed !== undefined ? point.currentAvgSpeed : point.CURAVSPD;
+                const maxSpeedRight = point.maxSpeedRight !== null && point.maxSpeedRight !== undefined ? point.maxSpeedRight : point.MAXSPEEDR;
+                const speedPercentDiff = point.speedPercentDiff !== null && point.speedPercentDiff !== undefined ? point.speedPercentDiff : point.SPPCTDF;
+                const labelValue = point.labelValue || point.LBLVAL || '';
+                const dateTimeString = point.dateTimeString || point.DTSTR || '';
+                const dateTimeStamp2 = point.dateTimeStamp2 || point.DTSTMP2 || '';
+                const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles : 0;
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚦 Real-Time Traffic
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${localName ? `<div style="margin-bottom: 4px;"><strong>Road:</strong> ${localName}</div>` : ''}
+                      ${countyName ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${countyName}</div>` : ''}
+                      ${direction ? `<div style="margin-bottom: 4px;"><strong>Direction:</strong> ${direction}</div>` : ''}
+                      ${currentVolume !== null && currentVolume !== undefined ? `<div style="margin-bottom: 4px;"><strong>Current Volume:</strong> ${currentVolume.toLocaleString()}</div>` : ''}
+                      ${averageVolume !== null && averageVolume !== undefined ? `<div style="margin-bottom: 4px;"><strong>Average Volume:</strong> ${averageVolume.toLocaleString()}</div>` : ''}
+                      ${percentDiffText ? `<div style="margin-bottom: 4px;"><strong>Volume Change:</strong> ${percentDiffText}</div>` : ''}
+                      ${currentAvgSpeed !== null && currentAvgSpeed !== undefined ? `<div style="margin-bottom: 4px;"><strong>Current Avg Speed:</strong> ${currentAvgSpeed.toFixed(1)} mph</div>` : ''}
+                      ${maxSpeedRight !== null && maxSpeedRight !== undefined ? `<div style="margin-bottom: 4px;"><strong>Speed Limit:</strong> ${maxSpeedRight} mph</div>` : ''}
+                      ${speedPercentDiff !== null && speedPercentDiff !== undefined ? `<div style="margin-bottom: 4px;"><strong>Speed Change:</strong> ${speedPercentDiff > 0 ? '+' : ''}${speedPercentDiff}%</div>` : ''}
+                      ${labelValue ? `<div style="margin-bottom: 4px;"><strong>Status:</strong> ${labelValue}</div>` : ''}
+                      ${dateTimeStamp2 ? `<div style="margin-bottom: 4px;"><strong>Date/Time:</strong> ${dateTimeStamp2}</div>` : dateTimeString ? `<div style="margin-bottom: 4px;"><strong>Date/Time:</strong> ${dateTimeString}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+                
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                totalTrafficPointCount++;
+              } catch (error: any) {
+                console.error('Error processing FLDOT Real-Time Traffic point:', error);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Real-Time Traffic:', error);
+      }
+
+      // Draw FLDOT Bike Routes as polylines on the map
+      try {
+        if (enrichments.fldot_bike_routes_all && Array.isArray(enrichments.fldot_bike_routes_all)) {
+          let routeCount = 0;
+          enrichments.fldot_bike_routes_all.forEach((route: any) => {
+            if (route.geometry && route.geometry.paths) {
+              try {
+                const paths = route.geometry.paths;
+                if (paths && Array.isArray(paths) && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    if (path && Array.isArray(path) && path.length > 0) {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                      
+                      if (latlngs.length < 2) {
+                        return; // Skip paths with less than 2 points
+                      }
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: '#10b981',
+                        weight: 4,
+                        opacity: 0.8
+                      });
+                      
+                      const routeName = route.route || route.ROUTE || 'Unknown Route';
+                      const routeNum = route.routeNum !== null && route.routeNum !== undefined ? route.routeNum : route.ROUTENUM || null;
+                      const status = route.status || route.STATUS || null;
+                      const ftype = route.ftype || route.FTYPE || null;
+                      const fname = route.fname || route.FNAME || null;
+                      const comments = route.comments || route.COMMENTS || null;
+                      const cntyname = route.cntyname || route.CNTYNAME || null;
+                      const fdotdist = route.fdotdist || route.FDOTDIST || null;
+                      const shapeLength = route.shapeLength !== null && route.shapeLength !== undefined ? route.shapeLength : route.Shape_Leng || null;
+                      const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles : 0;
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🚴 FLDOT Bike Route
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${routeName ? `<div style="margin-bottom: 4px;"><strong>Route:</strong> ${routeName}</div>` : ''}
+                            ${routeNum !== null ? `<div style="margin-bottom: 4px;"><strong>Route Number:</strong> ${routeNum}</div>` : ''}
+                            ${status ? `<div style="margin-bottom: 4px;"><strong>Status:</strong> ${status}</div>` : ''}
+                            ${ftype ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${ftype}</div>` : ''}
+                            ${fname ? `<div style="margin-bottom: 4px;"><strong>Name:</strong> ${fname}</div>` : ''}
+                            ${comments ? `<div style="margin-bottom: 4px;"><strong>Comments:</strong> ${comments}</div>` : ''}
+                            ${cntyname ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${cntyname}</div>` : ''}
+                            ${fdotdist ? `<div style="margin-bottom: 4px;"><strong>FDOT District:</strong> ${fdotdist}</div>` : ''}
+                            ${shapeLength !== null ? `<div style="margin-bottom: 4px;"><strong>Length:</strong> ${shapeLength.toFixed(2)} miles</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                        </div>
+                      `;
+                      
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+                      
+                      // Enable popup to open on click
+                      polyline.on('click', function(this: L.Polyline) {
+                        this.openPopup();
+                      });
+                      
+                      polyline.addTo(primary);
+                      
+                      const polylineBounds = L.latLngBounds(latlngs);
+                      bounds.extend(polylineBounds);
+                    }
+                  });
+                  
+                  routeCount++;
+                }
+              } catch (error: any) {
+                console.error('Error processing FLDOT Bike Route polyline:', error);
+              }
+            }
+          });
+          
+          // Accumulate total unique routes drawn across all results
+          totalBikeRouteCount += routeCount;
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Bike Routes:', error);
       }
 
       // Draw Miami Water Bodies as polygons on the map
@@ -37582,6 +37752,22 @@ const MapView: React.FC<MapViewProps> = ({
             color: '#3b82f6',
             title: 'Miami Business Locations (FD Inspected)',
             count: totalBusinessCount
+          };
+        }
+        if (totalBikeRouteCount > 0) {
+          legendAccumulator['fldot_bike_routes'] = {
+            icon: '🚴',
+            color: '#10b981',
+            title: 'FLDOT Bike Routes',
+            count: totalBikeRouteCount
+          };
+        }
+        if (totalTrafficPointCount > 0) {
+          legendAccumulator['fldot_real_time_traffic'] = {
+            icon: '🚦',
+            color: '#ef4444',
+            title: 'FLDOT Real-Time Traffic',
+            count: totalTrafficPointCount
           };
         }
 

@@ -297,6 +297,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'City of Miami';
     }
     
+    // FLDOT - check before other state data
+    if (key.includes('fldot_')) {
+      return 'FLDOT';
+    }
+    
     // Houston Data - check before other state data
     if (key.includes('houston_')) {
       return 'Houston Data';

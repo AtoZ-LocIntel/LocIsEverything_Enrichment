@@ -445,6 +445,8 @@ import { getMiamiBusinessFDInspectedData } from '../adapters/miamiBusinessFDInsp
 import { getMiamiPublicSchoolsData } from '../adapters/miamiPublicSchools';
 import { getMiamiPrivateSchoolsData } from '../adapters/miamiPrivateSchools';
 import { getMiamiWaterBodiesData } from '../adapters/miamiWaterBodies';
+import { getFLDOTBikeRoutesData } from '../adapters/fldotBikeRoutes';
+import { getFLDOTRealTimeTrafficData } from '../adapters/fldotRealTimeTraffic';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -8555,6 +8557,14 @@ export class EnrichmentService {
       // City of Miami - Water Bodies (point-in-polygon and proximity query, max 25 miles)
       case 'miami_water_bodies':
         return await this.getMiamiWaterBodies(lat, lon, radius);
+      
+      // FLDOT - Bike Routes (proximity query, max 50 miles)
+      case 'fldot_bike_routes':
+        return await this.getFLDOTBikeRoutes(lat, lon, radius);
+      
+      // FLDOT - Real-Time Traffic Volume and Speed (proximity query, max 10 miles)
+      case 'fldot_real_time_traffic':
+        return await this.getFLDOTRealTimeTraffic(lat, lon, radius);
       
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
@@ -24922,6 +24932,108 @@ out center tags;`;
         miami_water_bodies_count: 0,
         miami_water_bodies_all: [],
         miami_water_bodies_summary: `Error querying water bodies: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTBikeRoutes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🚴 Fetching FLDOT Bike Routes for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const routes = await getFLDOTBikeRoutesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (routes.length === 0) {
+        result.fldot_bike_routes_count = 0;
+        result.fldot_bike_routes_all = [];
+        result.fldot_bike_routes_summary = `No bike routes found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_bike_routes_count = routes.length;
+      result.fldot_bike_routes_all = routes.map(route => ({
+        ...route,
+        objectId: route.objectId,
+        route: route.route,
+        routeNum: route.routeNum,
+        status: route.status,
+        ftype: route.ftype,
+        fname: route.fname,
+        comments: route.comments,
+        cntyname: route.cntyname,
+        fdotcoid: route.fdotcoid,
+        fdotdist: route.fdotdist,
+        shapeLength: route.shapeLength,
+        globalId: route.globalId,
+        geometry: route.geometry,
+        distance_miles: route.distance_miles
+      }));
+
+      result.fldot_bike_routes_summary = `Found ${routes.length} bike route(s) within ${cappedRadius} miles`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Bike Routes:', error);
+      return {
+        fldot_bike_routes_count: 0,
+        fldot_bike_routes_all: [],
+        fldot_bike_routes_summary: `Error querying bike routes: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTRealTimeTraffic(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 10, 10);
+      console.log(`🚦 Fetching FLDOT Real-Time Traffic for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const trafficPoints = await getFLDOTRealTimeTrafficData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (trafficPoints.length === 0) {
+        result.fldot_real_time_traffic_count = 0;
+        result.fldot_real_time_traffic_all = [];
+        result.fldot_real_time_traffic_summary = `No real-time traffic monitoring points found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_real_time_traffic_count = trafficPoints.length;
+      result.fldot_real_time_traffic_all = trafficPoints.map(point => ({
+        ...point,
+        objectId: point.objectId,
+        roadway: point.roadway,
+        localName: point.localName,
+        countyName: point.countyName,
+        direction: point.direction,
+        currentVolume: point.currentVolume,
+        averageVolume: point.averageVolume,
+        percentDiff: point.percentDiff,
+        percentDiffText: point.percentDiffText,
+        currentAvgSpeed: point.currentAvgSpeed,
+        maxSpeedRight: point.maxSpeedRight,
+        speedPercentDiff: point.speedPercentDiff,
+        latitude: point.latitude,
+        longitude: point.longitude,
+        dateTimeString: point.dateTimeString,
+        dateTimeStamp2: point.dateTimeStamp2,
+        idString: point.idString,
+        labelValue: point.labelValue,
+        geometry: point.geometry,
+        distance_miles: point.distance_miles
+      }));
+
+      result.fldot_real_time_traffic_summary = `Found ${trafficPoints.length} real-time traffic monitoring point(s) within ${cappedRadius} miles`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Real-Time Traffic:', error);
+      return {
+        fldot_real_time_traffic_count: 0,
+        fldot_real_time_traffic_all: [],
+        fldot_real_time_traffic_summary: `Error querying real-time traffic: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

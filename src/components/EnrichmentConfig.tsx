@@ -821,6 +821,60 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             category: poi.category
           }));
           
+          // Get FLDOT enrichments (when added, they will start with 'fldot_' or have 'fldot' in id/description)
+          const fldotPOIs = flPOIs.filter(poi => 
+            poi.id.startsWith('fldot_') || 
+            poi.id.includes('fldot') ||
+            poi.description.toLowerCase().includes('fldot') ||
+            poi.label.toLowerCase().includes('fldot') ||
+            (poi.subCategory && poi.subCategory.toLowerCase().includes('fldot'))
+          );
+          
+          const fldotEnrichments = fldotPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Get FLDEP enrichments (when added, they will start with 'fldep_' or have 'fldep' in id/description)
+          const fldepPOIs = flPOIs.filter(poi => 
+            poi.id.startsWith('fldep_') || 
+            poi.id.includes('fldep') ||
+            poi.description.toLowerCase().includes('fldep') ||
+            poi.label.toLowerCase().includes('fldep') ||
+            (poi.subCategory && poi.subCategory.toLowerCase().includes('fldep'))
+          );
+          
+          const fldepEnrichments = fldepPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Get FGIO enrichments (when added, they will start with 'fgio_' or have 'fgio' in id/description)
+          const fgioPOIs = flPOIs.filter(poi => 
+            poi.id.startsWith('fgio_') || 
+            poi.id.includes('fgio') ||
+            poi.description.toLowerCase().includes('fgio') ||
+            poi.label.toLowerCase().includes('fgio') ||
+            (poi.subCategory && poi.subCategory.toLowerCase().includes('fgio'))
+          );
+          
+          const fgioEnrichments = fgioPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
           // Define FL sub-categories
           const flSubCategories: EnrichmentCategory[] = [
             {
@@ -835,6 +889,45 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               }} />,
               description: 'City of Miami open data layers',
               enrichments: miamiEnrichments
+            },
+            {
+              id: 'fldot',
+              title: 'FLDOT',
+              icon: <img src="/assets/FLDOT.webp" alt="FLDOT" className="w-full h-full object-cover rounded-full" onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/assets/FLDOT.webp';
+                target.onerror = () => {
+                  target.style.display = 'none';
+                };
+              }} />,
+              description: 'Florida Department of Transportation data layers',
+              enrichments: fldotEnrichments
+            },
+            {
+              id: 'fldep',
+              title: 'FLDEP',
+              icon: <img src="/assets/FLDEP.webp" alt="FLDEP" className="w-full h-full object-cover rounded-full" onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/assets/FLDEP.webp';
+                target.onerror = () => {
+                  target.style.display = 'none';
+                };
+              }} />,
+              description: 'Florida Department of Environmental Protection data layers',
+              enrichments: fldepEnrichments
+            },
+            {
+              id: 'fgio',
+              title: 'FGIO',
+              icon: <img src="/assets/FGIO.webp" alt="FGIO" className="w-full h-full object-cover rounded-full" onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/assets/FGIO.webp';
+                target.onerror = () => {
+                  target.style.display = 'none';
+                };
+              }} />,
+              description: 'Florida Geographic Information Office data layers',
+              enrichments: fgioEnrichments
             }
           ];
           
@@ -3018,7 +3111,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               const isEUSubCategory = activeModal === 'ireland';
               const isILSubCategory = activeModal?.startsWith('il_') || activeModal === 'chicago_data_portal';
               const isTXSubCategory = activeModal?.startsWith('tx_') || activeModal === 'houston_data_portal';
-              const isFLSubCategory = activeModal === 'city_of_miami';
+              const isFLSubCategory = activeModal === 'city_of_miami' || activeModal === 'fldot' || activeModal === 'fldep' || activeModal === 'fgio';
               let category: EnrichmentCategory | undefined;
               
               if (isNHSubCategory) {

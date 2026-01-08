@@ -41,10 +41,12 @@ export const exportEnrichmentResultsToCSV = (results: EnrichmentResult[]): void 
   
   const rows: string[][] = [];
   
-  // Track exported schools and businesses across ALL results to prevent duplicates
+  // Track exported schools, businesses, routes, and traffic points across ALL results to prevent duplicates
   const exportedPrivateSchoolIds = new Set<string>();
   const exportedPublicSchoolIds = new Set<string>();
   const exportedBusinessIds = new Set<string>();
+  const exportedRouteIds = new Set<string>();
+  const exportedTrafficIds = new Set<string>();
 
   results.forEach(result => {
     console.log(`🔍 Processing result for ${result.location.name}`);
@@ -56,7 +58,7 @@ export const exportEnrichmentResultsToCSV = (results: EnrichmentResult[]): void 
     addSummaryDataRows(result, rows);
     
     // Add POI data rows
-    addPOIDataRows(result, rows, exportedPrivateSchoolIds, exportedPublicSchoolIds, exportedBusinessIds);
+    addPOIDataRows(result, rows, exportedPrivateSchoolIds, exportedPublicSchoolIds, exportedBusinessIds, exportedRouteIds, exportedTrafficIds);
   });
 
   console.log(`📊 CSV will contain ${rows.length} rows with headers:`, allHeaders);
@@ -890,7 +892,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
   });
 };
 
-const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPrivateSchoolIds: Set<string>, exportedPublicSchoolIds: Set<string>, exportedBusinessIds: Set<string>): void => {
+const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPrivateSchoolIds: Set<string>, exportedPublicSchoolIds: Set<string>, exportedBusinessIds: Set<string>, exportedRouteIds: Set<string>, exportedTrafficIds: Set<string>): void => {
   const { location, enrichments } = result;
 
   // Add all POI data as individual rows
@@ -8583,6 +8585,82 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           `🏫 ${name}`, lat, lon, distance,
           `Private School (${distance} miles)`,
           addressLine || name, phone || '', website || '', attributesJson, 'City of Miami'
+        ]);
+      });
+    } else if (key === 'fldot_bike_routes_all' && Array.isArray(value)) {
+      value.forEach((route: any) => {
+        // Deduplicate: use objectId to track exported routes
+        const routeId = route.objectId ? String(route.objectId) : 
+                       (route.attributes && route.attributes.OBJECTID_1) ? String(route.attributes.OBJECTID_1) :
+                       (route.geometry && route.geometry.paths) ? 
+                       `${JSON.stringify(route.geometry.paths).substring(0, 50)}` : null;
+        if (routeId && exportedRouteIds.has(routeId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (routeId) exportedRouteIds.add(routeId);
+        
+        const routeName = route.route || route.ROUTE || 'Unknown Route';
+        const routeNum = route.routeNum !== null && route.routeNum !== undefined ? route.routeNum : route.ROUTENUM || null;
+        const fname = route.fname || route.FNAME || '';
+        const cntyname = route.cntyname || route.CNTYNAME || '';
+        const fdotdist = route.fdotdist || route.FDOTDIST || '';
+        const distance = route.distance_miles !== null && route.distance_miles !== undefined ? route.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...route };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        // Use center point for lat/lon if available, otherwise use first coordinate of first path
+        let lat = route.lat || '';
+        let lon = route.lon || '';
+        if (!lat || !lon) {
+          if (route.geometry && route.geometry.paths && Array.isArray(route.geometry.paths) && route.geometry.paths.length > 0) {
+            const firstPath = route.geometry.paths[0];
+            if (Array.isArray(firstPath) && firstPath.length > 0) {
+              const firstCoord = firstPath[0];
+              if (Array.isArray(firstCoord) && firstCoord.length >= 2) {
+                lat = firstCoord[1];
+                lon = firstCoord[0];
+              }
+            }
+          }
+        }
+        const routeInfo = `${routeName}${routeNum !== null ? ` (Route ${routeNum})` : ''}${fname ? ` - ${fname}` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_BIKE_ROUTES',
+          `🚴 ${routeInfo}`, lat, lon, distance,
+          `Bike Route (${distance} miles)`,
+          `${fname || routeName}${cntyname ? `, ${cntyname} County` : ''}${fdotdist ? ` (${fdotdist})` : ''}`, '', '', attributesJson, 'FLDOT'
+        ]);
+      });
+    } else if (key === 'fldot_real_time_traffic_all' && Array.isArray(value)) {
+      value.forEach((point: any) => {
+        // Deduplicate: use cosite to track exported traffic points
+        const trafficId = point.cosite ? String(point.cosite) : 
+                         (point.latitude && point.longitude) ?
+                         `${point.latitude.toFixed(6)}_${point.longitude.toFixed(6)}` : null;
+        if (trafficId && exportedTrafficIds.has(trafficId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (trafficId) exportedTrafficIds.add(trafficId);
+        
+        const localName = point.localName || point.LOCALNAM || '';
+        const countyName = point.countyName || point.COUNTYNM || '';
+        const direction = point.direction || point.DIRECTION || '';
+        const distance = point.distance_miles !== null && point.distance_miles !== undefined ? point.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...point };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = point.latitude || point.lat || (point.geometry && point.geometry.y) || '';
+        const lon = point.longitude || point.lon || (point.geometry && point.geometry.x) || '';
+        const roadInfo = `${localName}${direction ? ` (${direction})` : ''}${countyName ? `, ${countyName} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_REAL_TIME_TRAFFIC',
+          `🚦 ${roadInfo}`, lat, lon, distance,
+          `Real-Time Traffic (${distance} miles)`,
+          `${localName || 'Traffic Monitoring Point'}${direction ? ` - Direction: ${direction}` : ''}${countyName ? ` (${countyName} County)` : ''}`, '', '', attributesJson, 'FLDOT'
         ]);
       });
     } else if (key === 'miami_water_bodies_all' && Array.isArray(value)) {

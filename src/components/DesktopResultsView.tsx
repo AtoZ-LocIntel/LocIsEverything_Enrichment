@@ -873,6 +873,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'World Resources Institute';
       } else if (key.includes('miami_')) {
         category = 'City of Miami';
+      } else if (key.includes('fldot_')) {
+        category = 'FLDOT';
       } else if (key.includes('houston_')) {
         category = 'Houston Data';
       } else if (key.includes('tx_')) {

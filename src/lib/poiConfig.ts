@@ -2930,7 +2930,9 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'miami_business_fd_inspected', label: 'Business Location (FD Inspected)', description: 'City of Miami businesses with Fire Department Certificate of Occupancy (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
   { id: 'miami_public_schools', label: 'Public Schools', description: 'City of Miami public school sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
   { id: 'miami_private_schools', label: 'Private Schools', description: 'City of Miami private school sites (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
-  { id: 'miami_water_bodies', label: 'Water Bodies', description: 'City of Miami water body polygons (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 0, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' }
+  { id: 'miami_water_bodies', label: 'Water Bodies', description: 'City of Miami water body polygons (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 0, maxRadius: 25, category: 'fl', section: 'fl', subCategory: 'City of Miami' },
+  { id: 'fldot_bike_routes', label: 'Bike Routes', description: 'Florida Department of Transportation bike routes (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'fl', section: 'fl', subCategory: 'FLDOT' },
+  { id: 'fldot_real_time_traffic', label: 'Real-Time Traffic Volume and Speed', description: 'Florida Department of Transportation real-time traffic volume and speed monitoring points - Real Time Traffic Volume and Speed All Intervals All Directions TDA (proximity queries up to 10 miles)', isPOI: true, defaultRadius: 2, maxRadius: 10, category: 'fl', section: 'fl', subCategory: 'FLDOT' }
 ];
 
 class POIConfigManager {
