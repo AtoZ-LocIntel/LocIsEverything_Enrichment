@@ -9178,6 +9178,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/FDOTFAC10312016/FeatureServer/0"
         },
         {
+          name: "FLDOT - Bike Slots",
+          description: "Florida Department of Transportation bike slots - stripe-separated portions of roadway between through lanes and right turn lanes at intersections. Derived from FDOT Roadway Characteristics Inventory data. Bike slots are sometimes referred to as keyhole slots and may overlap bike lanes (proximity queries up to 50 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Bike_Slot_TDA/FeatureServer/0"
+        },
+        {
           name: "City of Miami - Water Bodies",
           description: "City of Miami water body polygons - point-in-polygon and proximity queries up to 25 miles",
           coverage: "City of Miami, Florida",

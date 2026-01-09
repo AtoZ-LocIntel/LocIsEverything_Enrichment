@@ -8700,6 +8700,42 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           attributesJson, 'FLDOT'
         ]);
       });
+    } else if (key === 'fldot_bike_slots_all' && Array.isArray(value)) {
+      value.forEach((slot: any) => {
+        // Deduplicate: use FID to track exported bike slots
+        const slotId = slot.fid !== null && slot.fid !== undefined ? String(slot.fid) : null;
+        if (slotId && exportedRouteIds.has(slotId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (slotId) exportedRouteIds.add(slotId);
+        
+        const roadway = slot.roadway || slot.ROADWAY || '';
+        const roadSide = slot.roadSide || slot.ROAD_SIDE || '';
+        const county = slot.county || slot.COUNTY || '';
+        const district = slot.district !== null && slot.district !== undefined ? String(slot.district) : '';
+        const description = slot.description || slot.DESCR || '';
+        const beginPost = slot.beginPost !== null && slot.beginPost !== undefined ? slot.beginPost.toFixed(3) : '';
+        const endPost = slot.endPost !== null && slot.endPost !== undefined ? slot.endPost.toFixed(3) : '';
+        const shapeLength = slot.shapeLength !== null && slot.shapeLength !== undefined ? slot.shapeLength.toFixed(2) : '';
+        const distance = slot.distance_miles !== null && slot.distance_miles !== undefined ? slot.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...slot };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = slot.lat || '';
+        const lon = slot.lon || '';
+        const slotInfo = `Roadway ${roadway}${roadSide ? ` (${roadSide} side)` : ''}${county ? `, ${county} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_BIKE_SLOTS',
+          `🚴 ${slotInfo}`, lat, lon, distance,
+          `Bike Slot${description ? ` - ${description}` : ''} (${distance} miles)`,
+          `${roadway ? `Roadway: ${roadway}` : ''}${beginPost ? `, Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `, Length: ${shapeLength}m` : ''}`,
+          '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
     } else if (key === 'miami_water_bodies_all' && Array.isArray(value)) {
       value.forEach((waterBody: any) => {
         const type = waterBody.type || waterBody.TYPE || waterBody.Type || 'Water Body';

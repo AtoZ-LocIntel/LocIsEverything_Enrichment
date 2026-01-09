@@ -2444,6 +2444,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'fldot_bike_routes_all' || // Skip FLDOT Bike Routes array (handled separately for map drawing)
     key === 'fldot_real_time_traffic_all' || // Skip FLDOT Real-Time Traffic array (handled separately for map drawing)
     key === 'fldot_facilities_all' || // Skip FLDOT Facilities array (handled separately for map drawing)
+    key === 'fldot_bike_slots_all' || // Skip FLDOT Bike Slots array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -4535,6 +4536,7 @@ const MapView: React.FC<MapViewProps> = ({
         let totalBikeRouteCount = 0;
         let totalTrafficPointCount = 0;
         let totalFacilityPointCount = 0;
+        let totalBikeSlotCount = 0;
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -20914,6 +20916,87 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing FLDOT Facilities:', error);
+      }
+
+      // Draw FLDOT Bike Slots as polylines on the map
+      try {
+        if (enrichments.fldot_bike_slots_all && Array.isArray(enrichments.fldot_bike_slots_all)) {
+          enrichments.fldot_bike_slots_all.forEach((slot: any) => {
+            if (slot.geometry && slot.geometry.paths) {
+              try {
+                const paths = slot.geometry.paths;
+                if (paths && Array.isArray(paths) && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    if (path && Array.isArray(path) && path.length > 0) {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+
+                      if (latlngs.length < 2) {
+                        return; // Skip paths with less than 2 points
+                      }
+
+                      const polyline = L.polyline(latlngs, {
+                        color: '#8b5cf6',
+                        weight: 3,
+                        opacity: 0.7
+                      });
+
+                      const roadway = slot.roadway || slot.ROADWAY || '';
+                      const roadSide = slot.roadSide || slot.ROAD_SIDE || '';
+                      const county = slot.county || slot.COUNTY || '';
+                      const district = slot.district !== null && slot.district !== undefined ? slot.district : null;
+                      const description = slot.description || slot.DESCR || '';
+                      const beginPost = slot.beginPost !== null && slot.beginPost !== undefined ? slot.beginPost : null;
+                      const endPost = slot.endPost !== null && slot.endPost !== undefined ? slot.endPost : null;
+                      const shapeLength = slot.shapeLength !== null && slot.shapeLength !== undefined ? slot.shapeLength : null;
+                      const lncd = slot.lncd !== null && slot.lncd !== undefined ? slot.lncd : null;
+                      const distance = slot.distance_miles !== null && slot.distance_miles !== undefined ? slot.distance_miles : 0;
+
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🚴 FLDOT Bike Slot
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${roadway ? `<div style="margin-bottom: 4px;"><strong>Roadway:</strong> ${roadway}</div>` : ''}
+                            ${roadSide ? `<div style="margin-bottom: 4px;"><strong>Road Side:</strong> ${roadSide}</div>` : ''}
+                            ${county ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>` : ''}
+                            ${district !== null ? `<div style="margin-bottom: 4px;"><strong>District:</strong> ${district}</div>` : ''}
+                            ${description ? `<div style="margin-bottom: 4px;"><strong>Description:</strong> ${description}</div>` : ''}
+                            ${lncd !== null ? `<div style="margin-bottom: 4px;"><strong>Lane Code:</strong> ${lncd}</div>` : ''}
+                            ${beginPost !== null && endPost !== null ? `<div style="margin-bottom: 4px;"><strong>Mile Post:</strong> ${beginPost.toFixed(3)} - ${endPost.toFixed(3)}</div>` : ''}
+                            ${shapeLength !== null ? `<div style="margin-bottom: 4px;"><strong>Length:</strong> ${shapeLength.toFixed(2)} meters</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                        </div>
+                      `;
+
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+
+                      polyline.on('click', function(this: L.Polyline) {
+                        this.openPopup();
+                      });
+
+                      polyline.addTo(poi);
+                      
+                      // Extend bounds to include all points in the polyline
+                      latlngs.forEach((latlng: [number, number]) => {
+                        bounds.extend(latlng);
+                      });
+                      
+                      totalBikeSlotCount++;
+                    }
+                  });
+                }
+              } catch (error: any) {
+                console.error('Error processing FLDOT Bike Slot polyline:', error);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Bike Slots:', error);
       }
 
       // Draw FLDOT Bike Routes as polylines on the map
@@ -37849,6 +37932,15 @@ const MapView: React.FC<MapViewProps> = ({
             color: '#10b981',
             title: 'FLDOT Facilities',
             count: totalFacilityPointCount
+          };
+        }
+
+        if (totalBikeSlotCount > 0) {
+          legendAccumulator['fldot_bike_slots'] = {
+            icon: '🚴',
+            color: '#8b5cf6',
+            title: 'FLDOT Bike Slots',
+            count: totalBikeSlotCount
           };
         }
 

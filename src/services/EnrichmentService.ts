@@ -448,6 +448,7 @@ import { getMiamiWaterBodiesData } from '../adapters/miamiWaterBodies';
 import { getFLDOTBikeRoutesData } from '../adapters/fldotBikeRoutes';
 import { getFLDOTRealTimeTrafficData } from '../adapters/fldotRealTimeTraffic';
 import { getFLDOTFacilitiesData } from '../adapters/fldotFacilities';
+import { getFLDOTBikeSlotsData } from '../adapters/fldotBikeSlots';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -8569,6 +8570,9 @@ export class EnrichmentService {
 
       case 'fldot_facilities':
         return await this.getFLDOTFacilities(lat, lon, radius);
+
+      case 'fldot_bike_slots':
+        return await this.getFLDOTBikeSlots(lat, lon, radius);
 
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
@@ -25101,6 +25105,67 @@ out center tags;`;
         fldot_facilities_count: 0,
         fldot_facilities_all: [],
         fldot_facilities_summary: `Error querying FDOT facilities: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTBikeSlots(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🚴 Fetching FLDOT Bike Slots for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const bikeSlots = await getFLDOTBikeSlotsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (bikeSlots.length === 0) {
+        result.fldot_bike_slots_count = 0;
+        result.fldot_bike_slots_all = [];
+        result.fldot_bike_slots_summary = `No bike slots found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_bike_slots_count = bikeSlots.length;
+      result.fldot_bike_slots_all = bikeSlots.map(slot => ({
+        ...slot,
+        fid: slot.fid,
+        roadway: slot.roadway,
+        roadSide: slot.roadSide,
+        lncd: slot.lncd,
+        description: slot.description,
+        district: slot.district,
+        countyDot: slot.countyDot,
+        county: slot.county,
+        managementDistrict: slot.managementDistrict,
+        beginPost: slot.beginPost,
+        endPost: slot.endPost,
+        shapeLength: slot.shapeLength,
+        lat: slot.lat,
+        lon: slot.lon,
+        geometry: slot.geometry,
+        distance_miles: slot.distance_miles
+      }));
+
+      // Group by county for summary
+      const countyCounts: Record<string, number> = {};
+      bikeSlots.forEach(slot => {
+        const county = slot.county || 'Unknown';
+        countyCounts[county] = (countyCounts[county] || 0) + 1;
+      });
+      
+      const countySummary = Object.entries(countyCounts)
+        .map(([county, count]) => `${county}: ${count}`)
+        .join(', ');
+
+      result.fldot_bike_slots_summary = `Found ${bikeSlots.length} bike slot(s) within ${cappedRadius} miles (${countySummary})`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Bike Slots:', error);
+      return {
+        fldot_bike_slots_count: 0,
+        fldot_bike_slots_all: [],
+        fldot_bike_slots_summary: `Error querying bike slots: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }
