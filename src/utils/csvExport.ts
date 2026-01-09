@@ -8729,8 +8729,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
           (location.confidence || 'N/A').toString(), 'FLDOT_BIKE_SLOTS',
           `🚴 ${slotInfo}`, lat, lon, distance,
-          `Bike Slot${description ? ` - ${description}` : ''} (${distance} miles)`,
-          `${roadway ? `Roadway: ${roadway}` : ''}${beginPost ? `, Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `, Length: ${shapeLength}m` : ''}`,
+          `Bike Slot${description ? ` - ${description}` : ''}${district ? ` (District ${district})` : ''} (${distance} miles)`,
+          `${roadway ? `Roadway: ${roadway}` : ''}${beginPost ? `, Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `, Length: ${shapeLength}m` : ''}${district ? `, District: ${district}` : ''}`,
           '',
           '',
           attributesJson, 'FLDOT'
