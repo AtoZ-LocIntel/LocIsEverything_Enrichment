@@ -2443,6 +2443,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'miami_water_bodies_all' || // Skip Miami Water Bodies array (handled separately for map drawing)
     key === 'fldot_bike_routes_all' || // Skip FLDOT Bike Routes array (handled separately for map drawing)
     key === 'fldot_real_time_traffic_all' || // Skip FLDOT Real-Time Traffic array (handled separately for map drawing)
+    key === 'fldot_facilities_all' || // Skip FLDOT Facilities array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -4533,6 +4534,7 @@ const MapView: React.FC<MapViewProps> = ({
         let totalBusinessCount = 0;
         let totalBikeRouteCount = 0;
         let totalTrafficPointCount = 0;
+        let totalFacilityPointCount = 0;
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -20842,6 +20844,76 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing FLDOT Real-Time Traffic:', error);
+      }
+
+      // Draw FLDOT Facilities points on the map
+      try {
+        if (enrichments.fldot_facilities_all && Array.isArray(enrichments.fldot_facilities_all)) {
+          enrichments.fldot_facilities_all.forEach((facility: any) => {
+            // Deduplicate: use FID as unique identifier
+            const facilityId = facility.fid !== null && facility.fid !== undefined ? String(facility.fid) :
+              (facility.lat && facility.lon) ?
+              `${facility.lat.toFixed(6)}_${facility.lon.toFixed(6)}` : null;
+
+            if (facilityId && drawnTrafficIds.has(facilityId)) {
+              return; // Skip - already drawn
+            }
+            if (facilityId) drawnTrafficIds.add(facilityId);
+
+            const lat = facility.lat || (facility.geometry && facility.geometry.y);
+            const lon = facility.lon || (facility.geometry && facility.geometry.x);
+
+            if (lat && lon) {
+              try {
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🏢', '#10b981', isMobile)
+                });
+
+                const facName = facility.facName || facility.Fac_Name || facility.FAC_NAME || '';
+                const facType = facility.facType || facility.Fac_Type || facility.FAC_TYPE || '';
+                const city = facility.city || facility.City || facility.CITY || '';
+                const county = facility.county || facility.County || facility.COUNTY || '';
+                const district = facility.district || facility.District || facility.DISTRICT || '';
+                const phone = facility.phone || facility.Phone || facility.PHONE || '';
+                const longAddress = facility.longAddress || facility.Long_Addre || facility.LONG_ADDRE || '';
+                const zipCode = facility.zipCode || facility.ZipCode || facility.ZIPCODE || '';
+                const distance = facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles : 0;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏢 FDOT Facility
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${facName ? `<div style="margin-bottom: 4px;"><strong>Name:</strong> ${facName}</div>` : ''}
+                      ${facType ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${facType}</div>` : ''}
+                      ${district ? `<div style="margin-bottom: 4px;"><strong>District:</strong> ${district}</div>` : ''}
+                      ${longAddress ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${longAddress}</div>` : ''}
+                      ${city ? `<div style="margin-bottom: 4px;"><strong>City:</strong> ${city}${county ? `, ${county} County` : ''}${zipCode ? ` ${zipCode}` : ''}</div>` : ''}
+                      ${phone ? `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phone}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                totalFacilityPointCount++;
+              } catch (error: any) {
+                console.error('Error processing FLDOT Facility point:', error);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Facilities:', error);
       }
 
       // Draw FLDOT Bike Routes as polylines on the map
@@ -37768,6 +37840,15 @@ const MapView: React.FC<MapViewProps> = ({
             color: '#ef4444',
             title: 'FLDOT Real-Time Traffic',
             count: totalTrafficPointCount
+          };
+        }
+
+        if (totalFacilityPointCount > 0) {
+          legendAccumulator['fldot_facilities'] = {
+            icon: '🏢',
+            color: '#10b981',
+            title: 'FLDOT Facilities',
+            count: totalFacilityPointCount
           };
         }
 

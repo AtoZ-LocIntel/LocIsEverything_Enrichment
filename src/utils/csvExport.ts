@@ -8663,6 +8663,43 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           `${localName || 'Traffic Monitoring Point'}${direction ? ` - Direction: ${direction}` : ''}${countyName ? ` (${countyName} County)` : ''}`, '', '', attributesJson, 'FLDOT'
         ]);
       });
+    } else if (key === 'fldot_facilities_all' && Array.isArray(value)) {
+      value.forEach((facility: any) => {
+        // Deduplicate: use FID to track exported facilities
+        const facilityId = facility.fid !== null && facility.fid !== undefined ? String(facility.fid) : 
+                          (facility.lat && facility.lon) ?
+                          `${facility.lat.toFixed(6)}_${facility.lon.toFixed(6)}` : null;
+        if (facilityId && exportedTrafficIds.has(facilityId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (facilityId) exportedTrafficIds.add(facilityId);
+        
+        const facName = facility.facName || facility.Fac_Name || facility.FAC_NAME || '';
+        const facType = facility.facType || facility.Fac_Type || facility.FAC_TYPE || '';
+        const city = facility.city || facility.City || facility.CITY || '';
+        const county = facility.county || facility.County || facility.COUNTY || '';
+        const district = facility.district || facility.District || facility.DISTRICT || '';
+        const phone = facility.phone || facility.Phone || facility.PHONE || '';
+        const longAddress = facility.longAddress || facility.Long_Addre || facility.LONG_ADDRE || '';
+        const distance = facility.distance_miles !== null && facility.distance_miles !== undefined ? facility.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...facility };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = facility.lat || (facility.geometry && facility.geometry.y) || '';
+        const lon = facility.lon || (facility.geometry && facility.geometry.x) || '';
+        const facilityInfo = `${facName}${facType ? ` (${facType})` : ''}${district ? ` - ${district}` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_FACILITIES',
+          `🏢 ${facilityInfo}`, lat, lon, distance,
+          `FDOT Facility${facType ? ` - ${facType}` : ''} (${distance} miles)`,
+          longAddress || `${city}${county ? `, ${county} County` : ''}`,
+          phone || '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
     } else if (key === 'miami_water_bodies_all' && Array.isArray(value)) {
       value.forEach((waterBody: any) => {
         const type = waterBody.type || waterBody.TYPE || waterBody.Type || 'Water Body';

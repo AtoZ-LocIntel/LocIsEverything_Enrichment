@@ -9170,6 +9170,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Real_Time_Traffic_Volume_and_Speed_All_Intervals_All_Directions_TDA/FeatureServer/0"
         },
         {
+          name: "FLDOT - FDOT Facilities",
+          description: "Florida Department of Transportation facilities including maintenance offices, warehouses, bridge facilities, labs, and other infrastructure (proximity queries up to 50 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/FDOTFAC10312016/FeatureServer/0"
+        },
+        {
           name: "City of Miami - Water Bodies",
           description: "City of Miami water body polygons - point-in-polygon and proximity queries up to 25 miles",
           coverage: "City of Miami, Florida",

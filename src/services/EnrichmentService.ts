@@ -447,6 +447,7 @@ import { getMiamiPrivateSchoolsData } from '../adapters/miamiPrivateSchools';
 import { getMiamiWaterBodiesData } from '../adapters/miamiWaterBodies';
 import { getFLDOTBikeRoutesData } from '../adapters/fldotBikeRoutes';
 import { getFLDOTRealTimeTrafficData } from '../adapters/fldotRealTimeTraffic';
+import { getFLDOTFacilitiesData } from '../adapters/fldotFacilities';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -8565,7 +8566,10 @@ export class EnrichmentService {
       // FLDOT - Real-Time Traffic Volume and Speed (proximity query, max 10 miles)
       case 'fldot_real_time_traffic':
         return await this.getFLDOTRealTimeTraffic(lat, lon, radius);
-      
+
+      case 'fldot_facilities':
+        return await this.getFLDOTFacilities(lat, lon, radius);
+
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
       case 'uk_nspl_postcode_centroids':
@@ -25034,6 +25038,69 @@ out center tags;`;
         fldot_real_time_traffic_count: 0,
         fldot_real_time_traffic_all: [],
         fldot_real_time_traffic_summary: `Error querying real-time traffic: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTFacilities(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🏢 Fetching FLDOT Facilities for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const facilities = await getFLDOTFacilitiesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (facilities.length === 0) {
+        result.fldot_facilities_count = 0;
+        result.fldot_facilities_all = [];
+        result.fldot_facilities_summary = `No FDOT facilities found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_facilities_count = facilities.length;
+      result.fldot_facilities_all = facilities.map(facility => ({
+        ...facility,
+        fid: facility.fid,
+        facName: facility.facName,
+        facType: facility.facType,
+        streetNumber: facility.streetNumber,
+        roadName: facility.roadName,
+        city: facility.city,
+        county: facility.county,
+        state: facility.state,
+        zipCode: facility.zipCode,
+        longAddress: facility.longAddress,
+        phone: facility.phone,
+        district: facility.district,
+        source: facility.source,
+        name: facility.name,
+        lat: facility.lat,
+        lon: facility.lon,
+        geometry: facility.geometry,
+        distance_miles: facility.distance_miles
+      }));
+
+      // Group by facility type for summary
+      const typeCounts: Record<string, number> = {};
+      facilities.forEach(fac => {
+        const type = fac.facType || 'Unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+      });
+      
+      const typeSummary = Object.entries(typeCounts)
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(', ');
+
+      result.fldot_facilities_summary = `Found ${facilities.length} FDOT facility(ies) within ${cappedRadius} miles (${typeSummary})`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Facilities:', error);
+      return {
+        fldot_facilities_count: 0,
+        fldot_facilities_all: [],
+        fldot_facilities_summary: `Error querying FDOT facilities: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }
