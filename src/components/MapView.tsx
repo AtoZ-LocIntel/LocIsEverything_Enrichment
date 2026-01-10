@@ -21444,12 +21444,12 @@ const MapView: React.FC<MapViewProps> = ({
                   icon: createPOIIcon(iconEmoji, iconColor, isMobile)
                 });
 
-                const roadway = restArea.roadway || restArea.ROADWAY || '';
-                const direction = restArea.direction || restArea.DIR || '';
-                const county = restArea.county || restArea.COUNTY || '';
-                const district = restArea.district !== null && restArea.district !== undefined ? restArea.district : null;
-                const beginPost = restArea.beginPost !== null && restArea.beginPost !== undefined ? restArea.beginPost : null;
-                const numFacilities = restArea.numFacilities !== null && restArea.numFacilities !== undefined ? restArea.numFacilities : null;
+                const _roadway = restArea.roadway || restArea.ROADWAY || '';
+                const _direction = restArea.direction || restArea.DIR || '';
+                const _county = restArea.county || restArea.COUNTY || '';
+                const _district = restArea.district !== null && restArea.district !== undefined ? restArea.district : null;
+                const _beginPost = restArea.beginPost !== null && restArea.beginPost !== undefined ? restArea.beginPost : null;
+                const _numFacilities = restArea.numFacilities !== null && restArea.numFacilities !== undefined ? restArea.numFacilities : null;
                 const distance = restArea.distance_miles !== null && restArea.distance_miles !== undefined ? restArea.distance_miles : 0;
 
                 // Get all attributes from the service - prioritize attributes object, fallback to restArea object

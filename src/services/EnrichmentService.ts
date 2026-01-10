@@ -25520,7 +25520,7 @@ out center tags;`;
         if (allLanduse.length > 0) {
           result.fldep_landuse_count = allLanduse.length;
           console.log(`✅ FLDEP Landuse: Processing ${allLanduse.length} features`);
-          result.fldep_landuse_all = allLanduse.map((landuse, idx) => {
+          result.fldep_landuse_all = allLanduse.map((landuse, _idx) => {
             const landuseAny = landuse as any;
             const geometry = landuseAny.geometry;
             const attributes = landuseAny.attributes;

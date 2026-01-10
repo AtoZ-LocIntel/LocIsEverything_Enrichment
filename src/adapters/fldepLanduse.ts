@@ -315,7 +315,7 @@ export async function getFLDEPLanduseNearbyData(
         geometry,
         attributes,
       };
-    }).filter((feature): feature is FLDEPLanduseInfo => feature !== null);
+    }).filter((feature: FLDEPLanduseInfo | null): feature is FLDEPLanduseInfo => feature !== null);
     
     // Sort by distance (containing features first, then by distance)
     landuseFeatures.sort((a, b) => {
