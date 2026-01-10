@@ -449,6 +449,11 @@ import { getFLDOTBikeRoutesData } from '../adapters/fldotBikeRoutes';
 import { getFLDOTRealTimeTrafficData } from '../adapters/fldotRealTimeTraffic';
 import { getFLDOTFacilitiesData } from '../adapters/fldotFacilities';
 import { getFLDOTBikeSlotsData } from '../adapters/fldotBikeSlots';
+import { getFLDOTBikeLanesData } from '../adapters/fldotBikeLanes';
+import { getFLDOTRailroadCrossingsData } from '../adapters/fldotRailroadCrossings';
+import { getFLDOTNumberOfLanesData } from '../adapters/fldotNumberOfLanes';
+import { getFLDOTRestAreasData } from '../adapters/fldotRestAreas';
+import { getFLDEPLanduseContainingData, getFLDEPLanduseNearbyData, FLDEPLanduseInfo } from '../adapters/fldepLanduse';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -8573,6 +8578,22 @@ export class EnrichmentService {
 
       case 'fldot_bike_slots':
         return await this.getFLDOTBikeSlots(lat, lon, radius);
+
+      case 'fldot_bike_lanes':
+        return await this.getFLDOTBikeLanes(lat, lon, radius);
+
+      case 'fldot_railroad_crossings':
+        return await this.getFLDOTRailroadCrossings(lat, lon, radius);
+
+      case 'fldot_number_of_lanes':
+        return await this.getFLDOTNumberOfLanes(lat, lon, radius);
+
+      case 'fldot_rest_areas':
+        return await this.getFLDOTRestAreas(lat, lon, radius);
+
+      // FLDEP Landuse - Point-in-polygon and proximity query (polygon dataset)
+      case 'fldep_landuse':
+        return await this.getFLDEPLanduse(lat, lon, radius);
 
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
@@ -25166,6 +25187,486 @@ out center tags;`;
         fldot_bike_slots_count: 0,
         fldot_bike_slots_all: [],
         fldot_bike_slots_summary: `Error querying bike slots: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTBikeLanes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🚴 Fetching FLDOT Bike Lanes for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const bikeLanes = await getFLDOTBikeLanesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (bikeLanes.length === 0) {
+        result.fldot_bike_lanes_count = 0;
+        result.fldot_bike_lanes_all = [];
+        result.fldot_bike_lanes_summary = `No bike lanes found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_bike_lanes_count = bikeLanes.length;
+      result.fldot_bike_lanes_all = bikeLanes.map(lane => ({
+        ...lane,
+        fid: lane.fid,
+        roadway: lane.roadway,
+        roadSide: lane.roadSide,
+        lncd: lane.lncd,
+        description: lane.description,
+        district: lane.district,
+        countyDot: lane.countyDot,
+        county: lane.county,
+        managementDistrict: lane.managementDistrict,
+        beginPost: lane.beginPost,
+        endPost: lane.endPost,
+        shapeLength: lane.shapeLength,
+        lat: lane.lat,
+        lon: lane.lon,
+        geometry: lane.geometry,
+        distance_miles: lane.distance_miles
+      }));
+
+      // Group by description type and county for summary
+      const typeCounts: Record<string, number> = {};
+      const countyCounts: Record<string, number> = {};
+      bikeLanes.forEach(lane => {
+        const type = lane.description || 'Unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+        const county = lane.county || 'Unknown';
+        countyCounts[county] = (countyCounts[county] || 0) + 1;
+      });
+      
+      const typeSummary = Object.entries(typeCounts)
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(', ');
+      
+      const topCounties = Object.entries(countyCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([county, count]) => `${county}: ${count}`)
+        .join(', ');
+
+      result.fldot_bike_lanes_summary = `Found ${bikeLanes.length} bike lane(s) within ${cappedRadius} miles (${typeSummary})${topCounties ? ` - Top counties: ${topCounties}` : ''}`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Bike Lanes:', error);
+      return {
+        fldot_bike_lanes_count: 0,
+        fldot_bike_lanes_all: [],
+        fldot_bike_lanes_summary: `Error querying bike lanes: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTRailroadCrossings(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🚂 Fetching FLDOT Railroad Crossings for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const crossings = await getFLDOTRailroadCrossingsData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (crossings.length === 0) {
+        result.fldot_railroad_crossings_count = 0;
+        result.fldot_railroad_crossings_all = [];
+        result.fldot_railroad_crossings_summary = `No railroad crossings found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_railroad_crossings_count = crossings.length;
+      result.fldot_railroad_crossings_all = crossings.map(crossing => ({
+        ...crossing,
+        fid: crossing.fid,
+        roadway: crossing.roadway,
+        checkDigit: crossing.checkDigit,
+        crossingNumber: crossing.crossingNumber,
+        district: crossing.district,
+        countyDot: crossing.countyDot,
+        county: crossing.county,
+        managementDistrict: crossing.managementDistrict,
+        beginPost: crossing.beginPost,
+        lat: crossing.lat,
+        lon: crossing.lon,
+        geometry: crossing.geometry,
+        distance_miles: crossing.distance_miles
+      }));
+
+      // Group by county for summary
+      const countyCounts: Record<string, number> = {};
+      crossings.forEach(crossing => {
+        const county = crossing.county || 'Unknown';
+        countyCounts[county] = (countyCounts[county] || 0) + 1;
+      });
+      
+      const topCounties = Object.entries(countyCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([county, count]) => `${county}: ${count}`)
+        .join(', ');
+
+      result.fldot_railroad_crossings_summary = `Found ${crossings.length} railroad crossing(s) within ${cappedRadius} miles${topCounties ? ` - Top counties: ${topCounties}` : ''}`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Railroad Crossings:', error);
+      return {
+        fldot_railroad_crossings_count: 0,
+        fldot_railroad_crossings_all: [],
+        fldot_railroad_crossings_summary: `Error querying railroad crossings: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTNumberOfLanes(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🛣️ Fetching FLDOT Number of Lanes for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const lanes = await getFLDOTNumberOfLanesData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (lanes.length === 0) {
+        result.fldot_number_of_lanes_count = 0;
+        result.fldot_number_of_lanes_all = [];
+        result.fldot_number_of_lanes_summary = `No roadway segments with lane counts found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_number_of_lanes_count = lanes.length;
+      result.fldot_number_of_lanes_all = lanes.map(lane => ({
+        ...lane,
+        fid: lane.fid,
+        roadway: lane.roadway,
+        roadSide: lane.roadSide,
+        laneCount: lane.laneCount,
+        district: lane.district,
+        countyDot: lane.countyDot,
+        county: lane.county,
+        managementDistrict: lane.managementDistrict,
+        beginPost: lane.beginPost,
+        endPost: lane.endPost,
+        shapeLength: lane.shapeLength,
+        lat: lane.lat,
+        lon: lane.lon,
+        geometry: lane.geometry, // Preserve full polyline geometry (paths)
+        attributes: lane.attributes, // Preserve all original attributes from service
+        distance_miles: lane.distance_miles
+      }));
+
+      // Group by lane count for summary
+      const laneCountStats: Record<string, number> = {};
+      lanes.forEach(lane => {
+        const count = lane.laneCount !== null && lane.laneCount !== undefined ? String(lane.laneCount) : 'Unknown';
+        laneCountStats[count] = (laneCountStats[count] || 0) + 1;
+      });
+      
+      // Group by county for summary
+      const countyCounts: Record<string, number> = {};
+      lanes.forEach(lane => {
+        const county = lane.county || 'Unknown';
+        countyCounts[county] = (countyCounts[county] || 0) + 1;
+      });
+      
+      const topCounties = Object.entries(countyCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([county, count]) => `${county}: ${count}`)
+        .join(', ');
+
+      const laneCountBreakdown = Object.entries(laneCountStats)
+        .sort(([a], [b]) => {
+          const numA = a === 'Unknown' ? 0 : parseInt(a);
+          const numB = b === 'Unknown' ? 0 : parseInt(b);
+          return numA - numB;
+        })
+        .map(([count, num]) => `${count} lane${count !== '1' ? 's' : ''}: ${num}`)
+        .slice(0, 5)
+        .join(', ');
+
+      result.fldot_number_of_lanes_summary = `Found ${lanes.length} roadway segment(s) with lane count data within ${cappedRadius} miles${laneCountBreakdown ? ` - Breakdown: ${laneCountBreakdown}` : ''}${topCounties ? ` | Top counties: ${topCounties}` : ''}`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Number of Lanes:', error);
+      return {
+        fldot_number_of_lanes_count: 0,
+        fldot_number_of_lanes_all: [],
+        fldot_number_of_lanes_summary: `Error querying number of lanes: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTRestAreas(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 50, 50);
+      console.log(`🚻 Fetching FLDOT Rest Areas & Welcome Centers for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const restAreas = await getFLDOTRestAreasData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (restAreas.length === 0) {
+        result.fldot_rest_areas_count = 0;
+        result.fldot_rest_areas_all = [];
+        result.fldot_rest_areas_summary = `No rest areas, welcome centers, or weigh stations found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_rest_areas_count = restAreas.length;
+      result.fldot_rest_areas_all = restAreas.map(restArea => ({
+        ...restArea,
+        fid: restArea.fid,
+        roadway: restArea.roadway,
+        type: restArea.type,
+        direction: restArea.direction,
+        district: restArea.district,
+        countyDot: restArea.countyDot,
+        county: restArea.county,
+        managementDistrict: restArea.managementDistrict,
+        beginPost: restArea.beginPost,
+        numFacilities: restArea.numFacilities,
+        lat: restArea.lat,
+        lon: restArea.lon,
+        geometry: restArea.geometry,
+        distance_miles: restArea.distance_miles
+      }));
+
+      // Group by type for summary
+      const typeCounts: Record<string, number> = {};
+      restAreas.forEach(restArea => {
+        const type = restArea.type || 'Unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+      });
+      
+      // Group by county for summary
+      const countyCounts: Record<string, number> = {};
+      restAreas.forEach(restArea => {
+        const county = restArea.county || 'Unknown';
+        countyCounts[county] = (countyCounts[county] || 0) + 1;
+      });
+      
+      const topCounties = Object.entries(countyCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([county, count]) => `${county}: ${count}`)
+        .join(', ');
+
+      const typeBreakdown = Object.entries(typeCounts)
+        .map(([type, count]) => {
+          let typeLabel = type;
+          if (type === 'RSTAREAS') typeLabel = 'Rest Areas';
+          else if (type === 'RSTARFAC') typeLabel = 'Rest Area Facilities';
+          else if (type === 'WAYSDPKS') typeLabel = 'Wayside Parks';
+          else if (type === 'WEIGHSTA') typeLabel = 'Weigh Stations';
+          else if (type === 'WELCMSTA') typeLabel = 'Welcome Stations';
+          return `${typeLabel}: ${count}`;
+        })
+        .slice(0, 5)
+        .join(', ');
+
+      result.fldot_rest_areas_summary = `Found ${restAreas.length} rest area/welcome center location(s) within ${cappedRadius} miles${typeBreakdown ? ` - Breakdown: ${typeBreakdown}` : ''}${topCounties ? ` | Top counties: ${topCounties}` : ''}`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Rest Areas:', error);
+      return {
+        fldot_rest_areas_count: 0,
+        fldot_rest_areas_all: [],
+        fldot_rest_areas_summary: `Error querying rest areas: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDEPLanduse(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌳 Fetching FLDEP Landuse data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
+      const result: Record<string, any> = {};
+
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby landuse features
+        const cappedRadius = Math.min(radius, 5.0);
+        const containingLanduse = await getFLDEPLanduseContainingData(lat, lon);
+        console.log('🌳 Containing landuse from adapter:', containingLanduse.length);
+
+        const nearbyLanduse = await getFLDEPLanduseNearbyData(lat, lon, cappedRadius);
+        console.log(`🌳 Nearby landuse from adapter: ${nearbyLanduse.length} found`);
+
+        // Combine results, avoiding duplicates by OBJECTID
+        const allLanduseMap = new Map<number, FLDEPLanduseInfo>();
+
+        // Add containing landuse first (distance = 0)
+        containingLanduse.forEach(landuse => {
+          if (landuse.objectId !== undefined && landuse.objectId !== null) {
+            allLanduseMap.set(landuse.objectId, landuse);
+          }
+        });
+
+        // Add nearby landuse (only if not already present as containing feature)
+        nearbyLanduse.forEach(landuse => {
+          if (landuse.objectId !== undefined && landuse.objectId !== null && !allLanduseMap.has(landuse.objectId)) {
+            // Only add if not already present (containing features take precedence)
+            allLanduseMap.set(landuse.objectId, landuse);
+          }
+        });
+
+        const allLanduse = Array.from(allLanduseMap.values());
+
+        if (allLanduse.length > 0) {
+          result.fldep_landuse_count = allLanduse.length;
+          console.log(`✅ FLDEP Landuse: Processing ${allLanduse.length} features`);
+          result.fldep_landuse_all = allLanduse.map((landuse, idx) => {
+            const landuseAny = landuse as any;
+            const geometry = landuseAny.geometry;
+            const attributes = landuseAny.attributes;
+            const { geometry: _geom1, ...rest } = landuseAny;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom2, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: _geom3, ...cleanRest } = rest || {};
+            const result = {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
+            };
+            return result;
+          });
+        } else {
+          result.fldep_landuse_count = 0;
+          result.fldep_landuse_all = [];
+        }
+
+        result.fldep_landuse_search_radius_miles = cappedRadius;
+
+        // Generate summary statistics
+        const containingCount = containingLanduse.length;
+        const nearbyCount = nearbyLanduse.filter(l => !containingLanduse.some(c => c.objectId === l.objectId)).length;
+        
+        // Group by description for summary
+        const descriptionCounts: Record<string, number> = {};
+        allLanduse.forEach(landuse => {
+          const desc = landuse.description || 'Unknown';
+          descriptionCounts[desc] = (descriptionCounts[desc] || 0) + 1;
+        });
+
+        // Group by WMD District
+        const wmdCounts: Record<string, number> = {};
+        allLanduse.forEach(landuse => {
+          const wmd = landuse.wmdDistrict || 'Unknown';
+          wmdCounts[wmd] = (wmdCounts[wmd] || 0) + 1;
+        });
+
+        // Group by landuse year
+        const yearCounts: Record<string, number> = {};
+        allLanduse.forEach(landuse => {
+          const year = landuse.landuseYear ? String(landuse.landuseYear) : 'Unknown';
+          yearCounts[year] = (yearCounts[year] || 0) + 1;
+        });
+
+        const topDescriptions = Object.entries(descriptionCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 3)
+          .map(([desc, count]) => `${desc}: ${count}`)
+          .join(', ');
+
+        const topWMDs = Object.entries(wmdCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 3)
+          .map(([wmd, count]) => `${wmd}: ${count}`)
+          .join(', ');
+
+        const yearBreakdown = Object.entries(yearCounts)
+          .map(([year, count]) => `${year}: ${count}`)
+          .join(', ');
+
+        // Calculate average LDI and LSI
+        const validLDI = allLanduse.filter(l => l.ldi !== null && l.ldi !== undefined).map(l => l.ldi!);
+        const validLSI = allLanduse.filter(l => l.lsi !== null && l.lsi !== undefined).map(l => l.lsi!);
+        const avgLDI = validLDI.length > 0 ? validLDI.reduce((a, b) => a + b, 0) / validLDI.length : null;
+        const avgLSI = validLSI.length > 0 ? validLSI.reduce((a, b) => a + b, 0) / validLSI.length : null;
+
+        let summaryParts: string[] = [];
+        summaryParts.push(`Found ${allLanduse.length} landuse feature(s)`);
+        if (containingCount > 0) {
+          summaryParts.push(`${containingCount} containing the point`);
+        }
+        if (nearbyCount > 0) {
+          summaryParts.push(`${nearbyCount} within ${cappedRadius} miles`);
+        }
+        if (topDescriptions) {
+          summaryParts.push(`Top types: ${topDescriptions}`);
+        }
+        if (topWMDs) {
+          summaryParts.push(`WMD Districts: ${topWMDs}`);
+        }
+        if (yearBreakdown) {
+          summaryParts.push(`Years: ${yearBreakdown}`);
+        }
+        if (avgLDI !== null) {
+          summaryParts.push(`Avg LDI: ${avgLDI.toFixed(2)}`);
+        }
+        if (avgLSI !== null) {
+          summaryParts.push(`Avg LSI: ${avgLSI.toFixed(2)}`);
+        }
+
+        result.fldep_landuse_summary = summaryParts.join(' | ');
+        result.fldep_landuse_containing_count = containingCount;
+        result.fldep_landuse_nearby_count = nearbyCount;
+        result.fldep_landuse_avg_ldi = avgLDI;
+        result.fldep_landuse_avg_lsi = avgLSI;
+
+      } else {
+        // Point-in-polygon query only
+        const containingLanduse = await getFLDEPLanduseContainingData(lat, lon);
+
+        if (containingLanduse.length > 0) {
+          result.fldep_landuse_count = containingLanduse.length;
+          result.fldep_landuse_all = containingLanduse.map(landuse => {
+            const landuseAny = landuse as any;
+            const geometry = landuseAny.geometry;
+            const attributes = landuseAny.attributes;
+            const { geometry: _geom4, ...rest } = landuseAny;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom5, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: _geom6, ...cleanRest } = rest || {};
+            return {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry, // Include geometry for map drawing (from top level)
+            };
+          });
+        } else {
+          result.fldep_landuse_count = 0;
+          result.fldep_landuse_all = [];
+        }
+
+        result.fldep_landuse_summary = containingLanduse.length > 0 
+          ? `Found ${containingLanduse.length} landuse feature(s) containing the point`
+          : `No landuse features found containing the point`;
+        result.fldep_landuse_containing_count = containingLanduse.length;
+        result.fldep_landuse_nearby_count = 0;
+      }
+
+      console.log(`✅ FLDEP Landuse data processed:`, {
+        count: result.fldep_landuse_count || 0
+      });
+
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error fetching FLDEP Landuse:', error);
+      return {
+        fldep_landuse_count: 0,
+        fldep_landuse_all: [],
+        fldep_landuse_summary: `Error fetching FLDEP Landuse data: ${error instanceof Error ? error.message : String(error)}`,
+        fldep_landuse_containing_count: 0,
+        fldep_landuse_nearby_count: 0
       };
     }
   }

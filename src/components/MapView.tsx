@@ -2445,6 +2445,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'fldot_real_time_traffic_all' || // Skip FLDOT Real-Time Traffic array (handled separately for map drawing)
     key === 'fldot_facilities_all' || // Skip FLDOT Facilities array (handled separately for map drawing)
     key === 'fldot_bike_slots_all' || // Skip FLDOT Bike Slots array (handled separately for map drawing)
+    key === 'fldot_bike_lanes_all' || // Skip FLDOT Bike Lanes array (handled separately for map drawing)
+    key === 'fldot_railroad_crossings_all' || // Skip FLDOT Railroad Crossings array (handled separately for map drawing)
+    key === 'fldot_number_of_lanes_all' || // Skip FLDOT Number of Lanes array (handled separately for map drawing)
+    key === 'fldot_rest_areas_all' || // Skip FLDOT Rest Areas array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -4537,6 +4541,11 @@ const MapView: React.FC<MapViewProps> = ({
         let totalTrafficPointCount = 0;
         let totalFacilityPointCount = 0;
         let totalBikeSlotCount = 0;
+        let totalBikeLaneCount = 0;
+        let totalRailroadCrossingCount = 0;
+        let totalNumberOfLanesCount = 0;
+        let totalRestAreaCount = 0;
+        const laneCountStats: Record<number, number> = {}; // Track lane count distribution for legend
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -8750,6 +8759,109 @@ const MapView: React.FC<MapViewProps> = ({
               legendAccumulator['nh_geographic_names'].count += 1;
             } catch (error) {
               console.error('Error drawing NH Geographic Name marker:', error);
+            }
+          }
+        });
+      }
+
+      // Draw FLDEP Landuse as polygons on the map
+      if (enrichments.fldep_landuse_all && Array.isArray(enrichments.fldep_landuse_all)) {
+        enrichments.fldep_landuse_all.forEach((landuse: any) => {
+          if (landuse.geometry && landuse.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = landuse.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = landuse.isContaining || landuse.distance_miles === 0 || landuse.distance_miles === null;
+                const color = isContaining ? '#10b981' : '#34d399'; // Green for containing, lighter green for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all landuse attributes
+                const description = landuse.DESCRIPTION || landuse.description || '';
+                const level3Value = landuse.LEVEL3_VALUE !== null && landuse.LEVEL3_VALUE !== undefined ? landuse.LEVEL3_VALUE : landuse.level3Value;
+                const ldi = landuse.LDI !== null && landuse.LDI !== undefined ? landuse.LDI : landuse.ldi;
+                const lsi = landuse.LSI !== null && landuse.LSI !== undefined ? landuse.LSI : landuse.lsi;
+                const wmdDistrict = landuse.WMD_DISTRICT || landuse.wmdDistrict || '';
+                const landuseYear = landuse.LANDUSE_YEAR !== null && landuse.LANDUSE_YEAR !== undefined ? landuse.LANDUSE_YEAR : landuse.landuseYear;
+                const shapeArea = landuse['SHAPE.AREA'] !== null && landuse['SHAPE.AREA'] !== undefined ? landuse['SHAPE.AREA'] : landuse.shapeArea;
+                const distance = landuse.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🌳 Containing Landuse' : '🌳 Nearby Landuse'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${description ? `<div><strong>Description:</strong> ${description}</div>` : ''}
+                      ${level3Value !== null && level3Value !== undefined ? `<div><strong>Level 3 Value:</strong> ${level3Value}</div>` : ''}
+                      ${ldi !== null && ldi !== undefined ? `<div><strong>LDI (Landscape Development Intensity):</strong> ${ldi.toFixed(2)}</div>` : ''}
+                      ${lsi !== null && lsi !== undefined ? `<div><strong>LSI (Landscape Support Index):</strong> ${lsi.toFixed(2)}</div>` : ''}
+                      ${wmdDistrict ? `<div><strong>WMD District:</strong> ${wmdDistrict}</div>` : ''}
+                      ${landuseYear ? `<div><strong>Landuse Year:</strong> ${landuseYear}</div>` : ''}
+                      ${shapeArea !== null && shapeArea !== undefined ? `<div><strong>Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other landuse attributes (excluding internal fields)
+                const excludeFields = ['DESCRIPTION', 'description', 'LEVEL3_VALUE', 'level3Value', 'LDI', 'ldi', 'LSI', 'lsi', 'WMD_DISTRICT', 'wmdDistrict', 'LANDUSE_YEAR', 'landuseYear', 'SHAPE.AREA', 'shapeArea', 'SHAPE.LEN', 'shapeLength', 'geometry', 'distance_miles', 'isContaining', 'OBJECTID', 'objectId'];
+                Object.entries(landuse).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['fldep_landuse']) {
+                  legendAccumulator['fldep_landuse'] = {
+                    icon: '🌳',
+                    color: '#10b981',
+                    title: 'FLDEP Landuse',
+                    count: 0,
+                    radius: enrichments.fldep_landuse_search_radius_miles,
+                    radiusDisplay: enrichments.fldep_landuse_search_radius_miles ? `${enrichments.fldep_landuse_search_radius_miles.toFixed(1)} mi` : undefined
+                  };
+                }
+                legendAccumulator['fldep_landuse'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing FLDEP Landuse polygon:', error);
             }
           }
         });
@@ -20918,6 +21030,75 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing FLDOT Facilities:', error);
       }
 
+      // Draw FLDOT Railroad Crossings points on the map
+      try {
+        if (enrichments.fldot_railroad_crossings_all && Array.isArray(enrichments.fldot_railroad_crossings_all)) {
+          enrichments.fldot_railroad_crossings_all.forEach((crossing: any) => {
+            // Deduplicate: use crossing number as unique identifier
+            const crossingId = crossing.crossingNumber ? String(crossing.crossingNumber) :
+              (crossing.fid !== null && crossing.fid !== undefined) ? String(crossing.fid) :
+              (crossing.lat && crossing.lon) ?
+              `${crossing.lat.toFixed(6)}_${crossing.lon.toFixed(6)}` : null;
+
+            if (crossingId && drawnTrafficIds.has(crossingId)) {
+              return; // Skip - already drawn
+            }
+            if (crossingId) drawnTrafficIds.add(crossingId);
+
+            const lat = crossing.lat || (crossing.geometry && crossing.geometry.y);
+            const lon = crossing.lon || (crossing.geometry && crossing.geometry.x);
+
+            if (lat && lon) {
+              try {
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚂', '#f59e0b', isMobile)
+                });
+
+                const roadway = crossing.roadway || crossing.ROADWAY || '';
+                const crossingNumber = crossing.crossingNumber || crossing.CROSSING_N || '';
+                const checkDigit = crossing.checkDigit || crossing.CHECK_DIGI || '';
+                const county = crossing.county || crossing.COUNTY || '';
+                const district = crossing.district !== null && crossing.district !== undefined ? crossing.district : null;
+                const beginPost = crossing.beginPost !== null && crossing.beginPost !== undefined ? crossing.beginPost : null;
+                const distance = crossing.distance_miles !== null && crossing.distance_miles !== undefined ? crossing.distance_miles : 0;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚂 FLDOT Railroad Crossing
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${crossingNumber ? `<div style="margin-bottom: 4px;"><strong>Crossing Number:</strong> ${crossingNumber}</div>` : ''}
+                      ${checkDigit ? `<div style="margin-bottom: 4px;"><strong>Check Digit:</strong> ${checkDigit}</div>` : ''}
+                      ${roadway ? `<div style="margin-bottom: 4px;"><strong>Roadway:</strong> ${roadway}</div>` : ''}
+                      ${county ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>` : ''}
+                      ${district !== null ? `<div style="margin-bottom: 4px;"><strong>District:</strong> ${district}</div>` : ''}
+                      ${beginPost !== null ? `<div style="margin-bottom: 4px;"><strong>Mile Post:</strong> ${beginPost.toFixed(3)}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                totalRailroadCrossingCount++;
+              } catch (error: any) {
+                console.error('Error processing FLDOT Railroad Crossing point:', error);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Railroad Crossings:', error);
+      }
+
       // Draw FLDOT Bike Slots as polylines on the map
       try {
         if (enrichments.fldot_bike_slots_all && Array.isArray(enrichments.fldot_bike_slots_all)) {
@@ -20997,6 +21178,367 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing FLDOT Bike Slots:', error);
+      }
+
+      // Draw FLDOT Bike Lanes as polylines on the map
+      try {
+        if (enrichments.fldot_bike_lanes_all && Array.isArray(enrichments.fldot_bike_lanes_all)) {
+          enrichments.fldot_bike_lanes_all.forEach((lane: any) => {
+            if (lane.geometry && lane.geometry.paths) {
+              try {
+                const paths = lane.geometry.paths;
+                if (paths && Array.isArray(paths) && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    if (path && Array.isArray(path) && path.length > 0) {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+
+                      if (latlngs.length < 2) {
+                        return; // Skip paths with less than 2 points
+                      }
+
+                      const polyline = L.polyline(latlngs, {
+                        color: '#3b82f6',
+                        weight: 3,
+                        opacity: 0.7
+                      });
+
+                      const roadway = lane.roadway || lane.ROADWAY || '';
+                      const roadSide = lane.roadSide || lane.ROAD_SIDE || '';
+                      const county = lane.county || lane.COUNTY || '';
+                      const district = lane.district !== null && lane.district !== undefined ? lane.district : null;
+                      const description = lane.description || lane.DESCR || '';
+                      const beginPost = lane.beginPost !== null && lane.beginPost !== undefined ? lane.beginPost : null;
+                      const endPost = lane.endPost !== null && lane.endPost !== undefined ? lane.endPost : null;
+                      const shapeLength = lane.shapeLength !== null && lane.shapeLength !== undefined ? lane.shapeLength : null;
+                      const lncd = lane.lncd !== null && lane.lncd !== undefined ? lane.lncd : null;
+                      const distance = lane.distance_miles !== null && lane.distance_miles !== undefined ? lane.distance_miles : 0;
+
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🚴 FLDOT Bike Lane
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                            ${roadway ? `<div style="margin-bottom: 4px;"><strong>Roadway:</strong> ${roadway}</div>` : ''}
+                            ${roadSide ? `<div style="margin-bottom: 4px;"><strong>Road Side:</strong> ${roadSide}</div>` : ''}
+                            ${county ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>` : ''}
+                            ${district !== null ? `<div style="margin-bottom: 4px;"><strong>District:</strong> ${district}</div>` : ''}
+                            ${description ? `<div style="margin-bottom: 4px;"><strong>Description:</strong> ${description}</div>` : ''}
+                            ${lncd !== null ? `<div style="margin-bottom: 4px;"><strong>Lane Code:</strong> ${lncd}</div>` : ''}
+                            ${beginPost !== null && endPost !== null ? `<div style="margin-bottom: 4px;"><strong>Mile Post:</strong> ${beginPost.toFixed(3)} - ${endPost.toFixed(3)}</div>` : ''}
+                            ${shapeLength !== null ? `<div style="margin-bottom: 4px;"><strong>Length:</strong> ${shapeLength.toFixed(2)} meters</div>` : ''}
+                            ${distance > 0 ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                          </div>
+                        </div>
+                      `;
+
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+
+                      polyline.on('click', function(this: L.Polyline) {
+                        this.openPopup();
+                      });
+
+                      polyline.addTo(poi);
+                      
+                      // Extend bounds to include all points in the polyline
+                      latlngs.forEach((latlng: [number, number]) => {
+                        bounds.extend(latlng);
+                      });
+                      
+                      totalBikeLaneCount++;
+                    }
+                  });
+                }
+              } catch (error: any) {
+                console.error('Error processing FLDOT Bike Lane polyline:', error);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Bike Lanes:', error);
+      }
+
+      // Draw FLDOT Number of Lanes as polylines on the map
+      try {
+        if (enrichments.fldot_number_of_lanes_all && Array.isArray(enrichments.fldot_number_of_lanes_all)) {
+          enrichments.fldot_number_of_lanes_all.forEach((lane: any) => {
+            // Check for polyline geometry (paths) - adapter already handles deduplication by FID
+            if (lane.geometry && lane.geometry.paths) {
+              try {
+                const paths = lane.geometry.paths;
+                if (paths && Array.isArray(paths) && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    if (path && Array.isArray(path) && path.length > 0) {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+                      
+                      if (latlngs.length < 2) {
+                        return; // Skip paths with less than 2 points
+                      }
+                      
+                      // Use different colors based on lane count
+                      // Get lane count from attributes first, then fallback to parsed field
+                      const laneCount = (lane.attributes && lane.attributes.LANE_CNT !== null && lane.attributes.LANE_CNT !== undefined) ? Number(lane.attributes.LANE_CNT) :
+                                       (lane.laneCount !== null && lane.laneCount !== undefined) ? lane.laneCount : 0;
+                      let lineColor = '#6366f1'; // Default: indigo for unknown/0
+                      if (laneCount === 1) lineColor = '#ef4444'; // Red for 1 lane
+                      else if (laneCount === 2) lineColor = '#f59e0b'; // Amber for 2 lanes
+                      else if (laneCount === 3) lineColor = '#10b981'; // Green for 3 lanes
+                      else if (laneCount === 4) lineColor = '#3b82f6'; // Blue for 4 lanes
+                      else if (laneCount >= 5) lineColor = '#8b5cf6'; // Purple for 5+ lanes
+                      
+                      const polyline = L.polyline(latlngs, {
+                        color: lineColor,
+                        weight: 4,
+                        opacity: 0.8
+                      });
+                      
+                      // Get all attributes from the service - prioritize attributes object, fallback to lane object
+                      const allAttributes = lane.attributes || lane;
+                      const distance = lane.distance_miles !== null && lane.distance_miles !== undefined ? lane.distance_miles : 0;
+
+                      // Build popup with ALL attributes from the service
+                      let popupContent = `
+                        <div style="min-width: 300px; max-width: 500px; max-height: 600px; overflow-y: auto;">
+                          <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                            🛣️ FLDOT Number of Lanes
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280;">
+                      `;
+
+                      // Iterate through all attributes and display them
+                      const excludeKeys = ['geometry', 'distance_miles', 'lat', 'lon', 'attributes'];
+                      const attributeKeys = Object.keys(allAttributes).filter(key => 
+                        !excludeKeys.includes(key) && 
+                        allAttributes[key] !== null && 
+                        allAttributes[key] !== undefined &&
+                        allAttributes[key] !== ''
+                      );
+
+                      // Sort attributes - put important ones first
+                      const importantKeys = ['LANE_CNT', 'laneCount', 'ROADWAY', 'roadway', 'ROAD_SIDE', 'roadSide', 'COUNTY', 'county', 'DISTRICT', 'district', 'BEGIN_POST', 'beginPost', 'END_POST', 'endPost', 'Shape_Leng', 'Shape__Length', 'shapeLength'];
+                      const sortedKeys = [
+                        ...importantKeys.filter(key => attributeKeys.includes(key)),
+                        ...attributeKeys.filter(key => !importantKeys.includes(key))
+                      ];
+
+                      sortedKeys.forEach(key => {
+                        const value = allAttributes[key];
+                        let displayValue = value;
+                        let displayKey = key;
+
+                        // Format the key name for display
+                        displayKey = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                        displayKey = displayKey.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+                        // Format the value
+                        if (typeof value === 'number') {
+                          if (key.includes('POST') || key.includes('Post')) {
+                            displayValue = value.toFixed(3);
+                          } else if (key.includes('Leng') || key.includes('Length') || key.includes('length')) {
+                            displayValue = value.toFixed(2) + ' meters';
+                          } else {
+                            displayValue = value.toString();
+                          }
+                        } else if (typeof value === 'boolean') {
+                          displayValue = value ? 'Yes' : 'No';
+                        } else {
+                          displayValue = String(value);
+                        }
+
+                        popupContent += `<div style="margin-bottom: 6px; padding: 4px 0; border-bottom: 1px solid #f3f4f6;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      });
+
+                      if (distance > 0) {
+                        popupContent += `<div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #e5e7eb; color: #374151; font-weight: 600;"><strong>Distance from location:</strong> ${distance.toFixed(2)} miles</div>`;
+                      }
+
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+
+                      polyline.bindPopup(popupContent, { maxWidth: 500, maxHeight: 600 });
+
+                      polyline.on('click', function(this: L.Polyline) {
+                        this.openPopup();
+                      });
+
+                      polyline.addTo(poi);
+                      
+                      // Extend bounds to include all points in the polyline
+                      latlngs.forEach((latlng: [number, number]) => {
+                        bounds.extend(latlng);
+                      });
+                      
+                      // Track lane count for legend
+                      if (laneCount !== null && laneCount !== undefined) {
+                        laneCountStats[laneCount] = (laneCountStats[laneCount] || 0) + 1;
+                      } else {
+                        laneCountStats[0] = (laneCountStats[0] || 0) + 1; // Unknown
+                      }
+                      
+                      totalNumberOfLanesCount++;
+                    }
+                  });
+                } else {
+                  console.warn('FLDOT Number of Lanes: geometry.paths is empty or invalid', lane);
+                }
+              } catch (error: any) {
+                console.error('Error processing FLDOT Number of Lanes polyline:', error, lane);
+              }
+            } else {
+              console.warn('FLDOT Number of Lanes: No geometry.paths found, skipping', lane);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Number of Lanes:', error);
+      }
+
+      // Draw FLDOT Rest Areas & Welcome Centers points on the map
+      try {
+        if (enrichments.fldot_rest_areas_all && Array.isArray(enrichments.fldot_rest_areas_all)) {
+          enrichments.fldot_rest_areas_all.forEach((restArea: any) => {
+            // Deduplicate: use FID as unique identifier
+            const restAreaId = (restArea.fid !== null && restArea.fid !== undefined) ? String(restArea.fid) :
+              (restArea.lat && restArea.lon) ?
+              `${restArea.lat.toFixed(6)}_${restArea.lon.toFixed(6)}` : null;
+
+            if (restAreaId && drawnTrafficIds.has(restAreaId)) {
+              return; // Skip - already drawn
+            }
+            if (restAreaId) drawnTrafficIds.add(restAreaId);
+
+            const lat = restArea.lat || (restArea.geometry && restArea.geometry.y);
+            const lon = restArea.lon || (restArea.geometry && restArea.geometry.x);
+
+            if (lat && lon) {
+              try {
+                // Choose icon based on type
+                let iconEmoji = '🚻'; // Default: restroom icon
+                let iconColor = '#3b82f6'; // Default: blue
+                const type = restArea.type || restArea.TYPE_ || '';
+                if (type === 'RSTAREAS') {
+                  iconEmoji = '🛑'; // Rest stop icon
+                  iconColor = '#10b981'; // Green
+                } else if (type === 'RSTARFAC') {
+                  iconEmoji = '🏢'; // Building icon
+                  iconColor = '#10b981'; // Green
+                } else if (type === 'WAYSDPKS') {
+                  iconEmoji = '🌳'; // Park icon
+                  iconColor = '#16a34a'; // Darker green
+                } else if (type === 'WEIGHSTA') {
+                  iconEmoji = '⚖️'; // Scale/weigh station icon
+                  iconColor = '#f59e0b'; // Amber
+                } else if (type === 'WELCMSTA') {
+                  iconEmoji = '🏛️'; // Welcome center icon
+                  iconColor = '#6366f1'; // Indigo
+                }
+                
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon(iconEmoji, iconColor, isMobile)
+                });
+
+                const roadway = restArea.roadway || restArea.ROADWAY || '';
+                const direction = restArea.direction || restArea.DIR || '';
+                const county = restArea.county || restArea.COUNTY || '';
+                const district = restArea.district !== null && restArea.district !== undefined ? restArea.district : null;
+                const beginPost = restArea.beginPost !== null && restArea.beginPost !== undefined ? restArea.beginPost : null;
+                const numFacilities = restArea.numFacilities !== null && restArea.numFacilities !== undefined ? restArea.numFacilities : null;
+                const distance = restArea.distance_miles !== null && restArea.distance_miles !== undefined ? restArea.distance_miles : 0;
+
+                // Get all attributes from the service - prioritize attributes object, fallback to restArea object
+                const allAttributes = restArea.attributes || restArea;
+                
+                let typeLabel = type;
+                if (type === 'RSTAREAS') typeLabel = 'Rest Areas';
+                else if (type === 'RSTARFAC') typeLabel = 'Rest Area Facilities';
+                else if (type === 'WAYSDPKS') typeLabel = 'Wayside Parks';
+                else if (type === 'WEIGHSTA') typeLabel = 'Weigh Stations';
+                else if (type === 'WELCMSTA') typeLabel = 'Welcome Stations';
+
+                // Build popup with ALL attributes from the service
+                let popupContent = `
+                  <div style="min-width: 300px; max-width: 500px; max-height: 600px; overflow-y: auto;">
+                    <h3 style="margin: 0 0 12px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+                      ${iconEmoji} FLDOT ${typeLabel || 'Rest Area/Welcome Center'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                `;
+
+                // Iterate through all attributes and display them
+                const excludeKeys = ['geometry', 'distance_miles', 'lat', 'lon', 'attributes'];
+                const attributeKeys = Object.keys(allAttributes).filter(key => 
+                  !excludeKeys.includes(key) && 
+                  allAttributes[key] !== null && 
+                  allAttributes[key] !== undefined &&
+                  allAttributes[key] !== ''
+                );
+
+                // Sort attributes - put important ones first
+                const importantKeys = ['TYPE_', 'type', 'ROADWAY', 'roadway', 'DIR', 'direction', 'COUNTY', 'county', 'DISTRICT', 'district', 'BEGIN_POST', 'beginPost', 'NUM_FAC', 'numFacilities', 'MNG_DIST', 'managementDistrict', 'COUNTYDOT', 'countyDot'];
+                const sortedKeys = [
+                  ...importantKeys.filter(key => attributeKeys.includes(key)),
+                  ...attributeKeys.filter(key => !importantKeys.includes(key))
+                ];
+
+                sortedKeys.forEach(key => {
+                  const value = allAttributes[key];
+                  let displayValue = value;
+                  let displayKey = key;
+
+                  // Format the key name for display
+                  displayKey = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                  displayKey = displayKey.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+                  // Format the value
+                  if (typeof value === 'number') {
+                    if (key.includes('POST') || key.includes('Post')) {
+                      displayValue = value.toFixed(3);
+                    } else {
+                      displayValue = value.toString();
+                    }
+                  } else if (typeof value === 'boolean') {
+                    displayValue = value ? 'Yes' : 'No';
+                  } else {
+                    displayValue = String(value);
+                  }
+
+                  popupContent += `<div style="margin-bottom: 6px; padding: 4px 0; border-bottom: 1px solid #f3f4f6;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                });
+
+                if (distance > 0) {
+                  popupContent += `<div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid #e5e7eb; color: #374151; font-weight: 600;"><strong>Distance from location:</strong> ${distance.toFixed(2)} miles</div>`;
+                }
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 500, maxHeight: 600 });
+
+                // Enable popup to open on click
+                marker.on('click', function(this: L.Marker) {
+                  this.openPopup();
+                });
+
+                marker.addTo(poi);
+                bounds.extend([lat, lon]);
+                totalRestAreaCount++;
+              } catch (error: any) {
+                console.error('Error processing FLDOT Rest Area point:', error);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Rest Areas:', error);
       }
 
       // Draw FLDOT Bike Routes as polylines on the map
@@ -37548,6 +38090,16 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        // Skip FLDOT Number of Lanes - handled separately with custom polylines (color-coded by lane count)
+        if (key === 'fldot_number_of_lanes_all') {
+          return;
+        }
+
+        // Skip FLDOT Rest Areas - handled separately with custom point markers (color-coded by type)
+        if (key === 'fldot_rest_areas_all') {
+          return;
+        }
+
         // Skip DC Urban Tree Canopy layers - handled separately with geometry drawing
         if (key.startsWith('dc_utc_') && key.endsWith('_all')) {
           return;
@@ -37941,6 +38493,62 @@ const MapView: React.FC<MapViewProps> = ({
             color: '#8b5cf6',
             title: 'FLDOT Bike Slots',
             count: totalBikeSlotCount
+          };
+        }
+
+        if (totalBikeLaneCount > 0) {
+          legendAccumulator['fldot_bike_lanes'] = {
+            icon: '🚴',
+            color: '#3b82f6',
+            title: 'FLDOT Bike Lanes',
+            count: totalBikeLaneCount
+          };
+        }
+
+        if (totalRailroadCrossingCount > 0) {
+          legendAccumulator['fldot_railroad_crossings'] = {
+            icon: '🚂',
+            color: '#f59e0b',
+            title: 'FLDOT Railroad Crossings',
+            count: totalRailroadCrossingCount
+          };
+        }
+
+        if (totalNumberOfLanesCount > 0) {
+          // Number of lanes uses polylines with color coding - show as line with ranges
+          // Count lanes by lane count using the stats we collected
+          const laneCountRanges = [
+            { label: '1 lane', color: '#ef4444', count: laneCountStats[1] || 0 },
+            { label: '2 lanes', color: '#f59e0b', count: laneCountStats[2] || 0 },
+            { label: '3 lanes', color: '#10b981', count: laneCountStats[3] || 0 },
+            { label: '4 lanes', color: '#3b82f6', count: laneCountStats[4] || 0 },
+            { label: '5+ lanes', color: '#8b5cf6', count: Object.keys(laneCountStats).filter(k => parseInt(k) >= 5).reduce((sum, k) => sum + (laneCountStats[parseInt(k)] || 0), 0) },
+            { label: 'Unknown', color: '#6366f1', count: laneCountStats[0] || 0 }
+          ];
+          
+          // Filter out ranges with zero count
+          const activeRanges = laneCountRanges.filter(range => range.count > 0);
+          
+          // Use most common color as primary, or default to indigo
+          const mostCommonRange = activeRanges.length > 0 
+            ? activeRanges.reduce((max, range) => range.count > max.count ? range : max)
+            : { color: '#6366f1', count: 0 };
+          
+          legendAccumulator['fldot_number_of_lanes'] = {
+            icon: '', // Empty icon for polylines - will render as line
+            color: mostCommonRange.color, // Use most common color as primary
+            title: 'FLDOT Number of Lanes',
+            count: totalNumberOfLanesCount,
+            ranges: activeRanges.length > 0 ? activeRanges : laneCountRanges // Show active ranges, or all if none
+          };
+        }
+
+        if (totalRestAreaCount > 0) {
+          legendAccumulator['fldot_rest_areas'] = {
+            icon: '🚻',
+            color: '#3b82f6',
+            title: 'FLDOT Rest Areas & Welcome Centers',
+            count: totalRestAreaCount
           };
         }
 
@@ -39379,42 +39987,63 @@ const MapView: React.FC<MapViewProps> = ({
           <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-6 max-w-md z-10">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Map Legend</h4>
             <div className="space-y-3">
-              {legendItems.map((item, index) => (
-                <div key={index}>
-                  <div className="flex items-center space-x-3 text-base">
-                    <div 
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-base"
-                      style={{ backgroundColor: item.color }}
-                    >
-                      {item.icon}
-                    </div>
-                    <span className="text-gray-700 font-medium flex-1">{item.title}</span>
-                    <div className="flex items-center gap-2 ml-auto">
-                      <span className="text-gray-600 font-semibold">{item.count || 0}</span>
-                      {(item.radiusDisplay || (item.radius !== undefined && item.radius > 0)) && (
-                        <span className="text-xs text-gray-500">
-                          ({item.radiusDisplay || (item.radius !== undefined ? `${item.radius} ${item.radius === 1 ? 'mile' : 'miles'}` : '')})
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {/* Show ranges for broadband layer */}
-                  {item.ranges && item.ranges.length > 0 && (
-                    <div className="ml-11 mt-2 space-y-2">
-                      {item.ranges.map((range, rangeIndex) => (
-                        <div key={rangeIndex} className="flex items-center space-x-3 text-sm">
+              {legendItems.map((item, index) => {
+                // Check if this is a polyline feature (no icon or empty icon) - show line symbol instead
+                const isPolyline = !item.icon || item.icon === '' || 
+                  item.title?.includes('Bike') || 
+                  item.title?.includes('Number of Lanes') ||
+                  item.title?.includes('Road') ||
+                  item.title?.includes('Route') ||
+                  item.title?.includes('Trail');
+                
+                return (
+                  <div key={index}>
+                    <div className="flex items-center space-x-3 text-base">
+                      {isPolyline ? (
+                        // Show line symbol for polylines
+                        <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                           <div 
-                            className="w-4 h-4 rounded flex-shrink-0"
-                            style={{ backgroundColor: range.color }}
+                            className="w-full h-1 rounded"
+                            style={{ backgroundColor: item.color }}
                           />
-                          <span className="text-gray-600">{range.label}</span>
-                          <span className="text-gray-400">({range.count})</span>
                         </div>
-                      ))}
+                      ) : (
+                        // Show icon in circle for points
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
+                          style={{ backgroundColor: item.color }}
+                        >
+                          {item.icon}
+                        </div>
+                      )}
+                      <span className="text-gray-700 font-medium flex-1">{item.title}</span>
+                      <div className="flex items-center gap-2 ml-auto">
+                        <span className="text-gray-600 font-semibold">{item.count || 0}</span>
+                        {(item.radiusDisplay || (item.radius !== undefined && item.radius > 0)) && (
+                          <span className="text-xs text-gray-500">
+                            ({item.radiusDisplay || (item.radius !== undefined ? `${item.radius} ${item.radius === 1 ? 'mile' : 'miles'}` : '')})
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {/* Show ranges for color-coded layers (broadband, number of lanes, etc.) */}
+                    {item.ranges && item.ranges.length > 0 && (
+                      <div className="ml-11 mt-2 space-y-2">
+                        {item.ranges.map((range, rangeIndex) => (
+                          <div key={rangeIndex} className="flex items-center space-x-3 text-sm">
+                            <div 
+                              className="w-4 h-4 rounded flex-shrink-0"
+                              style={{ backgroundColor: range.color }}
+                            />
+                            <span className="text-gray-600">{range.label}</span>
+                            <span className="text-gray-400">({range.count})</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

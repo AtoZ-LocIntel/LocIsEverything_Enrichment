@@ -6058,6 +6058,62 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
       });
     }
     
+    // Add FLDEP Landuse data rows
+    if (enrichments.fldep_landuse_all && Array.isArray(enrichments.fldep_landuse_all)) {
+      enrichments.fldep_landuse_all.forEach((landuse: any) => {
+        const description = landuse.DESCRIPTION || landuse.description || 'Unknown Landuse';
+        const level3Value = landuse.LEVEL3_VALUE !== null && landuse.LEVEL3_VALUE !== undefined ? landuse.LEVEL3_VALUE : landuse.level3Value;
+        const ldi = landuse.LDI !== null && landuse.LDI !== undefined ? landuse.LDI : landuse.ldi;
+        const lsi = landuse.LSI !== null && landuse.LSI !== undefined ? landuse.LSI : landuse.lsi;
+        const wmdDistrict = landuse.WMD_DISTRICT || landuse.wmdDistrict || '';
+        const landuseYear = landuse.LANDUSE_YEAR !== null && landuse.LANDUSE_YEAR !== undefined ? landuse.LANDUSE_YEAR : landuse.landuseYear;
+        const shapeArea = landuse['SHAPE.AREA'] !== null && landuse['SHAPE.AREA'] !== undefined ? landuse['SHAPE.AREA'] : landuse.shapeArea;
+        
+        const allAttributes = { ...landuse };
+        delete allAttributes.DESCRIPTION;
+        delete allAttributes.description;
+        delete allAttributes.LEVEL3_VALUE;
+        delete allAttributes.level3Value;
+        delete allAttributes.LDI;
+        delete allAttributes.ldi;
+        delete allAttributes.LSI;
+        delete allAttributes.lsi;
+        delete allAttributes.WMD_DISTRICT;
+        delete allAttributes.wmdDistrict;
+        delete allAttributes.LANDUSE_YEAR;
+        delete allAttributes.landuseYear;
+        delete allAttributes['SHAPE.AREA'];
+        delete allAttributes.shapeArea;
+        delete allAttributes['SHAPE.LEN'];
+        delete allAttributes.shapeLength;
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectId;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'FLDEP',
+          (location.confidence || 'N/A').toString(),
+          'FLDEP_LANDUSE',
+          description,
+          location.lat.toString(), // Use search location for landuse (it's a polygon, not a point)
+          location.lon.toString(),
+          landuse.distance_miles !== null && landuse.distance_miles !== undefined ? landuse.distance_miles.toFixed(2) : '',
+          level3Value !== null && level3Value !== undefined ? String(level3Value) : attributesJson,
+          ldi !== null && ldi !== undefined ? `LDI: ${ldi.toFixed(2)}` : (lsi !== null && lsi !== undefined ? `LSI: ${lsi.toFixed(2)}` : attributesJson),
+          wmdDistrict || (landuseYear ? String(landuseYear) : ''),
+          shapeArea !== null && shapeArea !== undefined ? `${shapeArea.toLocaleString()} sq units` : '',
+          attributesJson,
+          'FLDEP'
+        ]);
+      });
+    }
+    
     // Add MA Open Space data rows
     if (enrichments.ma_open_space_all && Array.isArray(enrichments.ma_open_space_all)) {
       enrichments.ma_open_space_all.forEach((openSpace: any) => {
@@ -8731,6 +8787,161 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           `🚴 ${slotInfo}`, lat, lon, distance,
           `Bike Slot${description ? ` - ${description}` : ''}${district ? ` (District ${district})` : ''} (${distance} miles)`,
           `${roadway ? `Roadway: ${roadway}` : ''}${beginPost ? `, Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `, Length: ${shapeLength}m` : ''}${district ? `, District: ${district}` : ''}`,
+          '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
+    } else if (key === 'fldot_bike_lanes_all' && Array.isArray(value)) {
+      value.forEach((lane: any) => {
+        // Deduplicate: use FID to track exported bike lanes
+        const laneId = lane.fid !== null && lane.fid !== undefined ? String(lane.fid) : null;
+        if (laneId && exportedRouteIds.has(laneId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (laneId) exportedRouteIds.add(laneId);
+        
+        const roadway = lane.roadway || lane.ROADWAY || '';
+        const roadSide = lane.roadSide || lane.ROAD_SIDE || '';
+        const county = lane.county || lane.COUNTY || '';
+        const district = lane.district !== null && lane.district !== undefined ? String(lane.district) : '';
+        const description = lane.description || lane.DESCR || '';
+        const beginPost = lane.beginPost !== null && lane.beginPost !== undefined ? lane.beginPost.toFixed(3) : '';
+        const endPost = lane.endPost !== null && lane.endPost !== undefined ? lane.endPost.toFixed(3) : '';
+        const shapeLength = lane.shapeLength !== null && lane.shapeLength !== undefined ? lane.shapeLength.toFixed(2) : '';
+        const lncd = lane.lncd !== null && lane.lncd !== undefined ? String(lane.lncd) : '';
+        const distance = lane.distance_miles !== null && lane.distance_miles !== undefined ? lane.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...lane };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = lane.lat || '';
+        const lon = lane.lon || '';
+        const laneInfo = `Roadway ${roadway}${roadSide ? ` (${roadSide} side)` : ''}${county ? `, ${county} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_BIKE_LANES',
+          `🚴 ${laneInfo}`, lat, lon, distance,
+          `Bike Lane${description ? ` - ${description}` : ''}${district ? ` (District ${district})` : ''} (${distance} miles)`,
+          `${roadway ? `Roadway: ${roadway}` : ''}${beginPost ? `, Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `, Length: ${shapeLength}m` : ''}${district ? `, District: ${district}` : ''}${lncd ? `, Lane Code: ${lncd}` : ''}`,
+          '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
+    } else if (key === 'fldot_railroad_crossings_all' && Array.isArray(value)) {
+      value.forEach((crossing: any) => {
+        // Deduplicate: use crossing number to track exported crossings
+        const crossingId = crossing.crossingNumber ? String(crossing.crossingNumber) : 
+                          (crossing.fid !== null && crossing.fid !== undefined) ? String(crossing.fid) :
+                          (crossing.lat && crossing.lon) ?
+                          `${crossing.lat.toFixed(6)}_${crossing.lon.toFixed(6)}` : null;
+        if (crossingId && exportedTrafficIds.has(crossingId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (crossingId) exportedTrafficIds.add(crossingId);
+        
+        const roadway = crossing.roadway || crossing.ROADWAY || '';
+        const crossingNumber = crossing.crossingNumber || crossing.CROSSING_N || '';
+        const checkDigit = crossing.checkDigit || crossing.CHECK_DIGI || '';
+        const county = crossing.county || crossing.COUNTY || '';
+        const district = crossing.district !== null && crossing.district !== undefined ? String(crossing.district) : '';
+        const beginPost = crossing.beginPost !== null && crossing.beginPost !== undefined ? crossing.beginPost.toFixed(3) : '';
+        const distance = crossing.distance_miles !== null && crossing.distance_miles !== undefined ? crossing.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...crossing };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = crossing.lat || (crossing.geometry && crossing.geometry.y) || '';
+        const lon = crossing.lon || (crossing.geometry && crossing.geometry.x) || '';
+        const crossingInfo = `Crossing ${crossingNumber}${roadway ? ` - Roadway: ${roadway}` : ''}${county ? `, ${county} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_RAILROAD_CROSSINGS',
+          `🚂 ${crossingInfo}`, lat, lon, distance,
+          `Railroad Crossing${district ? ` (District ${district})` : ''} (${distance} miles)`,
+          `${crossingNumber ? `Crossing Number: ${crossingNumber}${checkDigit ? ` (Check Digit: ${checkDigit})` : ''}` : ''}${roadway ? `${crossingNumber ? ', ' : ''}Roadway: ${roadway}` : ''}${beginPost ? `${roadway || crossingNumber ? ', ' : ''}Mile Post: ${beginPost}` : ''}${district ? `${roadway || crossingNumber || beginPost ? ', ' : ''}District: ${district}` : ''}`,
+          '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
+    } else if (key === 'fldot_number_of_lanes_all' && Array.isArray(value)) {
+      value.forEach((lane: any) => {
+        // Deduplicate: use FID to track exported segments
+        const laneId = (lane.fid !== null && lane.fid !== undefined) ? String(lane.fid) :
+                      (lane.lat && lane.lon) ?
+                      `${lane.lat.toFixed(6)}_${lane.lon.toFixed(6)}` : null;
+        if (laneId && exportedRouteIds.has(laneId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (laneId) exportedRouteIds.add(laneId);
+        
+        const roadway = lane.roadway || lane.ROADWAY || '';
+        const roadSide = lane.roadSide || lane.ROAD_SIDE || '';
+        const laneCount = lane.laneCount !== null && lane.laneCount !== undefined ? String(lane.laneCount) : '';
+        const county = lane.county || lane.COUNTY || '';
+        const district = lane.district !== null && lane.district !== undefined ? String(lane.district) : '';
+        const beginPost = lane.beginPost !== null && lane.beginPost !== undefined ? lane.beginPost.toFixed(3) : '';
+        const endPost = lane.endPost !== null && lane.endPost !== undefined ? lane.endPost.toFixed(3) : '';
+        const shapeLength = lane.shapeLength !== null && lane.shapeLength !== undefined ? lane.shapeLength.toFixed(2) : '';
+        const distance = lane.distance_miles !== null && lane.distance_miles !== undefined ? lane.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...lane };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = lane.lat || (lane.geometry && lane.geometry.paths && lane.geometry.paths[0] && lane.geometry.paths[0][0] && lane.geometry.paths[0][0][1]) || '';
+        const lon = lane.lon || (lane.geometry && lane.geometry.paths && lane.geometry.paths[0] && lane.geometry.paths[0][0] && lane.geometry.paths[0][0][0]) || '';
+        const laneInfo = `${laneCount} lane${laneCount && laneCount !== '1' ? 's' : ''}${roadway ? ` - Roadway: ${roadway}` : ''}${county ? `, ${county} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_NUMBER_OF_LANES',
+          `🛣️ ${laneInfo}`, lat, lon, distance,
+          `Number of Lanes${laneCount ? `: ${laneCount} lane${laneCount !== '1' ? 's' : ''}` : ''}${district ? ` (District ${district})` : ''} (${distance} miles)`,
+          `${roadway ? `Roadway: ${roadway}` : ''}${roadSide ? `${roadway ? ', ' : ''}Road Side: ${roadSide}` : ''}${beginPost && endPost ? `${roadway || roadSide ? ', ' : ''}Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `${roadway || roadSide || (beginPost && endPost) ? ', ' : ''}Length: ${shapeLength}m` : ''}${district ? `${roadway || roadSide || (beginPost && endPost) || shapeLength ? ', ' : ''}District: ${district}` : ''}`,
+          '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
+    } else if (key === 'fldot_rest_areas_all' && Array.isArray(value)) {
+      value.forEach((restArea: any) => {
+        // Deduplicate: use FID to track exported rest areas
+        const restAreaId = (restArea.fid !== null && restArea.fid !== undefined) ? String(restArea.fid) :
+                          (restArea.lat && restArea.lon) ?
+                          `${restArea.lat.toFixed(6)}_${restArea.lon.toFixed(6)}` : null;
+        if (restAreaId && exportedTrafficIds.has(restAreaId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (restAreaId) exportedTrafficIds.add(restAreaId);
+        
+        const roadway = restArea.roadway || restArea.ROADWAY || '';
+        const type = restArea.type || restArea.TYPE_ || '';
+        const direction = restArea.direction || restArea.DIR || '';
+        const county = restArea.county || restArea.COUNTY || '';
+        const district = restArea.district !== null && restArea.district !== undefined ? String(restArea.district) : '';
+        const beginPost = restArea.beginPost !== null && restArea.beginPost !== undefined ? restArea.beginPost.toFixed(3) : '';
+        const numFacilities = restArea.numFacilities !== null && restArea.numFacilities !== undefined ? String(restArea.numFacilities) : '';
+        const distance = restArea.distance_miles !== null && restArea.distance_miles !== undefined ? restArea.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...restArea };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = restArea.lat || (restArea.geometry && restArea.geometry.y) || '';
+        const lon = restArea.lon || (restArea.geometry && restArea.geometry.x) || '';
+        let typeLabel = type;
+        if (type === 'RSTAREAS') typeLabel = 'Rest Areas';
+        else if (type === 'RSTARFAC') typeLabel = 'Rest Area Facilities';
+        else if (type === 'WAYSDPKS') typeLabel = 'Wayside Parks';
+        else if (type === 'WEIGHSTA') typeLabel = 'Weigh Stations';
+        else if (type === 'WELCMSTA') typeLabel = 'Welcome Stations';
+        const restAreaInfo = `${typeLabel || 'Rest Area/Welcome Center'}${roadway ? ` - Roadway: ${roadway}` : ''}${county ? `, ${county} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_REST_AREAS',
+          `🚻 ${restAreaInfo}`, lat, lon, distance,
+          `${typeLabel || 'Rest Area/Welcome Center'}${district ? ` (District ${district})` : ''} (${distance} miles)`,
+          `${roadway ? `Roadway: ${roadway}` : ''}${direction ? `${roadway ? ', ' : ''}Direction: ${direction}` : ''}${beginPost ? `${roadway || direction ? ', ' : ''}Mile Post: ${beginPost}` : ''}${numFacilities ? `${roadway || direction || beginPost ? ', ' : ''}Number of Facilities: ${numFacilities}` : ''}${district ? `${roadway || direction || beginPost || numFacilities ? ', ' : ''}District: ${district}` : ''}`,
           '',
           '',
           attributesJson, 'FLDOT'

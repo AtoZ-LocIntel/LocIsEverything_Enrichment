@@ -9186,6 +9186,46 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Bike_Slot_TDA/FeatureServer/0"
         },
         {
+          name: "FLDOT - Bike Lanes",
+          description: "Florida Department of Transportation designated bike lanes - stripe-separated portions of roadway designated by pavement markings and/or signs for preferential use of bicycles. These features do not break at intersections or on bridges. Derived from FDOT Roadway Characteristics Inventory data Feature 216, characteristic BIKELNCD (proximity queries up to 50 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Bike_Lane_TDA/FeatureServer/0"
+        },
+        {
+          name: "FLDOT - Railroad Crossings",
+          description: "Florida Department of Transportation railroad crossings - at-grade crossings of railroads and roadways. Derived from FDOT Roadway Characteristics Inventory data Feature 253, characteristics CHKDIGIT and RRCROSNO. Only includes railroads that cross with roadways maintained in FDOT's RCI (proximity queries up to 50 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Railroad_Crossing_TDA/FeatureServer/0"
+        },
+        {
+          name: "FLDOT - Number of Lanes",
+          description: "Florida Department of Transportation number of through lanes on roadways. Shows the total number of through lanes as derived from FDOT Roadway Characteristics Inventory data Feature 212, characteristic NOLANES. A through traffic lane is a lane of roadway intended to facilitate moving vehicles along a corridor. For divided roadways, there are separate values for left and right roadways; for composite roadways, there is one value. Required for all functionally classified roadways On or Off the SHS and Active Exclusive roadways (proximity queries up to 50 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Number_Of_Lanes_TDA/FeatureServer/0"
+        },
+        {
+          name: "FLDOT - Rest Areas & Welcome Centers",
+          description: "Florida Department of Transportation rest areas, welcome centers, wayside parks, and weigh stations. Shows the location of parks, rest areas, welcome stations and weight stations along roadways as derived from FDOT Roadway Characteristics Inventory data Feature 431, characteristics RSTAREAS, RSTARFAC, WAYSDPKS, WEIGHSTA, WELCMSTA (proximity queries up to 50 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Rest_Welcome_FDOT_TDA/FeatureServer/0"
+        },
+        {
+          name: "FLDEP - Landuse",
+          description: "Florida Department of Environmental Protection (DEP) Statewide Land Use layer with Landscape Development Intensity (LDI) and Landscape Support Index (LSI) values. The two main purposes of this GIS layer are 1) to compile the five Florida Land use datasets from the Water Management Districts into one consistent state-wide layer for analysis and display purposes and 2) to incorporate LDI and LSI values into a statewide Land Use layer. The Land Use layer was compiled from the five Water Management Districts (WMD) in Florida (NWF, SR, SJR, SWF, SF) using the most recent version of data available. This layer will be updated when new versions of Land Use become available from the WMDs and updated with corresponding LDI and LSI values. Division of Environmental Assessment and Restoration (DEAR) (point-in-polygon and proximity queries up to 5 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://ca.dep.state.fl.us/arcgis/rest/services/OpenData/STATEWIDE_LU_2004_2013/MapServer/1"
+        },
+        {
           name: "City of Miami - Water Bodies",
           description: "City of Miami water body polygons - point-in-polygon and proximity queries up to 25 miles",
           coverage: "City of Miami, Florida",
