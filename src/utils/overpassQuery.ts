@@ -42,13 +42,11 @@ async function fetchWithRetry(
   maxRetries: number = 3,
   initialDelay: number = 1000
 ): Promise<Response> {
-  let lastResponse: Response | null = null;
   let lastError: Error | null = null;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch(url, options);
-      lastResponse = response;
       
       // If we get a 504 Gateway Timeout, retry (unless this is the last attempt)
       if (response.status === 504) {
@@ -79,7 +77,8 @@ async function fetchWithRetry(
       }
       
       // Only retry for network errors (not HTTP errors except 504, which is handled above)
-      if (error instanceof TypeError || error.message.includes('fetch')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (error instanceof TypeError || errorMessage.includes('fetch')) {
         const delay = initialDelay * Math.pow(2, attempt);
         console.log(`⚠️ Overpass API network error. Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
