@@ -754,12 +754,52 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
         } 
       });
       
-      if (!res.ok) {
-        console.warn(`⚠️ HTTP ${res.status} from ${attempts[i]}`);
-        throw new Error(`HTTP ${res.status}`);
+      // Handle 504 Gateway Timeout with automatic retry (for OSM/Nominatim services)
+      let responseToProcess = res;
+      if (res.status === 504) {
+        const maxRetries = 3;
+        const initialDelay = 1000; // Start with 1 second delay
+        let retryCount = 0;
+        let lastResponse = res;
+        
+        // Retry up to maxRetries times for 504 errors
+        while (retryCount < maxRetries && lastResponse.status === 504) {
+          const delay = initialDelay * Math.pow(2, retryCount); // Exponential backoff: 1s, 2s, 4s
+          console.log(`⚠️ Received 504 Gateway Timeout. Retrying in ${delay}ms... (retry ${retryCount + 1}/${maxRetries})`);
+          await new Promise(r => setTimeout(r, delay));
+          
+          // Retry the same URL
+          lastResponse = await fetch(attempts[i], { 
+            ...opts, 
+            headers: { 
+              "Accept": "application/json", 
+              ...(opts.headers || {}) 
+            } 
+          });
+          
+          retryCount++;
+          
+          // If successful, use the retried response
+          if (lastResponse.ok) {
+            console.log(`✅ Retry successful after ${retryCount} attempt(s)`);
+            responseToProcess = lastResponse;
+            break; // Exit retry loop, continue with processing
+          }
+        }
+        
+        // If all retries failed, throw error
+        if (lastResponse.status === 504) {
+          console.warn(`⚠️ HTTP 504 from ${attempts[i]} after ${maxRetries} retries`);
+          throw new Error(`HTTP 504 (Gateway Timeout after ${maxRetries} retries)`);
+        }
       }
       
-      const text = await res.text();
+      if (!responseToProcess.ok) {
+        console.warn(`⚠️ HTTP ${responseToProcess.status} from ${attempts[i]}`);
+        throw new Error(`HTTP ${responseToProcess.status}`);
+      }
+      
+      const text = await responseToProcess.text();
       
       // Check if response is HTML (error page) instead of JSON
       if (text.trim().startsWith('<html') || text.trim().startsWith('<!DOCTYPE')) {

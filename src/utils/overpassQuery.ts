@@ -33,6 +33,67 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
+ * Retry wrapper for API calls that may fail with 504 Gateway Timeout
+ * Automatically retries 504 errors with exponential backoff
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<Response> {
+  let lastResponse: Response | null = null;
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      lastResponse = response;
+      
+      // If we get a 504 Gateway Timeout, retry (unless this is the last attempt)
+      if (response.status === 504) {
+        if (attempt < maxRetries - 1) {
+          const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff: 1s, 2s, 4s
+          console.log(`⚠️ Overpass API returned 504 (Gateway Timeout). Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        } else {
+          // Last attempt failed with 504
+          throw new Error(`Overpass API error: 504 Gateway Timeout (after ${maxRetries} attempts)`);
+        }
+      }
+      
+      // For successful responses, return immediately
+      if (response.ok) {
+        return response;
+      }
+      
+      // For other HTTP errors, throw immediately (don't retry non-504 errors)
+      throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      
+      // If this is the last attempt or it's not a 504/network error, throw
+      if (attempt === maxRetries - 1) {
+        throw lastError;
+      }
+      
+      // Only retry for network errors (not HTTP errors except 504, which is handled above)
+      if (error instanceof TypeError || error.message.includes('fetch')) {
+        const delay = initialDelay * Math.pow(2, attempt);
+        console.log(`⚠️ Overpass API network error. Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        // Don't retry other errors
+        throw lastError;
+      }
+    }
+  }
+  
+  throw lastError || new Error('Overpass API request failed after retries');
+}
+
+/**
  * Query Overpass API with tag filters and radius
  * @param layerFilters - Overpass QL filter block (e.g., 'nwr["amenity"="hospital"];')
  * @param lat - Latitude of center point
@@ -59,8 +120,8 @@ export async function queryOverpass(
 (around:${radiusMeters}, ${lat}, ${lon});
 out center tags;`;
     
-    // Fetch from Overpass API
-    const response = await fetch(OVERPASS_API_URL, {
+    // Fetch from Overpass API with automatic retry for 504 errors
+    const response = await fetchWithRetry(OVERPASS_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

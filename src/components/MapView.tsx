@@ -2032,6 +2032,130 @@ const createPOIIcon = (emoji: string, color: string, isMobile: boolean = false) 
   });
 };
 
+/**
+ * Generate deep links to popular mapping platforms for a given location
+ */
+const generateMappingLinks = (lat: number, lon: number, name?: string): string => {
+  const encodedName = name ? encodeURIComponent(name) : '';
+  const encodedLocation = `${lat},${lon}`;
+  
+  const links = [
+    {
+      label: 'Google Maps',
+      url: `https://www.google.com/maps/search/?api=1&query=${encodedLocation}${encodedName ? `&query_place_id=${encodedName}` : ''}`,
+      icon: '🗺️'
+    },
+    {
+      label: 'Apple Maps',
+      url: `https://maps.apple.com/?q=${encodedLocation}${encodedName ? `&ll=${encodedLocation}` : ''}`,
+      icon: '🍎'
+    },
+    {
+      label: 'Waze',
+      url: `https://waze.com/ul?ll=${encodedLocation}&navigate=yes`,
+      icon: '🚗'
+    },
+    {
+      label: 'OpenStreetMap',
+      url: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`,
+      icon: '🌍'
+    }
+  ];
+  
+  return links.map(link => `
+    <a 
+      href="${link.url}" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      style="
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background-color: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        color: #374151;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background-color 0.2s;
+      "
+      onmouseover="this.style.backgroundColor='#e5e7eb'"
+      onmouseout="this.style.backgroundColor='#f3f4f6'"
+    >
+      <span>${link.icon}</span>
+      <span>${link.label}</span>
+    </a>
+  `).join('');
+};
+
+/**
+ * Helper function to extract coordinates from a feature object using common field patterns
+ */
+const extractCoordinates = (feature: any): { lat: number | undefined; lon: number | undefined } => {
+  // Try various common field name patterns for coordinates
+  const lat = feature.lat || feature.latitude || feature.y || feature.LAT || feature.LATITUDE || feature.Y ||
+              feature.geometry?.y || feature.geometry?.coordinates?.[1] || feature.coordinates?.[1];
+  const lon = feature.lon || feature.longitude || feature.x || feature.LON || feature.LONGITUDE || feature.X ||
+              feature.geometry?.x || feature.geometry?.coordinates?.[0] || feature.coordinates?.[0];
+  
+  // Validate coordinates
+  if (lat !== undefined && lon !== undefined && !isNaN(Number(lat)) && !isNaN(Number(lon))) {
+    return { lat: Number(lat), lon: Number(lon) };
+  }
+  
+  return { lat: undefined, lon: undefined };
+};
+
+/**
+ * Helper function to add mapping links to popup content for point features
+ * Can accept either explicit coordinates or a feature object to extract coordinates from
+ */
+const addMappingLinksToPopup = (
+  content: string, 
+  latOrFeature?: number | any, 
+  lon?: number, 
+  name?: string
+): string => {
+  let lat: number | undefined;
+  let actualLon: number | undefined;
+  
+  // If first parameter is an object, extract coordinates from it
+  if (typeof latOrFeature === 'object' && latOrFeature !== null) {
+    const coords = extractCoordinates(latOrFeature);
+    lat = coords.lat;
+    actualLon = coords.lon;
+    // Try to extract name from feature if not provided
+    if (!name) {
+      name = latOrFeature.name || latOrFeature.title || latOrFeature.facility || 
+             latOrFeature.feature || latOrFeature.NAME || latOrFeature.TITLE || '';
+    }
+  } else {
+    lat = latOrFeature;
+    actualLon = lon;
+  }
+  
+  if (!lat || !actualLon || isNaN(lat) || isNaN(actualLon)) return content;
+  
+  const mappingLinks = generateMappingLinks(lat, actualLon, name);
+  const mappingSection = `
+    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+      <div style="margin-bottom: 4px; font-size: 11px; font-weight: 600; color: #374151;">Open in Maps:</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+        ${mappingLinks}
+      </div>
+    </div>`;
+  
+  // Find the last </div> before the closing backtick and insert mapping section before it
+  const lastDivIndex = content.lastIndexOf('</div>');
+  if (lastDivIndex !== -1) {
+    return content.slice(0, lastDivIndex) + mappingSection + content.slice(lastDivIndex);
+  }
+  return content + mappingSection;
+};
+
 const createPOIPopupContent = (poi: any, legendTitle: string, key: string): string => {
     // Extract coordinates - try multiple possible field names
     const lat = poi.lat || poi.latitude || poi.y || poi.coordinates?.[1] || poi.geometry?.coordinates?.[1];
@@ -2742,49 +2866,6 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
   return Object.entries(sections)
     .map(([category, items]) => ({ category, items }))
     .filter(section => section.items.length > 0);
-};
-
-// Generate deep links to mapping platforms
-const generateMappingLinks = (lat: number, lon: number, name?: string): string => {
-  const encodedName = name ? encodeURIComponent(name) : '';
-  const links = [
-    {
-      name: 'Google Maps',
-      url: `https://www.google.com/maps?q=${lat},${lon}${encodedName ? `&query=${encodedName}` : ''}`,
-      icon: '🗺️'
-    },
-    {
-      name: 'Apple Maps',
-      url: `https://maps.apple.com/?ll=${lat},${lon}${encodedName ? `&q=${encodedName}` : ''}`,
-      icon: '🍎'
-    },
-    {
-      name: 'MapQuest',
-      url: `https://www.mapquest.com/search/results?query=${lat},${lon}`,
-      icon: '📍'
-    },
-    {
-      name: 'Bing Maps',
-      url: `https://www.bing.com/maps?cp=${lat}~${lon}&lvl=15`,
-      icon: '🌐'
-    },
-    {
-      name: 'Waze',
-      url: `https://www.waze.com/ul?ll=${lat},${lon}&navigate=yes`,
-      icon: '🚗'
-    },
-    {
-      name: 'OpenStreetMap',
-      url: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=15`,
-      icon: '🌍'
-    }
-  ];
-  
-  return links.map(link => 
-    `<a href="${link.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin: 2px 4px; padding: 4px 8px; background-color: #f3f4f6; border-radius: 4px; text-decoration: none; color: #1f2937; font-size: 11px; border: 1px solid #e5e7eb;">
-      ${link.icon} ${link.name}
-    </a>`
-  ).join('');
 };
 
 // Create popup content for main location
@@ -4758,7 +4839,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 </div>
               `;
-              
+              popupContent = addMappingLinksToPopup(popupContent, placeLat, placeLon, placeName);
               marker.bindPopup(popupContent, { maxWidth: 400 });
               marker.addTo(poi);
               
@@ -4835,7 +4916,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 </div>
               `;
-              
+              popupContent = addMappingLinksToPopup(popupContent, siteLat, siteLon, facilityName);
               marker.bindPopup(popupContent, { maxWidth: 400 });
               marker.addTo(poi);
               
@@ -6697,6 +6778,7 @@ const MapView: React.FC<MapViewProps> = ({
                 const marker = L.marker([lat, lon], { icon: L.divIcon({ className: 'custom-marker', html: '🚫', iconSize: [20, 20] }) });
                 const distance = feature.distance_miles;
                 let popupContent = `<div><strong>No Build Point - Bay</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                popupContent = addMappingLinksToPopup(popupContent, lat, lon, 'No Build Point - Bay');
                 marker.bindPopup(popupContent);
                 marker.addTo(poi);
                 bounds.extend([lat, lon]);
@@ -6748,6 +6830,7 @@ const MapView: React.FC<MapViewProps> = ({
                 const marker = L.marker([lat, lon], { icon: L.divIcon({ className: 'custom-marker', html: '🚫', iconSize: [20, 20] }) });
                 const distance = feature.distance_miles;
                 let popupContent = `<div><strong>No Build Point - Ocean</strong>${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                popupContent = addMappingLinksToPopup(popupContent, lat, lon, 'No Build Point - Ocean');
                 marker.bindPopup(popupContent);
                 marker.addTo(poi);
                 bounds.extend([lat, lon]);
@@ -7340,6 +7423,7 @@ const MapView: React.FC<MapViewProps> = ({
                 const facility = feature.FACILITY || feature.facility || '';
                 const distance = feature.distance_miles;
                 let popupContent = `<div><strong>${park || 'Park Facility'}</strong>${facility ? `<br>Facility: ${facility}` : ''}${distance !== null && distance !== undefined ? `<br>Distance: ${distance.toFixed(2)} miles` : ''}</div>`;
+                popupContent = addMappingLinksToPopup(popupContent, lat, lon, park || facility || 'Park Facility');
                 marker.bindPopup(popupContent);
                 marker.addTo(poi);
                 bounds.extend([lat, lon]);
@@ -7398,7 +7482,7 @@ const MapView: React.FC<MapViewProps> = ({
                     </div>
                   </div>
                 `;
-                
+                popupContent = addMappingLinksToPopup(popupContent, lat, lon, name);
                 marker.bindPopup(popupContent, { maxWidth: 400 });
                 marker.addTo(poi);
                 bounds.extend([lat, lon]);
@@ -8740,7 +8824,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                 </div>
               `;
-              
+              popupContent = addMappingLinksToPopup(popupContent, placeLat, placeLon, placeName);
               marker.bindPopup(popupContent, { maxWidth: 400 });
               marker.addTo(poi);
               
