@@ -8947,6 +8947,46 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           attributesJson, 'FLDOT'
         ]);
       });
+    } else if (key === 'fldot_functional_classification_all' && Array.isArray(value)) {
+      value.forEach((feature: any) => {
+        // Deduplicate: use objectId/FID to track exported segments
+        const featureId = (feature.objectId !== null && feature.objectId !== undefined) ? String(feature.objectId) :
+                         (feature.FID !== null && feature.FID !== undefined) ? String(feature.FID) :
+                         (feature.lat && feature.lon) ?
+                         `${feature.lat.toFixed(6)}_${feature.lon.toFixed(6)}` : null;
+        if (featureId && exportedRouteIds.has(featureId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (featureId) exportedRouteIds.add(featureId);
+
+        const roadway = feature.roadway || feature.ROADWAY || '';
+        const funclass = feature.funclass || feature.FUNCLASS || '';
+        const county = feature.county || feature.COUNTY || '';
+        const district = feature.district !== null && feature.district !== undefined ? String(feature.district) : '';
+        const countydot = feature.countydot !== null && feature.countydot !== undefined ? String(feature.countydot) : '';
+        const mngDist = feature.mngDist !== null && feature.mngDist !== undefined ? String(feature.mngDist) : '';
+        const beginPost = feature.beginPost !== null && feature.beginPost !== undefined ? feature.beginPost.toFixed(3) : '';
+        const endPost = feature.endPost !== null && feature.endPost !== undefined ? feature.endPost.toFixed(3) : '';
+        const shapeLength = feature.shapeLength !== null && feature.shapeLength !== undefined ? feature.shapeLength.toFixed(2) : '';
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...feature };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        const lat = feature.lat || (feature.geometry && feature.geometry.paths && feature.geometry.paths[0] && feature.geometry.paths[0][0] && feature.geometry.paths[0][0][1]) || '';
+        const lon = feature.lon || (feature.geometry && feature.geometry.paths && feature.geometry.paths[0] && feature.geometry.paths[0][0] && feature.geometry.paths[0][0][0]) || '';
+        const featureInfo = `FUNCLASS ${funclass || 'Unknown'}${roadway ? ` - Roadway: ${roadway}` : ''}${county ? `, ${county} County` : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'FLDOT',
+          (location.confidence || 'N/A').toString(), 'FLDOT_FUNCTIONAL_CLASSIFICATION',
+          `🛣️ ${featureInfo}`, lat, lon, distance,
+          `Functional Classification${funclass ? `: FUNCLASS ${funclass}` : ''}${district ? ` (District ${district})` : ''} (${distance} miles)`,
+          `${roadway ? `Roadway: ${roadway}` : ''}${funclass ? `${roadway ? ', ' : ''}Functional Class: ${funclass}` : ''}${beginPost && endPost ? `${roadway || funclass ? ', ' : ''}Mile Post: ${beginPost}-${endPost}` : ''}${shapeLength ? `${roadway || funclass || (beginPost && endPost) ? ', ' : ''}Length: ${shapeLength}m` : ''}${district ? `${roadway || funclass || (beginPost && endPost) || shapeLength ? ', ' : ''}District: ${district}` : ''}${county ? `${roadway || funclass || (beginPost && endPost) || shapeLength || district ? ', ' : ''}County: ${county}` : ''}`,
+          '',
+          '',
+          attributesJson, 'FLDOT'
+        ]);
+      });
     } else if (key === 'miami_water_bodies_all' && Array.isArray(value)) {
       value.forEach((waterBody: any) => {
         const type = waterBody.type || waterBody.TYPE || waterBody.Type || 'Water Body';

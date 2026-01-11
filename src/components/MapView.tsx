@@ -2573,6 +2573,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'fldot_railroad_crossings_all' || // Skip FLDOT Railroad Crossings array (handled separately for map drawing)
     key === 'fldot_number_of_lanes_all' || // Skip FLDOT Number of Lanes array (handled separately for map drawing)
     key === 'fldot_rest_areas_all' || // Skip FLDOT Rest Areas array (handled separately for map drawing)
+    key === 'fldot_functional_classification_all' || // Skip FLDOT Functional Classification array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -4626,7 +4627,9 @@ const MapView: React.FC<MapViewProps> = ({
         let totalRailroadCrossingCount = 0;
         let totalNumberOfLanesCount = 0;
         let totalRestAreaCount = 0;
+        let totalFunctionalClassificationCount = 0;
         const laneCountStats: Record<number, number> = {}; // Track lane count distribution for legend
+        const funclassStats: Record<string, number> = {}; // Track functional class distribution for legend
         
         // Re-add location marker to bounds (already added above, but need for bounds calculation)
         if (results[0]?.location) {
@@ -21484,6 +21487,146 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing FLDOT Number of Lanes:', error);
       }
 
+      // Draw FLDOT Functional Classification as polylines on the map
+      try {
+        if (enrichments.fldot_functional_classification_all && Array.isArray(enrichments.fldot_functional_classification_all)) {
+          enrichments.fldot_functional_classification_all.forEach((feature: any) => {
+            // Check for polyline geometry (paths)
+            if (feature.geometry && feature.geometry.paths) {
+              try {
+                const paths = feature.geometry.paths;
+                if (paths && Array.isArray(paths) && paths.length > 0) {
+                  paths.forEach((path: number[][]) => {
+                    if (path && Array.isArray(path) && path.length > 0) {
+                      const latlngs = path.map((coord: number[]) => {
+                        return [coord[1], coord[0]] as [number, number];
+                      });
+
+                      if (latlngs.length < 2) {
+                        return; // Skip paths with less than 2 points
+                      }
+
+                      // Use different colors based on functional class
+                      // FUNCLASS codes: 01-19 (Federal Functional Classification System)
+                      const funclass = feature.funclass || feature.FUNCLASS || '';
+                      let lineColor = '#6366f1'; // Default: indigo
+                      
+                      // Color code by FUNCLASS ranges
+                      const funclassNum = parseInt(funclass);
+                      if (funclassNum >= 1 && funclassNum <= 7) {
+                        lineColor = '#ef4444'; // Red for Principal Arterial (01-07)
+                      } else if (funclassNum >= 8 && funclassNum <= 12) {
+                        lineColor = '#f59e0b'; // Amber for Minor Arterial (08-12)
+                      } else if (funclassNum >= 13 && funclassNum <= 16) {
+                        lineColor = '#10b981'; // Green for Collector (13-16)
+                      } else if (funclassNum >= 17 && funclassNum <= 19) {
+                        lineColor = '#3b82f6'; // Blue for Local (17-19)
+                      }
+
+                      const polyline = L.polyline(latlngs, {
+                        color: lineColor,
+                        weight: 3,
+                        opacity: 0.7
+                      });
+
+                      const roadway = feature.roadway || feature.ROADWAY || 'Unknown';
+                      const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles : 0;
+
+                      // Get all attributes from the service
+                      const allAttributes = feature.attributes || feature;
+                      
+                      let popupContent = `
+                        <div style="min-width: 250px; max-width: 400px;">
+                          <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                            🛣️ FLDOT Functional Classification
+                          </h3>
+                          <div style="font-size: 12px; color: #6b7280;">
+                      `;
+
+                      // Iterate through all attributes and display them
+                      const excludeKeys = ['geometry', 'distance_miles', 'lat', 'lon', 'attributes'];
+                      const attributeKeys = Object.keys(allAttributes).filter(key =>
+                        !excludeKeys.includes(key) &&
+                        allAttributes[key] !== null &&
+                        allAttributes[key] !== undefined &&
+                        allAttributes[key] !== ''
+                      );
+
+                      // Sort attributes - put important ones first
+                      const importantKeys = ['FUNCLASS', 'funclass', 'ROADWAY', 'roadway', 'COUNTY', 'county', 'DISTRICT', 'district', 'COUNTYDOT', 'countydot', 'MNG_DIST', 'mngDist', 'BEGIN_POST', 'beginPost', 'END_POST', 'endPost', 'Shape_Leng', 'Shape__Length', 'shapeLength'];
+                      const sortedKeys = [
+                        ...importantKeys.filter(key => attributeKeys.includes(key)),
+                        ...attributeKeys.filter(key => !importantKeys.includes(key))
+                      ];
+
+                      sortedKeys.forEach(key => {
+                        const value = allAttributes[key];
+                        let displayValue = value;
+                        let displayKey = key;
+
+                        // Format the key name for display
+                        displayKey = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                        displayKey = displayKey.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
+                        // Format the value
+                        if (typeof value === 'number') {
+                          if (key.toLowerCase().includes('length') || key.toLowerCase().includes('leng')) {
+                            displayValue = `${value.toLocaleString()} m`;
+                          } else {
+                            displayValue = value.toLocaleString();
+                          }
+                        } else {
+                          displayValue = String(value);
+                        }
+
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      });
+
+                      if (distance > 0) {
+                        popupContent += `<div style="margin-top: 8px; margin-bottom: 4px;"><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>`;
+                      }
+
+                      popupContent += `
+                          </div>
+                        </div>
+                      `;
+
+                      popupContent = addMappingLinksToPopup(popupContent, feature.lat, feature.lon, roadway || 'Functional Classification Roadway');
+                      polyline.bindPopup(popupContent, { maxWidth: 400 });
+
+                      polyline.on('click', function(this: L.Polyline) {
+                        this.openPopup();
+                      });
+
+                      polyline.addTo(poi);
+
+                      // Extend bounds to include all points in the polyline
+                      latlngs.forEach((latlng: [number, number]) => {
+                        bounds.extend(latlng);
+                      });
+
+                      // Track functional class for legend
+                      const funclassKey = funclass || 'Unknown';
+                      funclassStats[funclassKey] = (funclassStats[funclassKey] || 0) + 1;
+
+                      totalFunctionalClassificationCount++;
+                    }
+                  });
+                } else {
+                  console.warn('FLDOT Functional Classification: geometry.paths is empty or invalid', feature);
+                }
+              } catch (error: any) {
+                console.error('Error processing FLDOT Functional Classification polyline:', error, feature);
+              }
+            } else {
+              console.warn('FLDOT Functional Classification: No geometry.paths found, skipping', feature);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error processing FLDOT Functional Classification:', error);
+      }
+
       // Draw FLDOT Rest Areas & Welcome Centers points on the map
       try {
         if (enrichments.fldot_rest_areas_all && Array.isArray(enrichments.fldot_rest_areas_all)) {
@@ -38173,6 +38316,11 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        // Skip FLDOT Functional Classification - handled separately with custom polylines (color-coded by FUNCLASS)
+        if (key === 'fldot_functional_classification_all') {
+          return;
+        }
+
         // Skip FLDOT Rest Areas - handled separately with custom point markers (color-coded by type)
         if (key === 'fldot_rest_areas_all') {
           return;
@@ -38618,6 +38766,34 @@ const MapView: React.FC<MapViewProps> = ({
             title: 'FLDOT Number of Lanes',
             count: totalNumberOfLanesCount,
             ranges: activeRanges.length > 0 ? activeRanges : laneCountRanges // Show active ranges, or all if none
+          };
+        }
+
+        if (totalFunctionalClassificationCount > 0) {
+          // Functional Classification uses polylines with color coding by FUNCLASS
+          const funclassRanges = [
+            { label: 'Principal Arterial (01-07)', color: '#ef4444', count: Object.entries(funclassStats).filter(([k]) => { const n = parseInt(k); return n >= 1 && n <= 7; }).reduce((sum, [, c]) => sum + (c || 0), 0) },
+            { label: 'Minor Arterial (08-12)', color: '#f59e0b', count: Object.entries(funclassStats).filter(([k]) => { const n = parseInt(k); return n >= 8 && n <= 12; }).reduce((sum, [, c]) => sum + (c || 0), 0) },
+            { label: 'Collector (13-16)', color: '#10b981', count: Object.entries(funclassStats).filter(([k]) => { const n = parseInt(k); return n >= 13 && n <= 16; }).reduce((sum, [, c]) => sum + (c || 0), 0) },
+            { label: 'Local (17-19)', color: '#3b82f6', count: Object.entries(funclassStats).filter(([k]) => { const n = parseInt(k); return n >= 17 && n <= 19; }).reduce((sum, [, c]) => sum + (c || 0), 0) }
+          ];
+
+          const activeRanges = funclassRanges.filter(range => range.count > 0);
+          const mostCommonRange = activeRanges.length > 0
+            ? activeRanges.reduce((max, range) => range.count > max.count ? range : max)
+            : { color: '#6366f1', count: 0 };
+
+          const radius = getRadiusForLegendKey('fldot_functional_classification');
+          const radiusDisplay = formatRadiusDisplay('fldot_functional_classification', radius);
+
+          legendAccumulator['fldot_functional_classification'] = {
+            icon: '', // Empty icon for polylines - will render as line
+            color: mostCommonRange.color, // Use most common color as primary
+            title: 'FLDOT Functional Classification',
+            count: totalFunctionalClassificationCount,
+            radius: radius,
+            radiusDisplay: radiusDisplay,
+            ranges: activeRanges.length > 0 ? activeRanges : funclassRanges // Show active ranges, or all if none
           };
         }
 

@@ -453,6 +453,7 @@ import { getFLDOTBikeLanesData } from '../adapters/fldotBikeLanes';
 import { getFLDOTRailroadCrossingsData } from '../adapters/fldotRailroadCrossings';
 import { getFLDOTNumberOfLanesData } from '../adapters/fldotNumberOfLanes';
 import { getFLDOTRestAreasData } from '../adapters/fldotRestAreas';
+import { getFLDOTFunctionalClassificationData } from '../adapters/fldotFunctionalClassification';
 import { getFLDEPLanduseContainingData, getFLDEPLanduseNearbyData, FLDEPLanduseInfo } from '../adapters/fldepLanduse';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
@@ -8630,6 +8631,9 @@ export class EnrichmentService {
 
       case 'fldot_rest_areas':
         return await this.getFLDOTRestAreas(lat, lon, radius);
+
+      case 'fldot_functional_classification':
+        return await this.getFLDOTFunctionalClassification(lat, lon, radius);
 
       // FLDEP Landuse - Point-in-polygon and proximity query (polygon dataset)
       case 'fldep_landuse':
@@ -25518,6 +25522,80 @@ out center tags;`;
         fldot_rest_areas_count: 0,
         fldot_rest_areas_all: [],
         fldot_rest_areas_summary: `Error querying rest areas: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getFLDOTFunctionalClassification(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = Math.min(radius || 25, 25);
+      console.log(`🛣️ Fetching FLDOT Functional Classification for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      
+      const features = await getFLDOTFunctionalClassificationData(lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result.fldot_functional_classification_count = 0;
+        result.fldot_functional_classification_all = [];
+        result.fldot_functional_classification_summary = `No functional classification roadways found within ${cappedRadius} miles`;
+        return result;
+      }
+
+      result.fldot_functional_classification_count = features.length;
+      result.fldot_functional_classification_all = features.map(feature => ({
+        ...feature,
+        objectId: feature.objectId,
+        roadway: feature.roadway,
+        funclass: feature.funclass,
+        district: feature.district,
+        countydot: feature.countydot,
+        county: feature.county,
+        mngDist: feature.mngDist,
+        beginPost: feature.beginPost,
+        endPost: feature.endPost,
+        shapeLength: feature.shapeLength,
+        lat: feature.lat,
+        lon: feature.lon,
+        geometry: feature.geometry,
+        distance_miles: feature.distance_miles
+      }));
+
+      // Group by functional class for summary
+      const funclassCounts: Record<string, number> = {};
+      features.forEach(feature => {
+        const funclass = feature.funclass || 'Unknown';
+        funclassCounts[funclass] = (funclassCounts[funclass] || 0) + 1;
+      });
+      
+      // Group by county for summary
+      const countyCounts: Record<string, number> = {};
+      features.forEach(feature => {
+        const county = feature.county || 'Unknown';
+        countyCounts[county] = (countyCounts[county] || 0) + 1;
+      });
+      
+      const topCounties = Object.entries(countyCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 3)
+        .map(([county, count]) => `${county}: ${count}`)
+        .join(', ');
+
+      const funclassBreakdown = Object.entries(funclassCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5)
+        .map(([funclass, count]) => `FUNCLASS ${funclass}: ${count}`)
+        .join(', ');
+
+      result.fldot_functional_classification_summary = `Found ${features.length} functional classification roadway segment(s) within ${cappedRadius} miles${funclassBreakdown ? ` - Top classes: ${funclassBreakdown}` : ''}${topCounties ? ` | Top counties: ${topCounties}` : ''}`;
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching FLDOT Functional Classification:', error);
+      return {
+        fldot_functional_classification_count: 0,
+        fldot_functional_classification_all: [],
+        fldot_functional_classification_summary: `Error querying functional classification: ${error instanceof Error ? error.message : String(error)}`
       };
     }
   }

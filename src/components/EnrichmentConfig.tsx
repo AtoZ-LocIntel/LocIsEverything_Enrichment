@@ -1097,14 +1097,56 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'wy') {
-          // WY will have sub-categories (to be added later)
+          // Get all WY enrichments (filter POIs where section is 'wy')
+          const wyPOIs = poiTypes.filter(poi => poi.section === 'wy');
+          
+          // Get WY Geospatial Hub enrichments (filter by subCategory 'WY Geospatial Hub' or id/description containing 'wygeohub' or 'wy_geospatial_hub')
+          const wyGeohubPOIs = wyPOIs.filter(poi => 
+            poi.id.startsWith('wygeohub_') || 
+            poi.id.includes('wygeohub') ||
+            poi.id.startsWith('wy_geospatial_hub_') ||
+            poi.id.includes('wy_geospatial_hub') ||
+            poi.description.toLowerCase().includes('wyoming geospatial hub') ||
+            poi.description.toLowerCase().includes('wy geospatial hub') ||
+            poi.label.toLowerCase().includes('wyoming geospatial hub') ||
+            poi.label.toLowerCase().includes('wy geospatial hub') ||
+            (poi.subCategory && poi.subCategory.toLowerCase().includes('wy geospatial hub')) ||
+            (poi.subCategory && poi.subCategory.toLowerCase().includes('wygeohub'))
+          );
+          
+          const wyGeohubEnrichments = wyGeohubPOIs.map(poi => ({
+            id: poi.id,
+            label: poi.label,
+            description: poi.description,
+            isPOI: poi.isPOI,
+            defaultRadius: poi.defaultRadius,
+            category: poi.category
+          }));
+          
+          // Define WY sub-categories
+          const wySubCategories: EnrichmentCategory[] = [
+            {
+              id: 'wy_geospatial_hub',
+              title: 'WY Geospatial Hub',
+              icon: <img src="/assets/WYgeohub.webp" alt="WY Geospatial Hub" className="w-full h-full object-cover rounded-full" onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/assets/WYgeohub.webp';
+                target.onerror = () => {
+                  target.style.display = 'none';
+                };
+              }} />,
+              description: 'Wyoming Geospatial Hub data layers',
+              enrichments: wyGeohubEnrichments
+            }
+          ];
+          
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // WY parent category has no direct enrichments
+            subCategories: wySubCategories
           };
         }
         

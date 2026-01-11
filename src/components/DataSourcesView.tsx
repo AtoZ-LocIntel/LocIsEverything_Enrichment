@@ -9218,6 +9218,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Rest_Welcome_FDOT_TDA/FeatureServer/0"
         },
         {
+          name: "FLDOT - Functional Classification",
+          description: "Florida Department of Transportation Functional Classification System. Shows roadway functional classifications (FUNCLASS codes) as derived from event mapping Feature 121, characteristic FUNCLASS from the FDOT Roadway Characteristics Inventory data. FUNCLASS is the assignment of roadways into systems according to the character of service they provide in relation to the total roadway network. Florida uses the Federal Functional Classification System, which is common to all states. FUNCLASS determines whether a roadway is STP or FA None, which determines funding categories. FEMA provides emergency funds for roadways that are not on the Federal Highway System. This dataset is maintained by the Transportation Data & Analytics office (TDA) (proximity queries up to 25 miles)",
+          coverage: "State of Florida",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services1.arcgis.com/O1JpcwDW8sjYuddV/arcgis/rest/services/Functional_Classification_TDA/FeatureServer/0"
+        },
+        {
           name: "FLDEP - Landuse",
           description: "Florida Department of Environmental Protection (DEP) Statewide Land Use layer with Landscape Development Intensity (LDI) and Landscape Support Index (LSI) values. The two main purposes of this GIS layer are 1) to compile the five Florida Land use datasets from the Water Management Districts into one consistent state-wide layer for analysis and display purposes and 2) to incorporate LDI and LSI values into a statewide Land Use layer. The Land Use layer was compiled from the five Water Management Districts (WMD) in Florida (NWF, SR, SJR, SWF, SF) using the most recent version of data available. This layer will be updated when new versions of Land Use become available from the WMDs and updated with corresponding LDI and LSI values. Division of Environmental Assessment and Restoration (DEAR) (point-in-polygon and proximity queries up to 5 miles)",
           coverage: "State of Florida",
