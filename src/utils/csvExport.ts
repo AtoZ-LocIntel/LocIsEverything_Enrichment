@@ -9016,6 +9016,65 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           type, '', '', attributesJson, 'City of Miami'
         ]);
       });
+    } else if (key === 'wy_bighorn_sheep_crucial_range_all' && Array.isArray(value)) {
+      value.forEach((range: any) => {
+        // Deduplicate: use OBJECTID to track exported ranges (lat/lon not included to prevent point markers)
+        const rangeId = (range.objectId !== null && range.objectId !== undefined) ? String(range.objectId) :
+                       (range.OBJECTID !== null && range.OBJECTID !== undefined) ? String(range.OBJECTID) : null;
+        if (rangeId && exportedRouteIds.has(rangeId)) {
+          return; // Skip - already exported from a previous result
+        }
+        if (rangeId) exportedRouteIds.add(rangeId);
+
+        const species = range.species || range.SPECIES || '';
+        const rangeType = range.range || range.RANGE || '';
+        const acres = range.acres !== null && range.acres !== undefined ? range.acres : range.Acres;
+        const sqMiles = range.sqMiles !== null && range.sqMiles !== undefined ? range.sqMiles : range.SQMiles;
+        const isContaining = range.isContaining || false;
+        const distance = range.distance_miles !== null && range.distance_miles !== undefined ? range.distance_miles.toFixed(2) : '';
+        const allAttributes = { ...range };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+        // For polygons, calculate centroid from geometry (lat/lon not included in output to prevent point markers)
+        let lat = '';
+        let lon = '';
+        if (range.geometry && range.geometry.rings && range.geometry.rings.length > 0) {
+          const firstRing = range.geometry.rings[0];
+          if (firstRing && firstRing.length > 0) {
+            // Calculate centroid from polygon rings
+            let sumLat = 0;
+            let sumLon = 0;
+            let count = 0;
+            firstRing.forEach((coord: number[]) => {
+              if (coord && coord.length >= 2) {
+                sumLon += coord[0]; // ESRI geometry: [lon, lat] = [x, y]
+                sumLat += coord[1];
+                count++;
+              }
+            });
+            if (count > 0) {
+              lon = (sumLon / count).toString();
+              lat = (sumLat / count).toString();
+            } else {
+              // Fallback to first coordinate if calculation fails
+              lon = firstRing[0][0]?.toString() || '';
+              lat = firstRing[0][1]?.toString() || '';
+            }
+          }
+        }
+        const rangeInfo = `${species ? `${species} ` : ''}${rangeType || 'Crucial Range'}${acres !== null && acres !== undefined ? ` - ${acres.toLocaleString(undefined, { maximumFractionDigits: 2 })} acres` : ''}${isContaining ? ' (Containing)' : ''}`;
+        rows.push([
+          location.name, location.lat.toString(), location.lon.toString(), 'Wyoming Geospatial Hub',
+          (location.confidence || 'N/A').toString(), 'WY_BIGHORN_SHEEP_CRUCIAL_RANGE',
+          `🐑 ${rangeInfo}`, lat || location.lat.toString(), lon || location.lon.toString(), distance,
+          `Bighorn Sheep Crucial Range${rangeType ? `: ${rangeType}` : ''} (${isContaining ? 'containing' : distance + ' miles'})`,
+          `${species ? `Species: ${species}` : ''}${rangeType ? `${species ? ', ' : ''}Range Type: ${rangeType}` : ''}${acres !== null && acres !== undefined ? `${species || rangeType ? ', ' : ''}Acres: ${acres.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}${sqMiles !== null && sqMiles !== undefined ? `${species || rangeType || acres !== null ? ', ' : ''}Square Miles: ${sqMiles.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : ''}`,
+          '',
+          '',
+          attributesJson, 'Wyoming Geospatial Hub'
+        ]);
+      });
     } else if (key === 'nyc_bike_routes_all' && Array.isArray(value)) {
       value.forEach((route: any) => {
         const routeName = route.name || route.NAME || route.Name || route.ROUTE_NAME || route.route_name || 'Unknown Route';

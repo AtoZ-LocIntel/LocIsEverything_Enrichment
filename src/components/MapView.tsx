@@ -2574,6 +2574,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'fldot_number_of_lanes_all' || // Skip FLDOT Number of Lanes array (handled separately for map drawing)
     key === 'fldot_rest_areas_all' || // Skip FLDOT Rest Areas array (handled separately for map drawing)
     key === 'fldot_functional_classification_all' || // Skip FLDOT Functional Classification array (handled separately for map drawing)
+    key === 'wy_bighorn_sheep_crucial_range_all' || // Skip WY Bighorn Sheep Crucial Range array (handled separately for map drawing)
     key === 'nyc_bike_routes_all' || // Skip NYC Bike Routes array (handled separately for map drawing)
     key === 'nyc_neighborhoods_all' || // Skip NYC Neighborhoods array (handled separately for map drawing)
     key === 'nyc_zoning_districts_all' || // Skip NYC Zoning Districts array (handled separately for map drawing)
@@ -8949,6 +8950,107 @@ const MapView: React.FC<MapViewProps> = ({
               }
             } catch (error) {
               console.error('Error drawing FLDEP Landuse polygon:', error);
+            }
+          }
+        });
+      }
+
+      // Draw WY Bighorn Sheep Crucial Range as polygons on the map
+      if (enrichments.wy_bighorn_sheep_crucial_range_all && Array.isArray(enrichments.wy_bighorn_sheep_crucial_range_all)) {
+        enrichments.wy_bighorn_sheep_crucial_range_all.forEach((range: any) => {
+          if (range.geometry && range.geometry.rings) {
+            try {
+              // Convert ESRI polygon rings to Leaflet LatLng array
+              const rings = range.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0]; // First ring is the outer boundary
+                const latlngs = outerRing.map((coord: number[]) => {
+                  // ESRI geometry coordinates are [x, y] which is [lon, lat] in WGS84
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = range.isContaining || range.distance_miles === 0 || range.distance_miles === null;
+                const color = isContaining ? '#f59e0b' : '#fbbf24'; // Amber for containing, lighter amber for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: weight,
+                  opacity: opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all range attributes
+                const species = range.SPECIES || range.species || '';
+                const rangeType = range.RANGE || range.range || '';
+                const acres = range.Acres !== null && range.Acres !== undefined ? range.Acres : range.acres;
+                const sqMiles = range.SQMiles !== null && range.SQMiles !== undefined ? range.SQMiles : range.sqMiles;
+                const shapeArea = range['Shape__Area'] !== null && range['Shape__Area'] !== undefined ? range['Shape__Area'] : range.shapeArea;
+                const shapeLength = range['Shape__Length'] !== null && range['Shape__Length'] !== undefined ? range['Shape__Length'] : range.shapeLength;
+                const distance = range.distance_miles;
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '🐑 Containing Bighorn Sheep Crucial Range' : '🐑 Nearby Bighorn Sheep Crucial Range'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${species ? `<div><strong>Species:</strong> ${species}</div>` : ''}
+                      ${rangeType ? `<div><strong>Range Type:</strong> ${rangeType}</div>` : ''}
+                      ${acres !== null && acres !== undefined ? `<div><strong>Acres:</strong> ${acres.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>` : ''}
+                      ${sqMiles !== null && sqMiles !== undefined ? `<div><strong>Square Miles:</strong> ${sqMiles.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>` : ''}
+                      ${shapeArea !== null && shapeArea !== undefined ? `<div><strong>Shape Area:</strong> ${shapeArea.toLocaleString()} sq units</div>` : ''}
+                      ${shapeLength !== null && shapeLength !== undefined ? `<div><strong>Shape Length:</strong> ${shapeLength.toLocaleString()} units</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${distance.toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                
+                // Add all other range attributes (excluding internal fields)
+                const excludeFields = ['SPECIES', 'species', 'RANGE', 'range', 'Acres', 'acres', 'SQMiles', 'sqMiles', 'Shape__Area', 'shapeArea', 'Shape__Length', 'shapeLength', 'geometry', 'distance_miles', 'isContaining', 'OBJECTID', 'objectId', 'lat', 'lon'];
+                Object.entries(range).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+                    
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+                
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                
+                // Add to legend accumulator
+                if (!legendAccumulator['wy_bighorn_sheep_crucial_range']) {
+                  legendAccumulator['wy_bighorn_sheep_crucial_range'] = {
+                    icon: '🐑',
+                    color: '#f59e0b',
+                    title: 'WY Bighorn Sheep Crucial Range',
+                    count: 0,
+                    radius: enrichments.wy_bighorn_sheep_crucial_range_search_radius_miles,
+                    radiusDisplay: enrichments.wy_bighorn_sheep_crucial_range_search_radius_miles ? `${enrichments.wy_bighorn_sheep_crucial_range_search_radius_miles.toFixed(1)} mi` : undefined
+                  };
+                }
+                legendAccumulator['wy_bighorn_sheep_crucial_range'].count += 1;
+              }
+            } catch (error) {
+              console.error('Error drawing WY Bighorn Sheep Crucial Range polygon:', error);
             }
           }
         });
@@ -38326,6 +38428,11 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        // Skip WY Bighorn Sheep Crucial Range - handled separately with polygon geometry drawing
+        if (key === 'wy_bighorn_sheep_crucial_range_all') {
+          return;
+        }
+
         // Skip DC Urban Tree Canopy layers - handled separately with geometry drawing
         if (key.startsWith('dc_utc_') && key.endsWith('_all')) {
           return;
@@ -38601,6 +38708,11 @@ const MapView: React.FC<MapViewProps> = ({
         // No need for additional limiting here - map ALL items
         let mappedCount = 0;
         itemsArray.forEach((item) => {
+          // Skip items with polygon geometry (rings) - these should be drawn as polygons, not points
+          if (item.geometry && item.geometry.rings && Array.isArray(item.geometry.rings) && item.geometry.rings.length > 0) {
+            return; // Skip polygon features - they're handled separately
+          }
+
           const poiLat =
             item.lat ??
             item.latitude ??

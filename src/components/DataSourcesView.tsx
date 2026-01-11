@@ -8998,11 +8998,12 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Wyoming Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Wyoming will be added in future updates",
-          coverage: "Wyoming",
-          accuracy: "N/A",
-          cost: "N/A"
+          name: "WY Geospatial Hub - Bighorn Sheep Crucial Range",
+          description: "Wyoming Bighorn Sheep Crucial Range - Polygon layer showing crucial winter and crucial winter-low elevation range areas for bighorn sheep. This layer is a subset of the corresponding seasonal range layer, including only ranges with a \"crucial\" (CRU) designation in the RANGE attribute field. All of the same metadata is used for this subset. The citation title is modified to replace \"Seasonal\" with \"Crucial\" and only the following seasonal ranges are included: anything with a \"crucial\" (CRU) designation in the RANGE attribute field (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "State of Wyoming",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services6.arcgis.com/cWzdqIyxbijuhPLw/arcgis/rest/services/Bighorn_Sheep_Crucial_Range/FeatureServer/0"
         }
       ]
     },

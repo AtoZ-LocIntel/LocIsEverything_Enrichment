@@ -455,6 +455,7 @@ import { getFLDOTNumberOfLanesData } from '../adapters/fldotNumberOfLanes';
 import { getFLDOTRestAreasData } from '../adapters/fldotRestAreas';
 import { getFLDOTFunctionalClassificationData } from '../adapters/fldotFunctionalClassification';
 import { getFLDEPLanduseContainingData, getFLDEPLanduseNearbyData, FLDEPLanduseInfo } from '../adapters/fldepLanduse';
+import { getWYBighornSheepCrucialRangeContainingData, getWYBighornSheepCrucialRangeNearbyData, WYBighornSheepCrucialRangeInfo } from '../adapters/wyBighornSheepCrucialRange';
 import { getNYCBikeRoutesData } from '../adapters/nycBikeRoutes';
 import { getNYCNeighborhoodsData } from '../adapters/nycNeighborhoods';
 import { getNYCZoningDistrictsData } from '../adapters/nycZoningDistricts';
@@ -8638,6 +8639,9 @@ export class EnrichmentService {
       // FLDEP Landuse - Point-in-polygon and proximity query (polygon dataset)
       case 'fldep_landuse':
         return await this.getFLDEPLanduse(lat, lon, radius);
+
+      case 'wy_bighorn_sheep_crucial_range':
+        return await this.getWYBighornSheepCrucialRange(lat, lon, radius);
 
       case 'uk_wales_local_health_boards':
         return await this.getUKWalesLocalHealthBoards(lat, lon, radius);
@@ -25596,6 +25600,181 @@ out center tags;`;
         fldot_functional_classification_count: 0,
         fldot_functional_classification_all: [],
         fldot_functional_classification_summary: `Error querying functional classification: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  }
+
+  private async getWYBighornSheepCrucialRange(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🐑 Fetching WY Bighorn Sheep Crucial Range data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+
+      const result: Record<string, any> = {};
+
+      if (radius && radius > 0) {
+        // Proximity query - get both containing and nearby range features
+        const cappedRadius = Math.min(radius, 100.0);
+        const containingRanges = await getWYBighornSheepCrucialRangeContainingData(lat, lon);
+        console.log('🐑 Containing ranges from adapter:', containingRanges.length);
+
+        const nearbyRanges = await getWYBighornSheepCrucialRangeNearbyData(lat, lon, cappedRadius);
+        console.log(`🐑 Nearby ranges from adapter: ${nearbyRanges.length} found`);
+
+        // Combine results, avoiding duplicates by OBJECTID
+        const allRangesMap = new Map<number, WYBighornSheepCrucialRangeInfo>();
+
+        // Add containing ranges first (distance = 0)
+        containingRanges.forEach(range => {
+          if (range.objectId !== undefined && range.objectId !== null) {
+            allRangesMap.set(range.objectId, range);
+          }
+        });
+
+        // Add nearby ranges, skipping duplicates
+        nearbyRanges.forEach(range => {
+          if (range.objectId !== undefined && range.objectId !== null) {
+            if (!allRangesMap.has(range.objectId)) {
+              allRangesMap.set(range.objectId, range);
+            }
+          }
+        });
+
+        const allRanges = Array.from(allRangesMap.values());
+
+        if (allRanges.length > 0) {
+          result.wy_bighorn_sheep_crucial_range_count = allRanges.length;
+          console.log(`✅ WY Bighorn Sheep Crucial Range: Processing ${allRanges.length} features`);
+          result.wy_bighorn_sheep_crucial_range_all = allRanges.map((range, _idx) => {
+            const rangeAny = range as any;
+            const geometry = rangeAny.geometry;
+            const attributes = rangeAny.attributes;
+            const { geometry: _geom1, ...rest } = rangeAny;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom2, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: _geom3, ...cleanRest } = rest || {};
+            const result = {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry,
+              objectId: range.objectId,
+              species: range.species,
+              range: range.range,
+              acres: range.acres,
+              sqMiles: range.sqMiles,
+              shapeArea: range.shapeArea,
+              shapeLength: range.shapeLength,
+              // Note: Not including lat/lon to prevent point markers from being drawn - only polygon geometry
+              distance_miles: range.distance_miles,
+              isContaining: range.isContaining
+            };
+            return result;
+          });
+        } else {
+          result.wy_bighorn_sheep_crucial_range_count = 0;
+          result.wy_bighorn_sheep_crucial_range_all = [];
+        }
+
+        result.wy_bighorn_sheep_crucial_range_search_radius_miles = cappedRadius;
+
+        // Generate summary statistics
+        const containingCount = containingRanges.length;
+        const nearbyCount = nearbyRanges.filter(r => !containingRanges.some(c => c.objectId === r.objectId)).length;
+
+        // Group by range type for summary
+        const rangeCounts: Record<string, number> = {};
+        allRanges.forEach(range => {
+          const rangeType = range.range || 'Unknown';
+          rangeCounts[rangeType] = (rangeCounts[rangeType] || 0) + 1;
+        });
+
+        const rangeBreakdown = Object.entries(rangeCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 5)
+          .map(([rangeType, count]) => `${rangeType}: ${count}`)
+          .join(', ');
+
+        // Calculate total acres
+        const totalAcres = allRanges.reduce((sum, range) => sum + (range.acres || 0), 0);
+        const avgAcres = allRanges.length > 0 ? totalAcres / allRanges.length : 0;
+
+        const summaryParts: string[] = [];
+        summaryParts.push(`Found ${allRanges.length} range feature(s) within ${cappedRadius} miles`);
+        if (containingCount > 0) {
+          summaryParts.push(`${containingCount} containing`);
+        }
+        if (nearbyCount > 0) {
+          summaryParts.push(`${nearbyCount} nearby`);
+        }
+        if (rangeBreakdown) {
+          summaryParts.push(`Range types: ${rangeBreakdown}`);
+        }
+        if (totalAcres > 0) {
+          summaryParts.push(`Total: ${totalAcres.toLocaleString(undefined, { maximumFractionDigits: 0 })} acres`);
+        }
+
+        result.wy_bighorn_sheep_crucial_range_summary = summaryParts.join(' | ');
+        result.wy_bighorn_sheep_crucial_range_containing_count = containingCount;
+        result.wy_bighorn_sheep_crucial_range_nearby_count = nearbyCount;
+        result.wy_bighorn_sheep_crucial_range_total_acres = totalAcres;
+        result.wy_bighorn_sheep_crucial_range_avg_acres = avgAcres;
+
+      } else {
+        // Point-in-polygon query only
+        const containingRanges = await getWYBighornSheepCrucialRangeContainingData(lat, lon);
+
+        if (containingRanges.length > 0) {
+          result.wy_bighorn_sheep_crucial_range_count = containingRanges.length;
+          result.wy_bighorn_sheep_crucial_range_all = containingRanges.map(range => {
+            const rangeAny = range as any;
+            const geometry = rangeAny.geometry;
+            const attributes = rangeAny.attributes;
+            const { geometry: _geom4, ...rest } = rangeAny;
+            // Exclude geometry from attributes if it exists there
+            const { geometry: _geom5, ...cleanAttributes } = attributes || {};
+            // Exclude geometry from rest to ensure it doesn't overwrite
+            const { geometry: _geom6, ...cleanRest } = rest || {};
+            return {
+              ...cleanAttributes,
+              ...cleanRest,
+              geometry: geometry,
+              objectId: range.objectId,
+              species: range.species,
+              range: range.range,
+              acres: range.acres,
+              sqMiles: range.sqMiles,
+              shapeArea: range.shapeArea,
+              shapeLength: range.shapeLength,
+              // Note: Not including lat/lon to prevent point markers from being drawn - only polygon geometry
+              distance_miles: range.distance_miles,
+              isContaining: range.isContaining
+            };
+          });
+        } else {
+          result.wy_bighorn_sheep_crucial_range_count = 0;
+          result.wy_bighorn_sheep_crucial_range_all = [];
+        }
+
+        result.wy_bighorn_sheep_crucial_range_summary = containingRanges.length > 0
+          ? `Found ${containingRanges.length} range feature(s) containing the point`
+          : `No range features found containing the point`;
+        result.wy_bighorn_sheep_crucial_range_containing_count = containingRanges.length;
+        result.wy_bighorn_sheep_crucial_range_nearby_count = 0;
+      }
+
+      console.log(`✅ WY Bighorn Sheep Crucial Range data processed:`, {
+        count: result.wy_bighorn_sheep_crucial_range_count || 0
+      });
+
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error fetching WY Bighorn Sheep Crucial Range:', error);
+      return {
+        wy_bighorn_sheep_crucial_range_count: 0,
+        wy_bighorn_sheep_crucial_range_all: [],
+        wy_bighorn_sheep_crucial_range_summary: `Error fetching WY Bighorn Sheep Crucial Range data: ${error instanceof Error ? error.message : String(error)}`,
+        wy_bighorn_sheep_crucial_range_containing_count: 0,
+        wy_bighorn_sheep_crucial_range_nearby_count: 0
       };
     }
   }
