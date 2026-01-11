@@ -496,7 +496,7 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
-      category: "USGS Sources",
+      category: "The National Map",
       sources: [
         {
           name: "2023 National Seismic Hazard Model",
@@ -2151,70 +2151,6 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://ebird.org/api/v2/"
         },
         {
-          name: "NOAA National Marine Sanctuaries",
-          description: "National Marine Sanctuaries - point-in-polygon and proximity queries (up to 25 miles)",
-          coverage: "United States (coastal waters)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://sanctuaries.noaa.gov/"
-        },
-        {
-          name: "NOAA Critical Fisheries Habitat",
-          description: "NOAA Critical Fisheries Habitat - All Critical Habitat polygons (point-in-polygon and proximity queries up to 100 miles)",
-          coverage: "United States (coastal waters)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://maps.fisheries.noaa.gov/server/rest/services/All_Critical_Habitat/MapServer/229"
-        },
-        {
-          name: "NOAA Weather Radar Impact Zones",
-          description: "National impacts of wind turbine interference with NEXRAD radar stations. Four zones: No Build, Mitigation, Consultation, and Notification (point-in-polygon and proximity queries up to 50 miles)",
-          coverage: "United States",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://coast.noaa.gov/arcgis/rest/services/Hosted/WeatherRadarImpactZones/FeatureServer/0"
-        },
-        {
-          name: "NOAA US Maritime Limits and Boundaries",
-          description: "Territorial Sea, Contiguous Zone, US/Canada International Boundary, Exclusive Economic Zone, and Maritime Boundaries of the United States. Includes Overview, 12NM Territorial Sea, 24NM Contiguous Zone, 200NM EEZ and Maritime Boundaries, and US/Canada Land Boundary (proximity queries up to 250 miles)",
-          coverage: "United States (coastal waters)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://gis.charttools.noaa.gov/arcgis/rest/services/MaritimeBoundaries/US_Maritime_Limits_Boundaries/MapServer"
-        },
-        {
-          name: "NOAA West Coast Essential Fish Habitat (EFH)",
-          description: "NOAA West Coast Essential Fish Habitat - HAPC, EFHA, EFH Salmon, and EFH HMS/CPS/Groundfish polygons (point-in-polygon and proximity queries up to 100 miles)",
-          coverage: "United States (West Coast)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/EFH_mapservice/MapServer"
-        },
-        {
-          name: "NOAA ESA Species Ranges - West Coast",
-          description: "NOAA Endangered Species Act (ESA) Species Ranges - West Coast salmon and steelhead ESUs/DPSs (point-in-polygon and proximity queries up to 100 miles)",
-          coverage: "United States (West Coast)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/ESA_Species_Ranges/MapServer"
-        },
-        {
-          name: "NOAA NMFS Critical Habitat",
-          description: "NOAA National Marine Fisheries Service (NMFS) Endangered Species Act (ESA) Critical Habitat - All NMFS-listed species critical habitat designations including corals, fishes, salmon, steelhead, sturgeon, sea turtles, seals, whales, and proposed critical habitat (point-in-polygon for polygons, proximity queries up to 100 miles for all geometry types)",
-          coverage: "United States (Marine and Coastal)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://maps.fisheries.noaa.gov/server/rest/services/All_NMFS_Critical_Habitat/MapServer"
-        },
-        {
-          name: "NOAA World Ocean Atlas Water Temperature",
-          description: "NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours for each month (January-December) - proximity queries up to 100 miles",
-          coverage: "Global (ocean waters)",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://gis.ngdc.noaa.gov/arcgis/rest/services/climatology/WorldOceanAtlas_WaterTemperature/MapServer"
-        },
-        {
           name: "ISRIC SoilGrids (via ESRI Living Atlas)",
           description: "World Soils 250m Organic Carbon Density - point-in-pixel queries for soil organic carbon density (kg/m²)",
           coverage: "Global",
@@ -2741,6 +2677,75 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonHarvest/MapServer"
+        }
+      ]
+    },
+    {
+      category: "NOAA",
+      sources: [
+        {
+          name: "NOAA National Marine Sanctuaries",
+          description: "National Marine Sanctuaries - point-in-polygon and proximity queries (up to 25 miles)",
+          coverage: "United States (coastal waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://sanctuaries.noaa.gov/"
+        },
+        {
+          name: "NOAA Critical Fisheries Habitat",
+          description: "NOAA Critical Fisheries Habitat - All Critical Habitat polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States (coastal waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/All_Critical_Habitat/MapServer/229"
+        },
+        {
+          name: "NOAA Weather Radar Impact Zones",
+          description: "National impacts of wind turbine interference with NEXRAD radar stations. Four zones: No Build, Mitigation, Consultation, and Notification (point-in-polygon and proximity queries up to 50 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/Hosted/WeatherRadarImpactZones/FeatureServer/0"
+        },
+        {
+          name: "NOAA US Maritime Limits and Boundaries",
+          description: "Territorial Sea, Contiguous Zone, US/Canada International Boundary, Exclusive Economic Zone, and Maritime Boundaries of the United States. Includes Overview, 12NM Territorial Sea, 24NM Contiguous Zone, 200NM EEZ and Maritime Boundaries, and US/Canada Land Boundary (proximity queries up to 250 miles)",
+          coverage: "United States (coastal waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.charttools.noaa.gov/arcgis/rest/services/MaritimeBoundaries/US_Maritime_Limits_Boundaries/MapServer"
+        },
+        {
+          name: "NOAA West Coast Essential Fish Habitat (EFH)",
+          description: "NOAA West Coast Essential Fish Habitat - HAPC, EFHA, EFH Salmon, and EFH HMS/CPS/Groundfish polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States (West Coast)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/EFH_mapservice/MapServer"
+        },
+        {
+          name: "NOAA ESA Species Ranges - West Coast",
+          description: "NOAA Endangered Species Act (ESA) Species Ranges - West Coast salmon and steelhead ESUs/DPSs (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States (West Coast)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/WCR/ESA_Species_Ranges/MapServer"
+        },
+        {
+          name: "NOAA NMFS Critical Habitat",
+          description: "NOAA National Marine Fisheries Service (NMFS) Endangered Species Act (ESA) Critical Habitat - All NMFS-listed species critical habitat designations including corals, fishes, salmon, steelhead, sturgeon, sea turtles, seals, whales, and proposed critical habitat (point-in-polygon for polygons, proximity queries up to 100 miles for all geometry types)",
+          coverage: "United States (Marine and Coastal)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps.fisheries.noaa.gov/server/rest/services/All_NMFS_Critical_Habitat/MapServer"
+        },
+        {
+          name: "NOAA World Ocean Atlas Water Temperature",
+          description: "NOAA World Ocean Atlas 2005 - Mean Water Temperature Contours for each month (January-December) - proximity queries up to 100 miles",
+          coverage: "Global (ocean waters)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.ngdc.noaa.gov/arcgis/rest/services/climatology/WorldOceanAtlas_WaterTemperature/MapServer"
         }
       ]
     },
@@ -8532,7 +8537,7 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
-      category: "Florida Sources",
+      category: "Florida Open Data",
       sources: [
         {
           name: "Sources Coming Soon...",
@@ -8995,7 +9000,7 @@ export const getDataSources = (): DataSourceCategory[] => {
       ]
     },
     {
-      category: "Wyoming Sources",
+      category: "Wyoming Open Data",
       sources: [
         {
           name: "WY Geospatial Hub - Bighorn Sheep Crucial Range",
