@@ -8963,8 +8963,6 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
         const funclass = feature.funclass || feature.FUNCLASS || '';
         const county = feature.county || feature.COUNTY || '';
         const district = feature.district !== null && feature.district !== undefined ? String(feature.district) : '';
-        const countydot = feature.countydot !== null && feature.countydot !== undefined ? String(feature.countydot) : '';
-        const mngDist = feature.mngDist !== null && feature.mngDist !== undefined ? String(feature.mngDist) : '';
         const beginPost = feature.beginPost !== null && feature.beginPost !== undefined ? feature.beginPost.toFixed(3) : '';
         const endPost = feature.endPost !== null && feature.endPost !== undefined ? feature.endPost.toFixed(3) : '';
         const shapeLength = feature.shapeLength !== null && feature.shapeLength !== undefined ? feature.shapeLength.toFixed(2) : '';
