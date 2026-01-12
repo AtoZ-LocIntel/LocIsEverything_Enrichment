@@ -632,6 +632,7 @@ import { getTIGERSpecialLandUseData } from '../adapters/tigerSpecialLandUse';
 import { getTIGERNativeLandsData } from '../adapters/tigerNativeLands';
 import { getTIGERCBSAData } from '../adapters/tigerCBSA';
 import { getTIGERUrbanData } from '../adapters/tigerUrban';
+import { getTIGERPlacesCountySubdivisionsData } from '../adapters/tigerPlacesCountySubdivisions';
 import { getIrelandProvincesData } from '../adapters/irelandProvinces';
 import { getIrelandBuiltUpAreasData } from '../adapters/irelandBuiltUpAreas';
 import { getUKLocalAuthorityDistrictsData } from '../adapters/ukLocalAuthorityDistricts';
@@ -8536,7 +8537,63 @@ export class EnrichmentService {
         return await this.getTIGERUrban(lat, lon, 7, radius);
       case 'tiger_urban_urban_areas':
         return await this.getTIGERUrban(lat, lon, 8, radius);
-      
+
+      // TIGER Places and County Subdivisions
+      case 'tiger_places_estates_layer0':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 0, radius);
+      case 'tiger_places_county_subdivisions_layer1':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 1, radius);
+      case 'tiger_places_subbarrios_layer2':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 2, radius);
+      case 'tiger_places_consolidated_cities_layer3':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 3, radius);
+      case 'tiger_places_incorporated_places_layer4':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 4, radius);
+      case 'tiger_places_census_designated_places_layer5':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 5, radius);
+      case 'tiger_places_bas2025_group_layer6':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 6, radius);
+      case 'tiger_places_bas2025_estates_layer7':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 7, radius);
+      case 'tiger_places_bas2025_county_subdivisions_layer8':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 8, radius);
+      case 'tiger_places_bas2025_subbarrios_layer9':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 9, radius);
+      case 'tiger_places_bas2025_consolidated_cities_layer10':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 10, radius);
+      case 'tiger_places_bas2025_incorporated_places_layer11':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 11, radius);
+      case 'tiger_places_bas2025_census_designated_places_layer12':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 12, radius);
+      case 'tiger_places_acs2024_group_layer13':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 13, radius);
+      case 'tiger_places_acs2024_estates_layer14':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 14, radius);
+      case 'tiger_places_acs2024_county_subdivisions_layer15':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 15, radius);
+      case 'tiger_places_acs2024_subbarrios_layer16':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 16, radius);
+      case 'tiger_places_acs2024_consolidated_cities_layer17':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 17, radius);
+      case 'tiger_places_acs2024_incorporated_places_layer18':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 18, radius);
+      case 'tiger_places_acs2024_census_designated_places_layer19':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 19, radius);
+      case 'tiger_places_census2020_group_layer20':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 20, radius);
+      case 'tiger_places_census2020_estates_layer21':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 21, radius);
+      case 'tiger_places_census2020_county_subdivisions_layer22':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 22, radius);
+      case 'tiger_places_census2020_subbarrios_layer23':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 23, radius);
+      case 'tiger_places_census2020_consolidated_cities_layer24':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 24, radius);
+      case 'tiger_places_census2020_incorporated_places_layer25':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 25, radius);
+      case 'tiger_places_census2020_census_designated_places_layer26':
+        return await this.getTIGERPlacesCountySubdivisions(lat, lon, 26, radius);
+
       // Ireland Data
       case 'ireland_provinces':
         return await this.getIrelandProvinces(lat, lon, radius);
@@ -27258,6 +27315,139 @@ out center tags;`;
       return result;
     } catch (error) {
       console.error(`❌ Error fetching TIGER Urban Areas Layer ${layerId}:`, error);
+      return {};
+    }
+  }
+
+  private async getTIGERPlacesCountySubdivisions(lat: number, lon: number, layerId: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const layerConfigs: Record<number, { name: string; poiId: string }> = {
+        0: { name: 'Estates', poiId: 'tiger_places_estates_layer0' },
+        1: { name: 'County Subdivisions', poiId: 'tiger_places_county_subdivisions_layer1' },
+        2: { name: 'Subbarrios', poiId: 'tiger_places_subbarrios_layer2' },
+        3: { name: 'Consolidated Cities', poiId: 'tiger_places_consolidated_cities_layer3' },
+        4: { name: 'Incorporated Places', poiId: 'tiger_places_incorporated_places_layer4' },
+        5: { name: 'Census Designated Places', poiId: 'tiger_places_census_designated_places_layer5' },
+        6: { name: 'BAS 2025 Group', poiId: 'tiger_places_bas2025_group_layer6' },
+        7: { name: 'BAS 2025 Estates', poiId: 'tiger_places_bas2025_estates_layer7' },
+        8: { name: 'BAS 2025 County Subdivisions', poiId: 'tiger_places_bas2025_county_subdivisions_layer8' },
+        9: { name: 'BAS 2025 Subbarrios', poiId: 'tiger_places_bas2025_subbarrios_layer9' },
+        10: { name: 'BAS 2025 Consolidated Cities', poiId: 'tiger_places_bas2025_consolidated_cities_layer10' },
+        11: { name: 'BAS 2025 Incorporated Places', poiId: 'tiger_places_bas2025_incorporated_places_layer11' },
+        12: { name: 'BAS 2025 Census Designated Places', poiId: 'tiger_places_bas2025_census_designated_places_layer12' },
+        13: { name: 'ACS 2024 Group', poiId: 'tiger_places_acs2024_group_layer13' },
+        14: { name: 'ACS 2024 Estates', poiId: 'tiger_places_acs2024_estates_layer14' },
+        15: { name: 'ACS 2024 County Subdivisions', poiId: 'tiger_places_acs2024_county_subdivisions_layer15' },
+        16: { name: 'ACS 2024 Subbarrios', poiId: 'tiger_places_acs2024_subbarrios_layer16' },
+        17: { name: 'ACS 2024 Consolidated Cities', poiId: 'tiger_places_acs2024_consolidated_cities_layer17' },
+        18: { name: 'ACS 2024 Incorporated Places', poiId: 'tiger_places_acs2024_incorporated_places_layer18' },
+        19: { name: 'ACS 2024 Census Designated Places', poiId: 'tiger_places_acs2024_census_designated_places_layer19' },
+        20: { name: 'Census 2020 Group', poiId: 'tiger_places_census2020_group_layer20' },
+        21: { name: 'Census 2020 Estates', poiId: 'tiger_places_census2020_estates_layer21' },
+        22: { name: 'Census 2020 County Subdivisions', poiId: 'tiger_places_census2020_county_subdivisions_layer22' },
+        23: { name: 'Census 2020 Subbarrios', poiId: 'tiger_places_census2020_subbarrios_layer23' },
+        24: { name: 'Census 2020 Consolidated Cities', poiId: 'tiger_places_census2020_consolidated_cities_layer24' },
+        25: { name: 'Census 2020 Incorporated Places', poiId: 'tiger_places_census2020_incorporated_places_layer25' },
+        26: { name: 'Census 2020 Census Designated Places', poiId: 'tiger_places_census2020_census_designated_places_layer26' }
+      };
+      
+      const config = layerConfigs[layerId];
+      if (!config) {
+        console.error(`❌ Unknown TIGER Places and County Subdivisions layer ID: ${layerId}`);
+        return {};
+      }
+      
+      const cappedRadius = Math.min(radius || 100, 100);
+      const data = await getTIGERPlacesCountySubdivisionsData(layerId, lat, lon, cappedRadius);
+      
+      const result: Record<string, any> = {};
+      
+      // Containing polygon
+      if (data.containing) {
+        const containing = data.containing;
+        result[`${config.poiId}_containing`] = {
+          name: containing.name || 'Unknown',
+          stateFips: containing.stateFips,
+          countyFips: containing.countyFips,
+          placeType: containing.placeType,
+          objectId: containing.objectId,
+          ...containing.attributes
+        };
+        
+        // Store geometry separately for map rendering
+        Object.defineProperty(result[`${config.poiId}_containing`], '__geometry', {
+          value: containing.geometry,
+          enumerable: false,
+          writable: false
+        });
+      } else {
+        result[`${config.poiId}_containing`] = null;
+      }
+      
+      // Nearby polygons
+      if (data.nearby_features && data.nearby_features.length > 0) {
+        result[`${config.poiId}_nearby_features`] = data.nearby_features.map(feature => {
+          const featureData: Record<string, any> = {
+            name: feature.name || 'Unknown',
+            stateFips: feature.stateFips,
+            countyFips: feature.countyFips,
+            placeType: feature.placeType,
+            objectId: feature.objectId,
+            distance_miles: Math.round(feature.distance_miles! * 100) / 100,
+            ...feature.attributes
+          };
+          
+          // Store geometry separately for map rendering
+          Object.defineProperty(featureData, '__geometry', {
+            value: feature.geometry,
+            enumerable: false,
+            writable: false
+          });
+          
+          return featureData;
+        });
+        
+        // Store all features for CSV export (use _all from adapter which already combines containing and nearby)
+        result[`${config.poiId}_all`] = data._all || [];
+      } else {
+        result[`${config.poiId}_nearby_features`] = [];
+        result[`${config.poiId}_all`] = data._all || (data.containing ? [data.containing] : []);
+      }
+      
+      // Store search radius
+      result[`${config.poiId}_search_radius_miles`] = cappedRadius;
+      
+      // Generate summary statistics - separate containing count (0 or 1) and nearby count only (no total _count field)
+      const containingCount = data.containing ? 1 : 0;
+      const nearbyCount = data.nearby_features?.length || 0;
+      const allFeatures = data._all || [];
+      
+      result[`${config.poiId}_containing_count`] = containingCount;
+      result[`${config.poiId}_nearby_count`] = nearbyCount;
+      
+      // Generate summary text (but don't create _count field - only _containing_count and _nearby_count)
+      if (allFeatures.length > 0) {
+        // Group by place type for summary
+        const placeTypeCounts: Record<string, number> = {};
+        allFeatures.forEach((feature: any) => {
+          const placeType = feature.placeType || 'Unknown';
+          placeTypeCounts[placeType] = (placeTypeCounts[placeType] || 0) + 1;
+        });
+        
+        const placeTypeBreakdown = Object.entries(placeTypeCounts)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 5)
+          .map(([type, count]) => `${type}: ${count}`)
+          .join(', ');
+        
+        result[`${config.poiId}_summary`] = `Found ${allFeatures.length} place(s) within ${cappedRadius} miles (${containingCount} containing, ${nearbyCount} nearby)${placeTypeBreakdown ? ` - ${placeTypeBreakdown}` : ''}`;
+      } else {
+        result[`${config.poiId}_summary`] = `No places found within ${cappedRadius} miles`;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching TIGER Places and County Subdivisions Layer ${layerId}:`, error);
       return {};
     }
   }

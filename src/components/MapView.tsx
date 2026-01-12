@@ -2798,6 +2798,37 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'tiger_census2020_cbsa_metropolitan_divisions_containing' || key === 'tiger_census2020_cbsa_metropolitan_divisions_all' ||
     key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_metropolitan_statistical_areas_all' ||
     key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_containing' || key === 'tiger_census2020_cbsa_micropolitan_statistical_areas_all' || // Skip TIGER CBSA arrays (handled separately for map drawing)
+    // TIGER Places and County Subdivisions skip list - Base layers (0-5)
+    key === 'tiger_places_estates_layer0_containing' || key === 'tiger_places_estates_layer0_nearby_features' || key === 'tiger_places_estates_layer0_all' ||
+    key === 'tiger_places_county_subdivisions_layer1_containing' || key === 'tiger_places_county_subdivisions_layer1_nearby_features' || key === 'tiger_places_county_subdivisions_layer1_all' ||
+    key === 'tiger_places_subbarrios_layer2_containing' || key === 'tiger_places_subbarrios_layer2_nearby_features' || key === 'tiger_places_subbarrios_layer2_all' ||
+    key === 'tiger_places_consolidated_cities_layer3_containing' || key === 'tiger_places_consolidated_cities_layer3_nearby_features' || key === 'tiger_places_consolidated_cities_layer3_all' ||
+    key === 'tiger_places_incorporated_places_layer4_containing' || key === 'tiger_places_incorporated_places_layer4_nearby_features' || key === 'tiger_places_incorporated_places_layer4_all' ||
+    key === 'tiger_places_census_designated_places_layer5_containing' || key === 'tiger_places_census_designated_places_layer5_nearby_features' || key === 'tiger_places_census_designated_places_layer5_all' ||
+    // TIGER Places and County Subdivisions skip list - BAS 2025 (6-12)
+    key === 'tiger_places_bas2025_group_layer6_containing' || key === 'tiger_places_bas2025_group_layer6_nearby_features' || key === 'tiger_places_bas2025_group_layer6_all' ||
+    key === 'tiger_places_bas2025_estates_layer7_containing' || key === 'tiger_places_bas2025_estates_layer7_nearby_features' || key === 'tiger_places_bas2025_estates_layer7_all' ||
+    key === 'tiger_places_bas2025_county_subdivisions_layer8_containing' || key === 'tiger_places_bas2025_county_subdivisions_layer8_nearby_features' || key === 'tiger_places_bas2025_county_subdivisions_layer8_all' ||
+    key === 'tiger_places_bas2025_subbarrios_layer9_containing' || key === 'tiger_places_bas2025_subbarrios_layer9_nearby_features' || key === 'tiger_places_bas2025_subbarrios_layer9_all' ||
+    key === 'tiger_places_bas2025_consolidated_cities_layer10_containing' || key === 'tiger_places_bas2025_consolidated_cities_layer10_nearby_features' || key === 'tiger_places_bas2025_consolidated_cities_layer10_all' ||
+    key === 'tiger_places_bas2025_incorporated_places_layer11_containing' || key === 'tiger_places_bas2025_incorporated_places_layer11_nearby_features' || key === 'tiger_places_bas2025_incorporated_places_layer11_all' ||
+    key === 'tiger_places_bas2025_census_designated_places_layer12_containing' || key === 'tiger_places_bas2025_census_designated_places_layer12_nearby_features' || key === 'tiger_places_bas2025_census_designated_places_layer12_all' ||
+    // TIGER Places and County Subdivisions skip list - ACS 2024 (13-19)
+    key === 'tiger_places_acs2024_group_layer13_containing' || key === 'tiger_places_acs2024_group_layer13_nearby_features' || key === 'tiger_places_acs2024_group_layer13_all' ||
+    key === 'tiger_places_acs2024_estates_layer14_containing' || key === 'tiger_places_acs2024_estates_layer14_nearby_features' || key === 'tiger_places_acs2024_estates_layer14_all' ||
+    key === 'tiger_places_acs2024_county_subdivisions_layer15_containing' || key === 'tiger_places_acs2024_county_subdivisions_layer15_nearby_features' || key === 'tiger_places_acs2024_county_subdivisions_layer15_all' ||
+    key === 'tiger_places_acs2024_subbarrios_layer16_containing' || key === 'tiger_places_acs2024_subbarrios_layer16_nearby_features' || key === 'tiger_places_acs2024_subbarrios_layer16_all' ||
+    key === 'tiger_places_acs2024_consolidated_cities_layer17_containing' || key === 'tiger_places_acs2024_consolidated_cities_layer17_nearby_features' || key === 'tiger_places_acs2024_consolidated_cities_layer17_all' ||
+    key === 'tiger_places_acs2024_incorporated_places_layer18_containing' || key === 'tiger_places_acs2024_incorporated_places_layer18_nearby_features' || key === 'tiger_places_acs2024_incorporated_places_layer18_all' ||
+    key === 'tiger_places_acs2024_census_designated_places_layer19_containing' || key === 'tiger_places_acs2024_census_designated_places_layer19_nearby_features' || key === 'tiger_places_acs2024_census_designated_places_layer19_all' ||
+    // TIGER Places and County Subdivisions skip list - Census 2020 (20-26)
+    key === 'tiger_places_census2020_group_layer20_containing' || key === 'tiger_places_census2020_group_layer20_nearby_features' || key === 'tiger_places_census2020_group_layer20_all' ||
+    key === 'tiger_places_census2020_estates_layer21_containing' || key === 'tiger_places_census2020_estates_layer21_nearby_features' || key === 'tiger_places_census2020_estates_layer21_all' ||
+    key === 'tiger_places_census2020_county_subdivisions_layer22_containing' || key === 'tiger_places_census2020_county_subdivisions_layer22_nearby_features' || key === 'tiger_places_census2020_county_subdivisions_layer22_all' ||
+    key === 'tiger_places_census2020_subbarrios_layer23_containing' || key === 'tiger_places_census2020_subbarrios_layer23_nearby_features' || key === 'tiger_places_census2020_subbarrios_layer23_all' ||
+    key === 'tiger_places_census2020_consolidated_cities_layer24_containing' || key === 'tiger_places_census2020_consolidated_cities_layer24_nearby_features' || key === 'tiger_places_census2020_consolidated_cities_layer24_all' ||
+    key === 'tiger_places_census2020_incorporated_places_layer25_containing' || key === 'tiger_places_census2020_incorporated_places_layer25_nearby_features' || key === 'tiger_places_census2020_incorporated_places_layer25_all' ||
+    key === 'tiger_places_census2020_census_designated_places_layer26_containing' || key === 'tiger_places_census2020_census_designated_places_layer26_nearby_features' || key === 'tiger_places_census2020_census_designated_places_layer26_all' ||
     // Ireland skip list
     key === 'ireland_provinces_containing' || key === 'ireland_provinces_nearby_features' || key === 'ireland_provinces_all' ||
     key === 'uk_local_authority_districts_containing' || key === 'uk_local_authority_districts_nearby' || key === 'uk_local_authority_districts_all' ||
@@ -10551,6 +10582,169 @@ const MapView: React.FC<MapViewProps> = ({
               color: color,
               title: name,
               count: 0,
+            };
+          }
+          legendAccumulator[layerType].count += featureCount;
+        }
+      });
+
+      // Draw TIGER Places and County Subdivisions as polygons on the map
+      const tigerPlacesLayers = [
+        // Base layers (0-5)
+        { containingKey: 'tiger_places_estates_layer0_containing', nearbyKey: 'tiger_places_estates_layer0_nearby_features', name: 'TIGER Places - Estates', color: '#8b5cf6', icon: '🏘️', layerType: 'tiger_places_estates_layer0' },
+        { containingKey: 'tiger_places_county_subdivisions_layer1_containing', nearbyKey: 'tiger_places_county_subdivisions_layer1_nearby_features', name: 'TIGER Places - County Subdivisions', color: '#7c3aed', icon: '🏘️', layerType: 'tiger_places_county_subdivisions_layer1' },
+        { containingKey: 'tiger_places_subbarrios_layer2_containing', nearbyKey: 'tiger_places_subbarrios_layer2_nearby_features', name: 'TIGER Places - Subbarrios', color: '#6d28d9', icon: '🏘️', layerType: 'tiger_places_subbarrios_layer2' },
+        { containingKey: 'tiger_places_consolidated_cities_layer3_containing', nearbyKey: 'tiger_places_consolidated_cities_layer3_nearby_features', name: 'TIGER Places - Consolidated Cities', color: '#5b21b6', icon: '🏙️', layerType: 'tiger_places_consolidated_cities_layer3' },
+        { containingKey: 'tiger_places_incorporated_places_layer4_containing', nearbyKey: 'tiger_places_incorporated_places_layer4_nearby_features', name: 'TIGER Places - Incorporated Places', color: '#4c1d95', icon: '🏙️', layerType: 'tiger_places_incorporated_places_layer4' },
+        { containingKey: 'tiger_places_census_designated_places_layer5_containing', nearbyKey: 'tiger_places_census_designated_places_layer5_nearby_features', name: 'TIGER Places - Census Designated Places', color: '#3b0f7a', icon: '🏘️', layerType: 'tiger_places_census_designated_places_layer5' },
+        // BAS 2025 layers (6-12)
+        { containingKey: 'tiger_places_bas2025_group_layer6_containing', nearbyKey: 'tiger_places_bas2025_group_layer6_nearby_features', name: 'TIGER Places - BAS 2025 Group', color: '#a78bfa', icon: '🏘️', layerType: 'tiger_places_bas2025_group_layer6' },
+        { containingKey: 'tiger_places_bas2025_estates_layer7_containing', nearbyKey: 'tiger_places_bas2025_estates_layer7_nearby_features', name: 'TIGER Places - BAS 2025 Estates', color: '#8b5cf6', icon: '🏘️', layerType: 'tiger_places_bas2025_estates_layer7' },
+        { containingKey: 'tiger_places_bas2025_county_subdivisions_layer8_containing', nearbyKey: 'tiger_places_bas2025_county_subdivisions_layer8_nearby_features', name: 'TIGER Places - BAS 2025 County Subdivisions', color: '#7c3aed', icon: '🏘️', layerType: 'tiger_places_bas2025_county_subdivisions_layer8' },
+        { containingKey: 'tiger_places_bas2025_subbarrios_layer9_containing', nearbyKey: 'tiger_places_bas2025_subbarrios_layer9_nearby_features', name: 'TIGER Places - BAS 2025 Subbarrios', color: '#6d28d9', icon: '🏘️', layerType: 'tiger_places_bas2025_subbarrios_layer9' },
+        { containingKey: 'tiger_places_bas2025_consolidated_cities_layer10_containing', nearbyKey: 'tiger_places_bas2025_consolidated_cities_layer10_nearby_features', name: 'TIGER Places - BAS 2025 Consolidated Cities', color: '#5b21b6', icon: '🏙️', layerType: 'tiger_places_bas2025_consolidated_cities_layer10' },
+        { containingKey: 'tiger_places_bas2025_incorporated_places_layer11_containing', nearbyKey: 'tiger_places_bas2025_incorporated_places_layer11_nearby_features', name: 'TIGER Places - BAS 2025 Incorporated Places', color: '#4c1d95', icon: '🏙️', layerType: 'tiger_places_bas2025_incorporated_places_layer11' },
+        { containingKey: 'tiger_places_bas2025_census_designated_places_layer12_containing', nearbyKey: 'tiger_places_bas2025_census_designated_places_layer12_nearby_features', name: 'TIGER Places - BAS 2025 Census Designated Places', color: '#3b0f7a', icon: '🏘️', layerType: 'tiger_places_bas2025_census_designated_places_layer12' },
+        // ACS 2024 layers (13-19)
+        { containingKey: 'tiger_places_acs2024_group_layer13_containing', nearbyKey: 'tiger_places_acs2024_group_layer13_nearby_features', name: 'TIGER Places - ACS 2024 Group', color: '#c4b5fd', icon: '🏘️', layerType: 'tiger_places_acs2024_group_layer13' },
+        { containingKey: 'tiger_places_acs2024_estates_layer14_containing', nearbyKey: 'tiger_places_acs2024_estates_layer14_nearby_features', name: 'TIGER Places - ACS 2024 Estates', color: '#a78bfa', icon: '🏘️', layerType: 'tiger_places_acs2024_estates_layer14' },
+        { containingKey: 'tiger_places_acs2024_county_subdivisions_layer15_containing', nearbyKey: 'tiger_places_acs2024_county_subdivisions_layer15_nearby_features', name: 'TIGER Places - ACS 2024 County Subdivisions', color: '#8b5cf6', icon: '🏘️', layerType: 'tiger_places_acs2024_county_subdivisions_layer15' },
+        { containingKey: 'tiger_places_acs2024_subbarrios_layer16_containing', nearbyKey: 'tiger_places_acs2024_subbarrios_layer16_nearby_features', name: 'TIGER Places - ACS 2024 Subbarrios', color: '#7c3aed', icon: '🏘️', layerType: 'tiger_places_acs2024_subbarrios_layer16' },
+        { containingKey: 'tiger_places_acs2024_consolidated_cities_layer17_containing', nearbyKey: 'tiger_places_acs2024_consolidated_cities_layer17_nearby_features', name: 'TIGER Places - ACS 2024 Consolidated Cities', color: '#6d28d9', icon: '🏙️', layerType: 'tiger_places_acs2024_consolidated_cities_layer17' },
+        { containingKey: 'tiger_places_acs2024_incorporated_places_layer18_containing', nearbyKey: 'tiger_places_acs2024_incorporated_places_layer18_nearby_features', name: 'TIGER Places - ACS 2024 Incorporated Places', color: '#5b21b6', icon: '🏙️', layerType: 'tiger_places_acs2024_incorporated_places_layer18' },
+        { containingKey: 'tiger_places_acs2024_census_designated_places_layer19_containing', nearbyKey: 'tiger_places_acs2024_census_designated_places_layer19_nearby_features', name: 'TIGER Places - ACS 2024 Census Designated Places', color: '#4c1d95', icon: '🏘️', layerType: 'tiger_places_acs2024_census_designated_places_layer19' },
+        // Census 2020 layers (20-26)
+        { containingKey: 'tiger_places_census2020_group_layer20_containing', nearbyKey: 'tiger_places_census2020_group_layer20_nearby_features', name: 'TIGER Places - Census 2020 Group', color: '#ddd6fe', icon: '🏘️', layerType: 'tiger_places_census2020_group_layer20' },
+        { containingKey: 'tiger_places_census2020_estates_layer21_containing', nearbyKey: 'tiger_places_census2020_estates_layer21_nearby_features', name: 'TIGER Places - Census 2020 Estates', color: '#c4b5fd', icon: '🏘️', layerType: 'tiger_places_census2020_estates_layer21' },
+        { containingKey: 'tiger_places_census2020_county_subdivisions_layer22_containing', nearbyKey: 'tiger_places_census2020_county_subdivisions_layer22_nearby_features', name: 'TIGER Places - Census 2020 County Subdivisions', color: '#a78bfa', icon: '🏘️', layerType: 'tiger_places_census2020_county_subdivisions_layer22' },
+        { containingKey: 'tiger_places_census2020_subbarrios_layer23_containing', nearbyKey: 'tiger_places_census2020_subbarrios_layer23_nearby_features', name: 'TIGER Places - Census 2020 Subbarrios', color: '#8b5cf6', icon: '🏘️', layerType: 'tiger_places_census2020_subbarrios_layer23' },
+        { containingKey: 'tiger_places_census2020_consolidated_cities_layer24_containing', nearbyKey: 'tiger_places_census2020_consolidated_cities_layer24_nearby_features', name: 'TIGER Places - Census 2020 Consolidated Cities', color: '#7c3aed', icon: '🏙️', layerType: 'tiger_places_census2020_consolidated_cities_layer24' },
+        { containingKey: 'tiger_places_census2020_incorporated_places_layer25_containing', nearbyKey: 'tiger_places_census2020_incorporated_places_layer25_nearby_features', name: 'TIGER Places - Census 2020 Incorporated Places', color: '#6d28d9', icon: '🏙️', layerType: 'tiger_places_census2020_incorporated_places_layer25' },
+        { containingKey: 'tiger_places_census2020_census_designated_places_layer26_containing', nearbyKey: 'tiger_places_census2020_census_designated_places_layer26_nearby_features', name: 'TIGER Places - Census 2020 Census Designated Places', color: '#5b21b6', icon: '🏘️', layerType: 'tiger_places_census2020_census_designated_places_layer26' }
+      ];
+
+      tigerPlacesLayers.forEach(({ containingKey, nearbyKey, name, color, icon, layerType }) => {
+        let featureCount = 0;
+        
+        // Draw containing polygon (only polygon geometry - rings, not paths)
+        if (enrichments[containingKey] && (enrichments[containingKey] as any).__geometry) {
+          const feature = enrichments[containingKey];
+          const geometry = (feature as any).__geometry || (feature as any).geometry;
+          if (geometry && geometry.rings && !geometry.paths) { // Only render polygon geometry
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const polygon = L.polygon(latlngs, {
+                  color: color,
+                  weight: 3,
+                  opacity: 0.9,
+                  fillColor: color,
+                  fillOpacity: 0.4
+                });
+
+                const featureName = (feature as any).name || 'Unknown';
+                const stateFips = (feature as any).stateFips || '';
+                const countyFips = (feature as any).countyFips || '';
+                const placeType = (feature as any).placeType || '';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${icon} ${featureName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Type:</strong> Containing Area</div>
+                      ${placeType ? `<div><strong>Place Type:</strong> ${placeType}</div>` : ''}
+                      ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                      ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = layerType;
+                (polygon as any).__layerTitle = name;
+                bounds.extend(polygon.getBounds());
+                featureCount += 1;
+              }
+            } catch (error) {
+              console.error(`Error drawing ${name} containing polygon:`, error);
+            }
+          }
+        }
+
+        // Draw nearby features (only polygon geometry - rings, not paths)
+        if (enrichments[nearbyKey] && Array.isArray(enrichments[nearbyKey])) {
+          enrichments[nearbyKey].forEach((feature: any) => {
+            const geometry = feature.__geometry || feature.geometry;
+            if (geometry && geometry.rings && !geometry.paths) { // Only render polygon geometry
+              try {
+                const rings = geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  const featureName = feature.name || 'Unknown';
+                  const distance = feature.distance_miles ? feature.distance_miles.toFixed(2) : 'Unknown';
+                  const stateFips = feature.stateFips || '';
+                  const countyFips = feature.countyFips || '';
+                  const placeType = feature.placeType || '';
+
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${icon} ${featureName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                        ${placeType ? `<div><strong>Place Type:</strong> ${placeType}</div>` : ''}
+                        ${stateFips ? `<div><strong>State FIPS:</strong> ${stateFips}</div>` : ''}
+                        ${countyFips ? `<div><strong>County FIPS:</strong> ${countyFips}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  (polygon as any).__layerType = layerType;
+                  (polygon as any).__layerTitle = name;
+                  bounds.extend(polygon.getBounds());
+                  featureCount += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing ${name} nearby polygon:`, error);
+              }
+            }
+          });
+        }
+        
+        // Add to legend with radius display (show even if no features drawn if counts exist)
+        if (featureCount > 0 || (enrichments[`${layerType}_containing_count`] !== undefined || enrichments[`${layerType}_nearby_count`] !== undefined)) {
+          if (!legendAccumulator[layerType]) {
+            const radius = enrichments[`${layerType}_search_radius_miles`];
+            legendAccumulator[layerType] = {
+              icon: icon,
+              color: color,
+              title: name,
+              count: 0,
+              radius: radius,
+              radiusDisplay: radius ? `${radius.toFixed(1)} mi` : undefined
             };
           }
           legendAccumulator[layerType].count += featureCount;
@@ -38367,6 +38561,11 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         if (!/_detailed$|_elements$|_features$|_facilities$|_all_pois$|_all$/i.test(key)) {
+          return;
+        }
+
+        // Skip TIGER Places and County Subdivisions _all arrays - handled separately with polygon geometry drawing
+        if (key.startsWith('tiger_places_') && key.endsWith('_all')) {
           return;
         }
 
