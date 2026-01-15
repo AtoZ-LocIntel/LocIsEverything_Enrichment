@@ -38899,9 +38899,6 @@ const MapView: React.FC<MapViewProps> = ({
           console.log(`🗺️ Mail & Shipping: Processing ${itemsArray.length} items for map display`);
         }
         
-        // Add to legend count - use full array length for accurate count (shows total available)
-        legendAccumulator[baseKey].count += itemsArray.length;
-
         const leafletIcon = createPOIIcon(iconEmoji, iconColor);
 
         // Map all POIs - they are already limited by proximity/radius in the query
@@ -38966,6 +38963,9 @@ const MapView: React.FC<MapViewProps> = ({
           poiMarker.addTo(poi);
           mappedCount++;
         });
+
+        // Add to legend count based on markers actually rendered
+        legendAccumulator[baseKey].count += mappedCount;
         
         // Debug logging for mail shipping
         if (baseKey === 'poi_mail_shipping') {
