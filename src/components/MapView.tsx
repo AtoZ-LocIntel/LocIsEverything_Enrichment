@@ -1496,6 +1496,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_bike_scooter_share': { icon: '🚲', color: '#10b981', title: 'Bike/Scooter Share' },
   'poi_dockless_hub': { icon: '🛴️', color: '#8b5cf6', title: 'Dockless Hub' },
   'poi_electric_charging': { icon: '🔌', color: '#10b981', title: 'Electric Charging Stations' },
+  'poi_osm_ev_charging': { icon: '🔋', color: '#22c55e', title: 'OSM EV Charging Stations' },
   'poi_gas_stations': { icon: '⛽', color: '#f59e0b', title: 'Gas Stations' },
   'poi_mail_shipping': { icon: '📮', color: '#3b82f6', title: 'Mail & Shipping' },
   'poi_colleges_universities': { icon: '🎓', color: '#7c3aed', title: 'Colleges & Universities' },

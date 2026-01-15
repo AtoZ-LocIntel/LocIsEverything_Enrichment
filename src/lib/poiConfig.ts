@@ -982,6 +982,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_bike_scooter_share', label: 'Bike/Scooter Share', description: 'Bicycle and scooter rental services', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
   { id: 'poi_dockless_hub', label: 'Dockless Hub', description: 'Dockless transportation hubs', isPOI: true, defaultRadius: 3, category: 'transportation', section: 'transportation' },
   { id: 'poi_electric_charging', label: 'Electric Charging Stations', description: 'EV charging stations via OpenChargeMap API', isPOI: true, defaultRadius: 25, category: 'transportation', section: 'transportation' },
+  { id: 'poi_osm_ev_charging', label: 'OSM EV Charging Stations', description: 'EV charging stations via OpenStreetMap Overpass API (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'transportation', section: 'transportation' },
   
   // Infrastructure
   { id: 'poi_power_plants_openei', label: 'Power Plants', description: 'Electric power generation facilities', isPOI: true, defaultRadius: 25, category: 'infrastructure', section: 'infrastructure' },

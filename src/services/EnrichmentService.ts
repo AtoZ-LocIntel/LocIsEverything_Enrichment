@@ -13582,6 +13582,7 @@ export class EnrichmentService {
       "railway=platform|monorail=yes",
       "public_transport=platform|monorail=yes"
     ];
+    if (id === "poi_osm_ev_charging") return ["amenity=charging_station"];
     if (id === "poi_aerialway") return [
       "aerialway=station",
       "aerialway=gondola",
@@ -45960,24 +45961,42 @@ out center tags;`;
         }
       });
       
-      // Get station details for mapping
-      const stationDetails = stations.slice(0, 10).map((station: any) => ({
-        id: station.ID,
-        name: station.AddressInfo?.Title || 'Unnamed Station',
-        address: station.AddressInfo?.AddressLine1 || 'No address',
-        city: station.AddressInfo?.Town || 'Unknown city',
-        state: station.AddressInfo?.StateOrProvince || 'Unknown state',
-        lat: station.AddressInfo?.Latitude,
-        lon: station.AddressInfo?.Longitude,
-        connections: station.Connections?.length || 0,
-        status: station.StatusType?.Title || 'Unknown'
-      }));
+      const stationRecords = stations.map((station: any) => {
+        const distanceKm = station.AddressInfo?.Distance;
+        const distanceMiles = typeof distanceKm === 'number' ? distanceKm * 0.621371 : null;
+        const street = station.AddressInfo?.AddressLine1 || '';
+        const city = station.AddressInfo?.Town || '';
+        const state = station.AddressInfo?.StateOrProvince || '';
+        const postcode = station.AddressInfo?.Postcode || '';
+        const fullAddress = [street, city, state, postcode].filter(Boolean).join(', ');
+
+        return {
+          id: station.ID,
+          name: station.AddressInfo?.Title || 'Unnamed Station',
+          address: fullAddress,
+          phone: station.AddressInfo?.ContactTelephone1 || '',
+          website: station.AddressInfo?.RelatedURL || station.DataProvider?.WebsiteURL || '',
+          lat: station.AddressInfo?.Latitude,
+          lon: station.AddressInfo?.Longitude,
+          distance_miles: distanceMiles,
+          source: 'OpenChargeMap',
+          tags: {
+            amenity: 'charging_station',
+            operator: station.OperatorInfo?.Title || '',
+            network: station.OperatorInfo?.WebsiteURL || '',
+            'addr:street': street || undefined,
+            'addr:city': city || undefined,
+            'addr:state': state || undefined,
+            'addr:postcode': postcode || undefined
+          }
+        };
+      });
       
       return {
         poi_electric_charging_count: totalStations,
         poi_electric_charging_connection_types: connectionCounts,
         poi_electric_charging_levels: levelCounts,
-        poi_electric_charging_detailed: stationDetails,
+        poi_electric_charging_all_pois: stationRecords,
         poi_electric_charging_proximity_distance: radiusMiles,
         poi_electric_charging_summary: `Found ${totalStations} electric charging stations within ${radiusMiles} miles with various connection types and charging levels.`
       };
