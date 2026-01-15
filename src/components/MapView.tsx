@@ -3433,6 +3433,8 @@ const MapView: React.FC<MapViewProps> = ({
     return false;
   };
 
+  const mapInitTimeoutRef = useRef<number | null>(null);
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) {
       return;
@@ -3457,6 +3459,9 @@ const MapView: React.FC<MapViewProps> = ({
     // Wait for container to be fully rendered before initializing map
     // This prevents twitchy behavior when transitioning to map view
     const initializeMap = () => {
+      if (mapInstanceRef.current) {
+        return;
+      }
       if (!mapRef.current) return;
 
       // Ensure container has dimensions (don't check opacity as it may start at 0 for fade-in)
@@ -3858,9 +3863,13 @@ const MapView: React.FC<MapViewProps> = ({
     };
 
     // Small delay to ensure container is rendered in DOM
-    setTimeout(initializeMap, 50);
+    mapInitTimeoutRef.current = window.setTimeout(initializeMap, 50);
 
     return () => {
+      if (mapInitTimeoutRef.current) {
+        window.clearTimeout(mapInitTimeoutRef.current);
+        mapInitTimeoutRef.current = null;
+      }
       if (mapInstanceRef.current) {
         try {
           // Remove weather radar overlay if present
