@@ -3434,6 +3434,8 @@ const MapView: React.FC<MapViewProps> = ({
   };
 
   const mapInitTimeoutRef = useRef<number | null>(null);
+  const featuresRenderFrameRef = useRef<number | null>(null);
+  const featuresRenderTokenRef = useRef(0);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) {
@@ -4644,7 +4646,16 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     // Add all enrichment features - use requestAnimationFrame for smooth rendering
-    requestAnimationFrame(() => {
+    featuresRenderTokenRef.current += 1;
+    const currentRenderToken = featuresRenderTokenRef.current;
+    if (featuresRenderFrameRef.current !== null) {
+      cancelAnimationFrame(featuresRenderFrameRef.current);
+    }
+    featuresRenderFrameRef.current = requestAnimationFrame(() => {
+        if (currentRenderToken !== featuresRenderTokenRef.current) {
+          return;
+        }
+        featuresRenderFrameRef.current = null;
         console.log('🗺️ STEP 2: Inside setTimeout, starting to draw features');
         // Reset color tracking to ensure unique colors for this map render
         resetColorTracking();
