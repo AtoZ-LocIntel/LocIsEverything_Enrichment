@@ -1804,26 +1804,50 @@ export class EnrichmentService {
   // Working geocoding functions from original geocoder.html with rate limiting
   private async geocodeNominatim(q: string): Promise<GeocodeResult | null> {
     try {
+      // Validate input
+      if (!q || typeof q !== 'string' || q.trim().length === 0) {
+        console.warn('Nominatim geocoding: Invalid query string');
+        return null;
+      }
+
       const u = new URL("https://nominatim.openstreetmap.org/search");
-      u.searchParams.set("q", q);
+      u.searchParams.set("q", q.trim());
       u.searchParams.set("format", "json");
       u.searchParams.set("addressdetails", "1");
       u.searchParams.set("limit", "1");
+      // Email is required by Nominatim usage policy for identification
       u.searchParams.set("email", "noreply@locationmart.com");
       
-      const d = await fetchJSONSmart(u.toString());
-      if (d && d.length) {
-        const x = d[0];
-        return {
-          lat: +x.lat, 
-          lon: +x.lon, 
-          source: "Nominatim (OSM)", 
-          confidence: 0.9,
-          name: x.display_name || q,
-          raw: x
-        };
+      // User-Agent header is required by Nominatim usage policy
+      const d = await fetchJSONSmart(u.toString(), {
+        headers: {
+          'User-Agent': 'LocIsEverything-Enrichment/1.0 (https://locationmart.com; noreply@locationmart.com)'
+        }
+      });
+
+      // Validate response
+      if (!d || !Array.isArray(d) || d.length === 0) {
+        return null;
       }
-      return null;
+
+      const x = d[0];
+      const lat = parseFloat(x.lat);
+      const lon = parseFloat(x.lon);
+
+      // Validate coordinates
+      if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        console.warn('Nominatim geocoding: Invalid coordinates received', { lat, lon });
+        return null;
+      }
+
+      return {
+        lat,
+        lon,
+        source: "Nominatim (OSM)",
+        confidence: x.importance ?? 0.9,
+        name: x.display_name || q.trim(),
+        raw: x
+      };
     } catch (error) {
       console.error('Nominatim geocoding failed:', error);
       return null;

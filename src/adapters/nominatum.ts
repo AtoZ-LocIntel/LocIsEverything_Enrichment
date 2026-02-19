@@ -10,6 +10,8 @@ export const NominatimAdapter: GeocodingAdapter = {
     url.searchParams.set("addressdetails", "1");
     url.searchParams.set("limit", "5");
     url.searchParams.set("q", q.text);
+    // Email is required by Nominatim usage policy for identification
+    url.searchParams.set("email", "noreply@locationmart.com");
     if (q.countryCodes) url.searchParams.set("countrycodes", q.countryCodes.toLowerCase());
     if (q.bbox) {
       const [s,w,n,e] = q.bbox;
@@ -18,11 +20,17 @@ export const NominatimAdapter: GeocodingAdapter = {
     }
     return [url.toString()];
   },
-  parseResponse(json: any): GeocodeResult[] {
-    return (json || []).map((it:any)=>({
+  parseResponse(json: any, q: GeocodeQuery): GeocodeResult[] {
+    if (!json || !Array.isArray(json)) {
+      return [];
+    }
+    return json.map((it: any) => ({
       source: "OSM Nominatim",
-      lat: parseFloat(it.lat), lon: parseFloat(it.lon),
-      name: it.display_name, confidence: it.importance ?? 0.5, raw: it
+      lat: parseFloat(it.lat),
+      lon: parseFloat(it.lon),
+      name: it.display_name || q.text,
+      confidence: it.importance ?? 0.5,
+      raw: it
     }));
   }
 };
