@@ -753,7 +753,7 @@ function proxied(url: string, which: number = 0): string {
   return p.type === "prefix" ? (p.value + url) : (p.value + encodeURIComponent(url));
 }
 
-function getProxyKey(url: string, which: number): string {
+function getProxyKey(_url: string, which: number): string {
   const p = CORS_PROXIES[which];
   if (!p) return 'direct';
   return p.value.split('/')[2] || `proxy-${which}`; // Extract domain
@@ -781,9 +781,6 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
     }
     
     try {
-      // Reduced logging for production - only log in development mode
-      const isDev = import.meta.env.DEV;
-      
       // Create abort controller for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -803,7 +800,6 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
         // Handle 504 Gateway Timeout with automatic retry (for OSM/Nominatim services)
         let responseToProcess = res;
         if (res.status === 504 && i === 0) { // Only retry direct URL for 504
-          const maxRetries = 1; // Reduced to 1 retry for speed
           const delay = 1000;
           
           await new Promise(r => setTimeout(r, delay));
