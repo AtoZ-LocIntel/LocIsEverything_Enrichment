@@ -734,97 +734,155 @@ const CORS_PROXIES = [
 // Rate limiting constants
 const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
 
+// Track failed proxies to skip them faster (persists across requests)
+const failedProxies = new Set<string>();
+
+// APIs that typically work without CORS proxy (government APIs, etc.)
+const DIRECT_API_PATTERNS = [
+  /geocoding\.geo\.census\.gov/,
+  /api\.open-meteo\.com/,
+  /api\.weather\.gov/,
+  /nominatim\.openstreetmap\.org/,
+  /overpass-api\.de/,
+  /lz4\.overpass-api\.de/
+];
+
 function proxied(url: string, which: number = 0): string {
   const p = CORS_PROXIES[which];
   if (!p) return url;
   return p.type === "prefix" ? (p.value + url) : (p.value + encodeURIComponent(url));
 }
 
+function getProxyKey(url: string, which: number): string {
+  const p = CORS_PROXIES[which];
+  if (!p) return 'direct';
+  return p.value.split('/')[2] || `proxy-${which}`; // Extract domain
+}
+
+function shouldSkipProxies(url: string): boolean {
+  return DIRECT_API_PATTERNS.some(pattern => pattern.test(url));
+}
+
 export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backoff: number = 200): Promise<any> {
-  // When CORS proxy is disabled, only try direct URL
-  const attempts = USE_CORS_PROXY ? [url, proxied(url, 0), proxied(url, 1), proxied(url, 2)] : [url];
+  // Check if this API typically works without proxies (skip proxies entirely)
+  const skipProxies = shouldSkipProxies(url);
+  const attempts = (USE_CORS_PROXY && !skipProxies) ? [url, proxied(url, 0), proxied(url, 1), proxied(url, 2)] : [url];
   let err: any;
   
+  // Request timeout (5 seconds max per attempt)
+  const REQUEST_TIMEOUT_MS = 5000;
+  
   for (let i = 0; i < attempts.length; i++) {
+    const proxyKey = getProxyKey(url, i);
+    
+    // Skip proxies that have consistently failed with 403
+    if (i > 0 && failedProxies.has(proxyKey)) {
+      continue; // Skip this proxy, try next one
+    }
+    
     try {
-      console.log(`🌐 Attempt ${i + 1}: Fetching from ${attempts[i]}`);
+      // Reduced logging for production - only log in development mode
+      const isDev = import.meta.env.DEV;
       
-      const res = await fetch(attempts[i], { 
-        ...opts, 
-        headers: { 
-          "Accept": "application/json", 
-          ...(opts.headers || {}) 
-        } 
-      });
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       
-      // Handle 504 Gateway Timeout with automatic retry (for OSM/Nominatim services)
-      let responseToProcess = res;
-      if (res.status === 504) {
-        const maxRetries = 3;
-        const initialDelay = 1000; // Start with 1 second delay
-        let retryCount = 0;
-        let lastResponse = res;
+      try {
+        const res = await fetch(attempts[i], { 
+          ...opts,
+          signal: controller.signal,
+          headers: { 
+            "Accept": "application/json", 
+            ...(opts.headers || {}) 
+          } 
+        });
         
-        // Retry up to maxRetries times for 504 errors
-        while (retryCount < maxRetries && lastResponse.status === 504) {
-          const delay = initialDelay * Math.pow(2, retryCount); // Exponential backoff: 1s, 2s, 4s
-          console.log(`⚠️ Received 504 Gateway Timeout. Retrying in ${delay}ms... (retry ${retryCount + 1}/${maxRetries})`);
+        clearTimeout(timeoutId);
+        
+        // Handle 504 Gateway Timeout with automatic retry (for OSM/Nominatim services)
+        let responseToProcess = res;
+        if (res.status === 504 && i === 0) { // Only retry direct URL for 504
+          const maxRetries = 1; // Reduced to 1 retry for speed
+          const delay = 1000;
+          
           await new Promise(r => setTimeout(r, delay));
+          const retryController = new AbortController();
+          const retryTimeoutId = setTimeout(() => retryController.abort(), REQUEST_TIMEOUT_MS);
           
-          // Retry the same URL
-          lastResponse = await fetch(attempts[i], { 
-            ...opts, 
-            headers: { 
-              "Accept": "application/json", 
-              ...(opts.headers || {}) 
-            } 
-          });
-          
-          retryCount++;
-          
-          // If successful, use the retried response
-          if (lastResponse.ok) {
-            console.log(`✅ Retry successful after ${retryCount} attempt(s)`);
-            responseToProcess = lastResponse;
-            break; // Exit retry loop, continue with processing
+          try {
+            const retryResponse = await fetch(attempts[i], { 
+              ...opts,
+              signal: retryController.signal,
+              headers: { 
+                "Accept": "application/json", 
+                ...(opts.headers || {}) 
+              } 
+            });
+            clearTimeout(retryTimeoutId);
+            
+            if (retryResponse.ok) {
+              responseToProcess = retryResponse;
+            } else {
+              throw new Error(`HTTP ${retryResponse.status}`);
+            }
+          } catch (retryError) {
+            clearTimeout(retryTimeoutId);
+            throw retryError;
           }
         }
         
-        // If all retries failed, throw error
-        if (lastResponse.status === 504) {
-          console.warn(`⚠️ HTTP 504 from ${attempts[i]} after ${maxRetries} retries`);
-          throw new Error(`HTTP 504 (Gateway Timeout after ${maxRetries} retries)`);
+        // If proxy returns 403, mark it as failed and skip immediately
+        if (responseToProcess.status === 403 && i > 0) {
+          failedProxies.add(proxyKey);
+          continue; // Skip to next attempt immediately, no delay
         }
-      }
-      
-      if (!responseToProcess.ok) {
-        console.warn(`⚠️ HTTP ${responseToProcess.status} from ${attempts[i]}`);
-        throw new Error(`HTTP ${responseToProcess.status}`);
-      }
-      
-      const text = await responseToProcess.text();
-      
-      // Check if response is HTML (error page) instead of JSON
-      if (text.trim().startsWith('<html') || text.trim().startsWith('<!DOCTYPE')) {
-        console.warn(`⚠️ Received HTML instead of JSON from ${attempts[i]}:`, text.substring(0, 200));
-        throw new Error('Received HTML instead of JSON');
-      }
-      
-      // Try to parse as JSON
-      try {
-        const body = JSON.parse(text);
-        console.log(`✅ Successfully parsed JSON from ${attempts[i]}`);
-        return body;
-      } catch (parseError) {
-        console.warn(`⚠️ Failed to parse JSON from ${attempts[i]}:`, text.substring(0, 200));
-        console.warn(`⚠️ Full response length:`, text.length);
-        throw new Error('Invalid JSON response');
+        
+        if (!responseToProcess.ok) {
+          throw new Error(`HTTP ${responseToProcess.status}`);
+        }
+        
+        const text = await responseToProcess.text();
+        
+        // Check if response is HTML (error page) instead of JSON
+        if (text.trim().startsWith('<html') || text.trim().startsWith('<!DOCTYPE')) {
+          throw new Error('Received HTML instead of JSON');
+        }
+        
+        // Try to parse as JSON
+        try {
+          const body = JSON.parse(text);
+          return body;
+        } catch (parseError) {
+          throw new Error('Invalid JSON response');
+        }
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        
+        // Handle timeout
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Request timeout');
+        }
+        throw fetchError;
       }
       
     } catch (e) { 
       err = e; 
       const errorMessage = e instanceof Error ? e.message : String(e);
-      console.warn(`❌ Attempt ${i + 1} failed:`, errorMessage);
+      
+      // Only log errors for direct URL failures or in development
+      const isDev = import.meta.env.DEV;
+      if (isDev || i === 0) {
+        if (isDev) {
+          console.warn(`❌ Attempt ${i + 1} failed:`, errorMessage);
+        }
+      }
+      
+      // If proxy fails with 403 or timeout, mark it and skip immediately
+      if ((errorMessage.includes('403') || errorMessage.includes('timeout')) && i > 0) {
+        failedProxies.add(proxyKey);
+        continue; // Skip to next attempt immediately, no delay
+      }
       
       // Don't retry if CORS proxy is disabled and we get certain errors
       if (!USE_CORS_PROXY && (
@@ -832,18 +890,21 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
         errorMessage.includes('CORS') || 
         errorMessage.includes('network')
       )) {
-        console.warn(`🚫 Skipping retries due to CORS/network error with proxy disabled`);
         break;
       }
       
-      if (i < attempts.length - 1) {
-        console.log(`⏳ Waiting ${backoff}ms before retry...`);
-        await new Promise(r => setTimeout(r, backoff)); 
+      // Only delay if not the last attempt and not a 403/timeout from proxy
+      if (i < attempts.length - 1 && !(errorMessage.includes('403') && i > 0) && !(errorMessage.includes('timeout') && i > 0)) {
+        // Minimal delay for faster retries
+        await new Promise(r => setTimeout(r, Math.min(backoff, 50))); 
       }
     }
   }
   
-  console.error(`❌ All attempts failed for ${url}`);
+  // Only log final failure in dev mode to reduce console noise
+  if (import.meta.env.DEV) {
+    console.error(`❌ All attempts failed for ${url}`);
+  }
   throw err || new Error("fetchJSONSmart failed");
 }
 
@@ -13212,23 +13273,10 @@ export class EnrichmentService {
 
   private async getFIPSCodes(lat: number, lon: number): Promise<Record<string, any>> {
     try {
-      console.log('🌐 Fetching rich census data from Census Geocoder API...');
-      
-      // Try direct API first, then CORS proxy if needed
+      // fetchJSONSmart already handles direct + proxy fallback automatically
       const directUrl = `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lon}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`;
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
       
-      console.log('🌐 Census Geocoder Direct URL:', directUrl);
-      
-      let j;
-      try {
-        // Try direct first
-        j = await fetchJSONSmart(directUrl);
-      } catch (corsError) {
-        console.warn('⚠️ Direct Census API blocked by CORS, trying proxy...', corsError);
-        console.log('🌐 Census Geocoder Proxy URL:', proxyUrl);
-        j = await fetchJSONSmart(proxyUrl);
-      }
+      const j = await fetchJSONSmart(directUrl);
       
       if (!j?.result?.geographies) {
         console.warn('⚠️ Census Geocoder returned no geographic data');
