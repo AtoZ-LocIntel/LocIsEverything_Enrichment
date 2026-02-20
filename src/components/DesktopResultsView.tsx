@@ -838,7 +838,13 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Government & Public Services';
       } else if (key.includes('poi_parks') || key.includes('poi_tnm_trailheads') || key.includes('poi_tnm_trails') || key.includes('poi_mountain_biking') || key.includes('poi_boat_ramps') || key.includes('poi_golf_courses')) {
         category = 'Parks & Recreation';
-      } else if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife')) {
+      } else if (
+        key.includes('poi_cinemas') ||
+        key.includes('poi_theatres') ||
+        key.includes('poi_museums_historic') ||
+        key.includes('poi_bars_nightlife') ||
+        key.includes('poi_sports_stadiums_venues')
+      ) {
         category = 'Arts & Entertainment';
       } else if (key.includes('poi_hotels')) {
         category = 'Travel & Accommodations';

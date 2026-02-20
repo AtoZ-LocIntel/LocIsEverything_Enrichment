@@ -996,6 +996,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'poi_theatres', label: 'Theatres', description: 'Live performance venues for plays, concerts, and shows', isPOI: true, defaultRadius: 5, category: 'arts_entertainment', section: 'arts_entertainment' },
   { id: 'poi_museums_historic', label: 'Museums, Historic Sites & Memorials', description: 'Museums, historic landmarks, memorials, and cultural heritage sites', isPOI: true, defaultRadius: 5, category: 'arts_entertainment', section: 'arts_entertainment' },
   { id: 'poi_bars_nightlife', label: 'Bars & Nightlife', description: 'Bars, taverns, nightclubs, and live music venues', isPOI: true, defaultRadius: 2, category: 'arts_entertainment', section: 'arts_entertainment' },
+  { id: 'poi_sports_stadiums_venues', label: 'Sports Stadiums & Venues', description: 'Sports stadiums, arenas, and major sports venues via OpenStreetMap Overpass API (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 10, maxRadius: 50, category: 'arts_entertainment', section: 'arts_entertainment' },
   
   // Travel & Accommodations
   { id: 'poi_hotels', label: 'Hotels', description: 'Accommodation options', isPOI: true, defaultRadius: 5, category: 'travel_accommodations', section: 'travel_accommodations' },

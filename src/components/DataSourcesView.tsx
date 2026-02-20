@@ -137,6 +137,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://overpass-api.de/"
         },
         {
+          name: "OSM Sports Stadiums & Venues (Overpass)",
+          description: "OpenStreetMap sports stadiums, arenas, and major sports venues using Overpass API (proximity queries up to 50 miles)",
+          coverage: "Global (OSM mapped areas)",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        },
+        {
           name: "USDA Local Food Portal",
           description: "Farmers markets, CSA programs, agritourism, food hubs, and on-farm markets",
           coverage: "United States",

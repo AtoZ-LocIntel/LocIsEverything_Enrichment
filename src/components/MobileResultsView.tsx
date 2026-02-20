@@ -484,7 +484,13 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_police_stations') || key.includes('poi_fire_stations') || key.includes('poi_mail_shipping') || key.includes('poi_post_offices') || key.includes('poi_parcel_lockers') || key.includes('poi_osm_city_town_halls') || key.includes('poi_osm_courthouses') || key.includes('poi_osm_dmv_licensing') || key.includes('poi_osm_zoning_planning') || key.includes('poi_osm_public_works') || key.includes('poi_osm_social_services')) {
       return 'Government & Public Services';
     }
-    if (key.includes('poi_cinemas') || key.includes('poi_theatres') || key.includes('poi_museums_historic') || key.includes('poi_bars_nightlife')) {
+    if (
+      key.includes('poi_cinemas') ||
+      key.includes('poi_theatres') ||
+      key.includes('poi_museums_historic') ||
+      key.includes('poi_bars_nightlife') ||
+      key.includes('poi_sports_stadiums_venues')
+    ) {
       return 'Arts & Entertainment';
     }
     if (key.includes('poi_hotels')) {

@@ -1475,6 +1475,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_theatres': { icon: '🎭', color: '#800080', title: 'Theatres' },
   'poi_museums_historic': { icon: '🏛️', color: '#7c3aed', title: 'Museums, Historic Sites & Memorials' },
   'poi_bars_nightlife': { icon: '🍻', color: '#f59e0b', title: 'Bars & Nightlife' },
+  'poi_sports_stadiums_venues': { icon: '🏟️', color: '#0ea5e9', title: 'Sports Stadiums & Venues' },
   
   // USDA Local Food Portal - Farmers Markets & Local Food
   'poi_usda_agritourism': { icon: '🚜', color: '#22c55e', title: 'Agritourism' },

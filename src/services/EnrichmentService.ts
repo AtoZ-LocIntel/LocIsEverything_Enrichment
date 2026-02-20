@@ -13541,6 +13541,15 @@ export class EnrichmentService {
         } else {
           console.log(`⚠️  No elements found for ${enrichmentId}`);
         }
+
+        // Add human-readable summary for Arts & Entertainment stadiums/venues layer
+        if (enrichmentId === "poi_sports_stadiums_venues") {
+          poiResult[`${enrichmentId}_summary`] =
+            result.count === 0
+              ? `No sports stadiums or major sports venues found within ${radius} miles.`
+              : `Found ${result.count} sports stadiums and major sports venues within ${radius} miles.`;
+          poiResult[`${enrichmentId}_proximity_distance_miles`] = radius;
+        }
         
         console.log(`🔍 Final poiResult for ${enrichmentId}:`, poiResult);
         return poiResult;
@@ -13675,7 +13684,12 @@ export class EnrichmentService {
      if (id === "poi_bus_stations") return ["amenity=bus_station", "public_transport=station"];
      if (id === "poi_bus_stops") return ["highway=platform", "public_transport=platform"];
      if (id === "poi_cell_towers") return ["man_made=mast", "man_made=tower", "tower:type=communication", "communication:mobile_phone=yes"];
-     if (id === "poi_bars_nightlife") return ["amenity=bar", "amenity=pub", "amenity=nightclub", "amenity=biergarten", "amenity=music_venue"];
+    if (id === "poi_bars_nightlife") return ["amenity=bar", "amenity=pub", "amenity=nightclub", "amenity=biergarten", "amenity=music_venue"];
+    if (id === "poi_sports_stadiums_venues") return [
+      "leisure=stadium",
+      "leisure=sports_centre",
+      "building=stadium"
+    ];
      
            // Hazards
       if (id === "poi_fema_flood_zones") return ["fema_flood_zones"]; // Special handling for FEMA flood zones
