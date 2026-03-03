@@ -581,6 +581,113 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
     exportMapLayerId: 210,
   },
+  // USFS FHAAST Maple Species - Maple Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_maple_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Maple Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Maple Species - Bigleaf Maple Frequency
+  usfs_fhaast_maple_bigleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Bigleaf Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 21,
+  },
+  // USFS FHAAST Maple Species - Bigtooth Maple Frequency
+  usfs_fhaast_maple_bigtooth_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Bigtooth Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 42,
+  },
+  // USFS FHAAST Maple Species - Black Maple Frequency
+  usfs_fhaast_maple_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Black Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 63,
+  },
+  // USFS FHAAST Maple Species - Boxelder Frequency
+  usfs_fhaast_maple_boxelder_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Boxelder Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 84,
+  },
+  // USFS FHAAST Maple Species - Chalk Maple Frequency
+  usfs_fhaast_maple_chalk_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Chalk Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 105,
+  },
+  // USFS FHAAST Maple Species - Florida Maple Frequency
+  usfs_fhaast_maple_florida_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Florida Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 126,
+  },
+  // USFS FHAAST Maple Species - Mountain Maple Frequency
+  usfs_fhaast_maple_mountain_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Mountain Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 147,
+  },
+  // USFS FHAAST Maple Species - Red Maple Frequency
+  usfs_fhaast_maple_red_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Red Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 168,
+  },
+  // USFS FHAAST Maple Species - Rocky Mountain Maple Frequency
+  // Note: Layer ID 168 matches Red Maple - may need verification
+  usfs_fhaast_maple_rocky_mountain_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Rocky Mountain Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 168, // Same as Red Maple - may need correction to 189
+  },
+  // USFS FHAAST Maple Species - Silver Maple Frequency
+  usfs_fhaast_maple_silver_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Silver Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 210,
+  },
+  // USFS FHAAST Maple Species - Striped Maple Frequency
+  usfs_fhaast_maple_striped_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Striped Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 231,
+  },
+  // USFS FHAAST Maple Species - Sugar Maple Frequency
+  usfs_fhaast_maple_sugar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Maple Species - Sugar Maple Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Maple',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
+    exportMapLayerId: 252,
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',
@@ -935,6 +1042,22 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
     exportMapLayerId: 210,
   },
+  // USFS FHAAST Maple Species - Maple Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Maple Species - Bigleaf Maple Frequency
+  // USFS FHAAST Maple Species - Bigtooth Maple Frequency
+  // USFS FHAAST Maple Species - Black Maple Frequency
+  // USFS FHAAST Maple Species - Boxelder Frequency
+  // USFS FHAAST Maple Species - Chalk Maple Frequency
+  // USFS FHAAST Maple Species - Florida Maple Frequency
+  // USFS FHAAST Maple Species - Mountain Maple Frequency
+  // USFS FHAAST Maple Species - Red Maple Frequency
+  // USFS FHAAST Maple Species - Rocky Mountain Maple Frequency
+  // Note: Layer ID 168 matches Red Maple - may need verification
+  // USFS FHAAST Maple Species - Silver Maple Frequency
+  // USFS FHAAST Maple Species - Striped Maple Frequency
+  // USFS FHAAST Maple Species - Sugar Maple Frequency
   // USFS FHAAST Birch Species - Birch Species Distribution Frequency
   // MapServer ExportMap service - visualization only, not queryable
   // Note: Uses Export Map REST endpoint for dynamic raster rendering

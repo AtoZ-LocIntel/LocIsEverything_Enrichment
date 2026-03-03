@@ -9118,6 +9118,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer"
         },
+        {
+          name: "USFS FHAAST Maple Species",
+          description: "USDA Forest Service FHAAST Hosts Maple - Frequency distribution layers for Bigleaf Maple, Bigtooth Maple, Black Maple, Boxelder, Chalk Maple, Florida Maple, Mountain Maple, Red Maple, Rocky Mountain Maple, Silver Maple, Striped Maple, Sugar Maple, and general Maple species distribution",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer"
+        },
         ]
     }
   ];
