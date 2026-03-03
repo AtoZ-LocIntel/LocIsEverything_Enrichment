@@ -813,6 +813,128 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
     exportMapLayerId: 819,
   },
+  // USFS FHAAST Redwood Species - Giant Sequoia Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_redwood_giant_sequoia_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Redwood Species - Giant Sequoia Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Redwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Redwood/MapServer',
+    exportMapLayerId: 9, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Redwood Species - Redwood Frequency
+  usfs_fhaast_redwood_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Redwood Species - Redwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Redwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Redwood/MapServer',
+    exportMapLayerId: 30,
+  },
+  // USFS FHAAST Sycamore Species - American Sycamore Frequency
+  usfs_fhaast_sycamore_american_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Sycamore Species - American Sycamore Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Sycamore',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Sycamore/MapServer',
+    exportMapLayerId: 9,
+  },
+  // USFS FHAAST Sycamore Species - Arizona Sycamore Frequency
+  usfs_fhaast_sycamore_arizona_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Sycamore Species - Arizona Sycamore Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Sycamore',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Sycamore/MapServer',
+    exportMapLayerId: 30,
+  },
+  // USFS FHAAST Sycamore Species - California Sycamore Frequency
+  usfs_fhaast_sycamore_california_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Sycamore Species - California Sycamore Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Sycamore',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Sycamore/MapServer',
+    exportMapLayerId: 51,
+  },
+  // USFS FHAAST Juniper Species - Alligator Juniper Frequency
+  usfs_fhaast_juniper_alligator_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Alligator Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 21,
+  },
+  // USFS FHAAST Juniper Species - Ashe Juniper Frequency
+  usfs_fhaast_juniper_ashe_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Ashe Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 42,
+  },
+  // USFS FHAAST Juniper Species - California Juniper Frequency
+  usfs_fhaast_juniper_california_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - California Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 63,
+  },
+  // USFS FHAAST Juniper Species - Eastern Red Cedar Frequency
+  usfs_fhaast_juniper_eastern_red_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Eastern Red Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 84,
+  },
+  // USFS FHAAST Juniper Species - Oneseed Juniper Frequency
+  usfs_fhaast_juniper_oneseed_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Oneseed Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 105,
+  },
+  // USFS FHAAST Juniper Species - Pinchot Juniper Frequency
+  usfs_fhaast_juniper_pinchot_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Pinchot Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 126,
+  },
+  // USFS FHAAST Juniper Species - Redberry Juniper Frequency
+  usfs_fhaast_juniper_redberry_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Redberry Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 147,
+  },
+  // USFS FHAAST Juniper Species - Rocky Mountain Juniper Frequency
+  usfs_fhaast_juniper_rocky_mountain_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Rocky Mountain Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 168,
+  },
+  // USFS FHAAST Juniper Species - Utah Juniper Frequency
+  usfs_fhaast_juniper_utah_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Utah Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 189,
+  },
+  // USFS FHAAST Juniper Species - Western Juniper Frequency
+  usfs_fhaast_juniper_western_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Juniper Species - Western Juniper Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Juniper',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer',
+    exportMapLayerId: 210,
+  },
   // USFS FHAAST Birch Species - Birch Species Distribution Frequency
   // MapServer ExportMap service - visualization only, not queryable
   // Note: Uses Export Map REST endpoint for dynamic raster rendering

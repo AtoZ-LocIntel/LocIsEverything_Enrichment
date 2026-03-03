@@ -9094,6 +9094,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer"
         },
+        {
+          name: "USFS FHAAST Redwood Species",
+          description: "USDA Forest Service FHAAST Hosts Redwood - Frequency distribution layers for Giant Sequoia and Redwood species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Redwood/MapServer"
+        },
+        {
+          name: "USFS FHAAST Sycamore Species",
+          description: "USDA Forest Service FHAAST Hosts Sycamore - Frequency distribution layers for American Sycamore, Arizona Sycamore, and California Sycamore species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Sycamore/MapServer"
+        },
+        {
+          name: "USFS FHAAST Juniper Species",
+          description: "USDA Forest Service FHAAST Hosts Juniper - Frequency distribution layers for Alligator Juniper, Ashe Juniper, California Juniper, Eastern Red Cedar, Oneseed Juniper, Pinchot Juniper, Redberry Juniper, Rocky Mountain Juniper, Utah Juniper, and Western Juniper species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Juniper/MapServer"
+        },
         ]
     }
   ];
