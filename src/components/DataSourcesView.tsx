@@ -9086,6 +9086,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer"
         },
+        {
+          name: "USFS FHAAST Pine Species",
+          description: "USDA Forest Service FHAAST Hosts Pine - Frequency distribution layers for 35 pine species including Apache Pine, Arizona Pine, Arizona Pinyon Pine, Bishop Pine, Border Pinyon, California Foothills Pine, Chihuahua Pine, Common Pinyon, Coulter Pine, Eastern White Pine, Foxtail Pine, Great Basin Bristlecone Pine, Jack Pine, Jeffrey Pine, Knobcone Pine, Limber Pine, Loblolly Pine, Lodgepole Pine, Longleaf Pine, Mexican Pinyon Pine, Monterey Pine, Papershell Pinyon Pine, Pitch Pine, Pond Pine, Ponderosa Pine, Red Pine, Rocky Mountain Bristlecone Pine, Sand Pine, Shortleaf Pine, Singleleaf Pinyon, Slash Pine, Southwestern White Pine, Spruce Pine, Sugar Pine, Table Mountain Pine, Virginia Pine, Washoe Pine, Western White Pine, Whitebark Pine, and general Pine species distribution",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer"
+        },
         ]
     }
   ];

@@ -491,6 +491,328 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
     exportMapLayerId: 189, // Layer ID for ExportMap endpoint
   },
+  // USFS FHAAST Pine Species - Pine Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pine_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Pine Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pine Species - Apache Pine Frequency
+  usfs_fhaast_pine_apache_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Apache Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 21,
+  },
+  // USFS FHAAST Pine Species - Arizona Pine Frequency
+  usfs_fhaast_pine_arizona_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Arizona Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 42,
+  },
+  // USFS FHAAST Pine Species - Arizona Pinyon Pine Frequency
+  usfs_fhaast_pine_arizona_pinyon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Arizona Pinyon Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 63,
+  },
+  // USFS FHAAST Pine Species - Bishop Pine Frequency
+  usfs_fhaast_pine_bishop_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Bishop Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 84,
+  },
+  // USFS FHAAST Pine Species - Border Pinyon Frequency
+  usfs_fhaast_pine_border_pinyon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Border Pinyon Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 105,
+  },
+  // USFS FHAAST Pine Species - California Foothills Pine Frequency
+  usfs_fhaast_pine_california_foothills_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - California Foothills Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 126,
+  },
+  // USFS FHAAST Pine Species - Chihuahua Pine Frequency
+  usfs_fhaast_pine_chihuahua_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Chihuahua Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 147,
+  },
+  // USFS FHAAST Pine Species - Common Pinyon Frequency
+  usfs_fhaast_pine_common_pinyon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Common Pinyon Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 168,
+  },
+  // USFS FHAAST Pine Species - Coulter Pine Frequency
+  usfs_fhaast_pine_coulter_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Coulter Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 189,
+  },
+  // USFS FHAAST Pine Species - Eastern White Pine Frequency
+  usfs_fhaast_pine_eastern_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Eastern White Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 210,
+  },
+  // USFS FHAAST Pine Species - Foxtail Pine Frequency
+  usfs_fhaast_pine_foxtail_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Foxtail Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 231,
+  },
+  // USFS FHAAST Pine Species - Great Basin Bristlecone Pine Frequency
+  usfs_fhaast_pine_great_basin_bristlecone_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Great Basin Bristlecone Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 252,
+  },
+  // USFS FHAAST Pine Species - Jack Pine Frequency
+  usfs_fhaast_pine_jack_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Jack Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 273,
+  },
+  // USFS FHAAST Pine Species - Jeffrey Pine Frequency
+  usfs_fhaast_pine_jeffrey_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Jeffrey Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 294,
+  },
+  // USFS FHAAST Pine Species - Knobcone Pine Frequency
+  usfs_fhaast_pine_knobcone_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Knobcone Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 315,
+  },
+  // USFS FHAAST Pine Species - Limber Pine Frequency
+  usfs_fhaast_pine_limber_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Limber Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 336,
+  },
+  // USFS FHAAST Pine Species - Loblolly Pine Frequency
+  usfs_fhaast_pine_loblolly_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Loblolly Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 357,
+  },
+  // USFS FHAAST Pine Species - Lodgepole Pine Frequency
+  usfs_fhaast_pine_lodgepole_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Lodgepole Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 378,
+  },
+  // USFS FHAAST Pine Species - Longleaf Pine Frequency
+  usfs_fhaast_pine_longleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Longleaf Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 399,
+  },
+  // USFS FHAAST Pine Species - Mexican Pinyon Pine Frequency
+  usfs_fhaast_pine_mexican_pinyon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Mexican Pinyon Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 420,
+  },
+  // USFS FHAAST Pine Species - Monterey Pine Frequency
+  usfs_fhaast_pine_monterey_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Monterey Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 441,
+  },
+  // USFS FHAAST Pine Species - Papershell Pinyon Pine Frequency
+  usfs_fhaast_pine_papershell_pinyon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Papershell Pinyon Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 462,
+  },
+  // USFS FHAAST Pine Species - Pitch Pine Frequency
+  usfs_fhaast_pine_pitch_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Pitch Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 483,
+  },
+  // USFS FHAAST Pine Species - Pond Pine Frequency
+  usfs_fhaast_pine_pond_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Pond Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 504,
+  },
+  // USFS FHAAST Pine Species - Ponderosa Pine Frequency
+  usfs_fhaast_pine_ponderosa_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Ponderosa Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 525,
+  },
+  // USFS FHAAST Pine Species - Red Pine Frequency
+  usfs_fhaast_pine_red_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Red Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 546,
+  },
+  // USFS FHAAST Pine Species - Rocky Mountain Bristlecone Pine Frequency
+  usfs_fhaast_pine_rocky_mountain_bristlecone_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Rocky Mountain Bristlecone Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 567,
+  },
+  // USFS FHAAST Pine Species - Sand Pine Frequency
+  usfs_fhaast_pine_sand_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Sand Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 588,
+  },
+  // USFS FHAAST Pine Species - Shortleaf Pine Frequency
+  usfs_fhaast_pine_shortleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Shortleaf Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 609,
+  },
+  // USFS FHAAST Pine Species - Singleleaf Pinyon Frequency
+  usfs_fhaast_pine_singleleaf_pinyon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Singleleaf Pinyon Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 630,
+  },
+  // USFS FHAAST Pine Species - Slash Pine Frequency
+  usfs_fhaast_pine_slash_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Slash Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 651,
+  },
+  // USFS FHAAST Pine Species - Southwestern White Pine Frequency
+  usfs_fhaast_pine_southwestern_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Southwestern White Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 672,
+  },
+  // USFS FHAAST Pine Species - Spruce Pine Frequency
+  usfs_fhaast_pine_spruce_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Spruce Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 693,
+  },
+  // USFS FHAAST Pine Species - Sugar Pine Frequency
+  usfs_fhaast_pine_sugar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Sugar Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 714,
+  },
+  // USFS FHAAST Pine Species - Table Mountain Pine Frequency
+  usfs_fhaast_pine_table_mountain_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Table Mountain Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 735,
+  },
+  // USFS FHAAST Pine Species - Virginia Pine Frequency
+  usfs_fhaast_pine_virginia_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Virginia Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 756,
+  },
+  // USFS FHAAST Pine Species - Washoe Pine Frequency
+  usfs_fhaast_pine_washoe_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Washoe Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 777,
+  },
+  // USFS FHAAST Pine Species - Western White Pine Frequency
+  usfs_fhaast_pine_western_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Western White Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 798,
+  },
+  // USFS FHAAST Pine Species - Whitebark Pine Frequency
+  usfs_fhaast_pine_whitebark_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pine Species - Whitebark Pine Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pine',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pine/MapServer',
+    exportMapLayerId: 819,
+  },
   // USFS FHAAST Birch Species - Birch Species Distribution Frequency
   // MapServer ExportMap service - visualization only, not queryable
   // Note: Uses Export Map REST endpoint for dynamic raster rendering
