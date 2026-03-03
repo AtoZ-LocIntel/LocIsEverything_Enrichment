@@ -28,9 +28,9 @@ interface LegendItem {
 }
 
 // Basemap configuration supporting MapLibre (vector), WMS (raster), and direct tile layers
-type BasemapType = 'maplibre' | 'wms' | 'tile';
+export type BasemapType = 'maplibre' | 'wms' | 'tile';
 
-interface BasemapConfig {
+export interface BasemapConfig {
   type: BasemapType;
   name: string;
   attribution: string;
@@ -251,50 +251,6 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
   },
-  // USFS TCA Road Density - Using ExportImage endpoint with raster function
-  // Note: ImageServer services with raster functions work better via ExportImage than WMS
-  // This requires a custom tile URL function to construct the ExportImage URL with bbox
-  usfs_tca_road_density: {
-    type: 'tile',
-    name: 'USFS TCA Road Density',
-    attribution: 'USDA Forest Service',
-    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_RoadDensity/ImageServer/exportImage',
-    // Custom parameters for ExportImage
-    exportImageRasterFunction: 'RoadDensity',
-  },
-  // USFS TCA Nitrogen Deposition - Using ExportImage endpoint with raster function
-  // Note: ImageServer services with raster functions work better via ExportImage than WMS
-  // This requires a custom tile URL function to construct the ExportImage URL with bbox
-  usfs_tca_nitrogen_deposition: {
-    type: 'tile',
-    name: 'USFS TCA Nitrogen Deposition',
-    attribution: 'USDA Forest Service - Total Deposition (TDep) modeling system',
-    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_NitrogenDeposition/ImageServer/exportImage',
-    // Custom parameters for ExportImage
-    exportImageRasterFunction: 'Nitrogen Deposition',
-  },
-  // USFS TCA Insect and Disease Hazard - Using ExportImage endpoint with raster function
-  // Note: ImageServer services with raster functions work better via ExportImage than WMS
-  // This requires a custom tile URL function to construct the ExportImage URL with bbox
-  usfs_tca_insect_disease_hazard: {
-    type: 'tile',
-    name: 'USFS TCA Insect and Disease Hazard',
-    attribution: 'USDA Forest Service - National Insect and Disease Risk Map (NIDRM) 2018',
-    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_InsectAndDiseaseHazard/ImageServer/exportImage',
-    // Custom parameters for ExportImage
-    exportImageRasterFunction: 'Insect and Disease Risk',
-  },
-  // USFS TCA Fire Deficit - Using ExportImage endpoint with raster function
-  // Note: ImageServer services with raster functions work better via ExportImage than WMS
-  // This requires a custom tile URL function to construct the ExportImage URL with bbox
-  usfs_tca_fire_deficit: {
-    type: 'tile',
-    name: 'USFS TCA Fire Deficit',
-    attribution: 'USDA Forest Service - MTBS, Landfire MFRI, NIFC Fire Perimeters',
-    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_TCA_FireDeficit/ImageServer/exportImage',
-    // Custom parameters for ExportImage
-    exportImageRasterFunction: 'Fire Deficit',
-  },
   // USFS National Snag Hazard - Using ExportImage endpoint with raster function
   // Note: ImageServer service with Single Fused Map Cache: false
   // National Snag Hazard Map provides landscape-level view of current snag hazard for firefighter safety
@@ -306,466 +262,360 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'SnagHaz', // Snag hazard raster function
   },
-  // USFS FIA Forest Atlas - American Elm Historical Range Boundary
+  // USFS Heat Stress Index - Percent Change
+  // MapServer image layer - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  usfs_heat_stress_index_percent_change: {
+    type: 'tile',
+    name: 'USFS Heat Stress Index - Percent Change',
+    attribution: 'USDA Forest Service - EDW Heat Stress Index',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HeatStressIndex/MapServer',
+    exportMapLayerId: 3, // Layer ID for ExportMap endpoint,
+  },
+  // USFS Heat Stress Index - Absolute Change
+  // MapServer image layer - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  usfs_heat_stress_index_absolute_change: {
+    type: 'tile',
+    name: 'USFS Heat Stress Index - Absolute Change',
+    attribution: 'USDA Forest Service - EDW Heat Stress Index',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HeatStressIndex/MapServer',
+    exportMapLayerId: 7, // Layer ID for ExportMap endpoint,
+  },
+  // USFS Heat Stress Index - 2080s RCP 8.5
+  // MapServer image layer - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  usfs_heat_stress_index_2080s_rcp85: {
+    type: 'tile',
+    name: 'USFS Heat Stress Index - 2080s RCP 8.5',
+    attribution: 'USDA Forest Service - EDW Heat Stress Index',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HeatStressIndex/MapServer',
+    exportMapLayerId: 11, // Layer ID for ExportMap endpoint,
+  },
+  // USFS Heat Stress Index - Historical
+  // MapServer image layer - visualization only, not queryable
+  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  usfs_heat_stress_index_historical: {
+    type: 'tile',
+    name: 'USFS Heat Stress Index - Historical',
+    attribution: 'USDA Forest Service - EDW Heat Stress Index',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HeatStressIndex/MapServer',
+    exportMapLayerId: 15, // Layer ID for ExportMap endpoint,
+  },
+  // USFS FHAAST Elm Species - Basal Area
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_elm_basal_area: {
+    type: 'tile',
+    name: 'USFS FHAAST Elm Species - Basal Area',
+    attribution: 'USDA Forest Service - FHAAST Hosts Elm',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Elm/MapServer',
+    exportMapLayerId: 4, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Elm Species - American Elm Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_elm_american_elm_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Elm Species - American Elm Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Elm',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Elm/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Elm Species - Cedar Elm Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_elm_cedar_elm_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Elm Species - Cedar Elm Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Elm',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Elm/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Elm Species - Rock Elm Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_elm_rock_elm_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Elm Species - Rock Elm Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Elm',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Elm/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Alder Species - Arizona Alder Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_alder_arizona_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Alder Species - Arizona Alder Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Alder',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Alder/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Alder Species - Red Alder Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_alder_red_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Alder Species - Red Alder Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Alder',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Alder/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_elm_slippery_elm_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Elm Species - Slippery Elm Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Elm',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Elm/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Elm Species - Winged Elm Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_elm_winged_elm_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Elm Species - Winged Elm Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Elm',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Elm/MapServer',
+    exportMapLayerId: 105, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Douglas Fir - Big Cone Douglas Fir Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_douglas_fir_bigcone_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Douglas Fir - Big Cone Douglas Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Douglas Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_DouglasFir/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Ash Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Ash Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Black Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Black Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Blue Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_blue_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Blue Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 39, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Carolina Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_carolina_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Carolina Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Green Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_green_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Green Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Oregon Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_oregon_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Oregon Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 105, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Pumpkin Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_pumpkin_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Pumpkin Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 126, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Texas Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_texas_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Texas Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 147, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Velvet Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_velvet_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - Velvet Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 168, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - White Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_ash_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Ash Species - White Ash Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Ash',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Ash/MapServer',
+    exportMapLayerId: 189, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Birch Species - Birch Species Distribution Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_birch_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Birch Species - Birch Species Distribution Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Birch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer',
+    exportMapLayerId: 4, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Birch Species - Gray Birch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_birch_gray_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Birch Species - Gray Birch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Birch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Birch Species - Paper Birch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_birch_paper_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Birch Species - Paper Birch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Birch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Birch Species - River Birch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // TODO: Confirm layer ID - URL provided without layer ID
+  usfs_fhaast_birch_river_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Birch Species - River Birch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Birch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint (estimated - needs confirmation)
+  },
+  // USFS FHAAST Birch Species - Sweet Birch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // TODO: Confirm layer ID - URL provided without layer ID
+  usfs_fhaast_birch_sweet_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Birch Species - Sweet Birch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Birch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint (estimated - needs confirmation)
+  },
+  // USFS FHAAST Birch Species - Yellow Birch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_birch_yellow_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Birch Species - Yellow Birch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Birch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Birch/MapServer',
+    exportMapLayerId: 105, // Layer ID for ExportMap endpoint
+  },
+    // USFS FHAAST Alder Species - White Alder Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_alder_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Alder Species - White Alder Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Alder',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Alder/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Douglas Fir - Douglas Fir Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_douglas_fir_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Douglas Fir - Douglas Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Douglas Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_DouglasFir/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Alder Species - Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_alder_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Alder Species - Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Alder',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Alder/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Ash Species - Ash Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Black Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Blue Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Carolina Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Green Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Oregon Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Pumpkin Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Texas Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - Velvet Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // USFS FHAAST Ash Species - White Ash Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+      // USFS FIA Forest Atlas - American Elm Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  // Note: Single fused cache shows all layers, but this is the historical range layer
-  fia_american_elm_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA American Elm Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_American_elm_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Ashe Juniper Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_ashe_juniper_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Ashe Juniper Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Ashe_juniper_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Balsam Fir Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_balsam_fir_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Balsam Fir Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_balsam_fir_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Chestnut Oak Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_chestnut_oak_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Chestnut Oak Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_chestnut_oak_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Common Pinyon Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_common_pinyon_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Common Pinyon Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_common_pinyon_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Douglas Fir Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_douglas_fir_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Douglas Fir Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Douglas_fir_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Gambel Oak Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_gambel_oak_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Gambel Oak Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Gambel_oak_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Honey Mesquite Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_honey_mesquite_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Honey Mesquite Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_honey_mesquite_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Loblolly Pine Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_loblolly_pine_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Loblolly Pine Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_loblolly_pine_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Lodgepole Pine Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_lodgepole_pine_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Lodgepole Pine Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_lodgepole_pine_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Pond Cypress Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_pond_cypress_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Pond Cypress Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_pondcypress_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Ponderosa Pine Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_ponderosa_pine_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Ponderosa Pine Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_ponderosa_pine_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Post Oak Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_post_oak_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Post Oak Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_post_oak_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Quaking Aspen Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_quaking_aspen_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Quaking Aspen Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_quaking_aspen_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Red Alder Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_red_alder_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Red Alder Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_alder_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Red Maple Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_red_maple_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Red Maple Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_red_maple_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Redwood Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_redwood_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Redwood Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_redwood_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Shortleaf Pine Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_shortleaf_pine_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Shortleaf Pine Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_shortleaf_pine_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Sugar Maple Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_sugar_maple_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Sugar Maple Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sugar_maple_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Sweetgum Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_sweetgum_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Sweetgum Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_sweetgum_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Tanoak Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_tanoak_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Tanoak Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_tanoak_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Utah Juniper Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_utah_juniper_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Utah Juniper Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_Utah_juniper_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Western Hemlock Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_western_hemlock_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA Western Hemlock Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_western_hemlock_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - White Oak Historical Range Boundary
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_white_oak_historical_range_basemap: {
-    type: 'tile',
-    name: 'FIA White Oak Historical Range',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/107_white_oak_spp/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - White/Red/Jack Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_white_red_jack_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA White/Red/Jack Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_100WhiteRedJackPine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Spruce Fir Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_spruce_fir_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Spruce Fir Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_120SpruceFir/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Longleaf/Slash Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_longleaf_slash_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Longleaf/Slash Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_140LongleafSlashPine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Loblolly/Shortleaf Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_loblolly_shortleaf_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Loblolly/Shortleaf Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_160LoblollyShortleafPine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Pinyon/Juniper Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_pinyon_juniper_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Pinyon/Juniper Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_180PinyonJuniper/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Douglas Fir Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_douglas_fir_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Douglas Fir Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_200DouglasFir/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Ponderosa Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_ponderosa_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Ponderosa Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_220PonderosaPine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Western White Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_western_white_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Western White Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_240WesternWhitePine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Fir/Spruce/Mountain Hemlock Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_fir_spruce_mountain_hemlock_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Fir/Spruce/Mountain Hemlock Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_260FirSpruceMountainHemlock/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Lodgepole Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_lodgepole_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Lodgepole Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_280LodgepolePine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Hemlock/Sitka Spruce Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_hemlock_sitka_spruce_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Hemlock/Sitka Spruce Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_300HemlockSitkaSpruce/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Western Larch Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_western_larch_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Western Larch Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_320WesternLarch/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Redwood Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_redwood_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Redwood Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_340Redwood/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Other Western Softwoods Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_other_western_softwoods_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Other Western Softwoods Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_360OtherWesternSoftwoods/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - California Mixed Conifer Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_california_mixed_conifer_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA California Mixed Conifer Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_370CaliforniaMixedConifer/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Exotic Softwoods Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_exotic_softwoods_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Exotic Softwoods Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_380ExoticSoftwoods/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Oak/Pine Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_oak_pine_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Oak/Pine Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_400OakPine/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Oak/Hickory Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_oak_hickory_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Oak/Hickory Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_500OakHickory/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Oak/Gum/Cypress Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_oak_gum_cypress_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Oak/Gum/Cypress Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_600OakGumCypress/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Elm/Ash/Cottonwood Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_elm_ash_cottonwood_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Elm/Ash/Cottonwood Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_700ElmAshCottonwood/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Maple/Beech/Birch Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_maple_beech_birch_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Maple/Beech/Birch Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_800MmapleBeechBirch/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Aspen/Birch Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_aspen_birch_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Aspen/Birch Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_900AspenBirch/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Western Oak Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_western_oak_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Western Oak Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_920WesternOak/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Tanoak/Laurel Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_tanoak_laurel_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Tanoak/Laurel Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_940TanoakLaurel/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Other Western Hardwoods Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_other_western_hardwoods_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Other Western Hardwoods Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_950OtherWesternHardwoods/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Tropical Hardwoods Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_tropical_hardwoods_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Tropical Hardwoods Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_980TropicalHardwoods/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Exotic Hardwoods Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_exotic_hardwoods_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Exotic Hardwoods Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_990ExoticHardwoods/MapServer/tile/{z}/{y}/{x}',
-  },
   // Alaska AHRI 2020 RGB Cache
   // Tiled map service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
@@ -827,78 +677,6 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'Alaska Geospatial Office',
     tileUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/Alaska_IFSAR_DTM/ImageServer/exportImage',
     exportImageRasterFunction: 'Hillshade', // Use Hillshade for better elevation visualization
-  },
-  // USFS FIA Forest Atlas - Alaska Forest-Type Group
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_alaska_forest_type_basemap: {
-    type: 'tile',
-    name: 'FIA Alaska Forest-Type',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_ak_forest_type_group/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Hardwood Groups
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_hardwoods_basemap: {
-    type: 'tile',
-    name: 'FIA Hardwood Groups',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Hardwoods/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Softwood Groups
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_softwoods_basemap: {
-    type: 'tile',
-    name: 'FIA Softwood Groups',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/109_Softwoods/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Harvest as a Fraction of Live Volume
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_harvest_fraction_by_county_basemap: {
-    type: 'tile',
-    name: 'FIA Harvest Fraction by County',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionByCounty/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Harvest as a Fraction of Annual Growth
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_harvest_fraction_growth_state_basemap: {
-    type: 'tile',
-    name: 'FIA Harvest Fraction by Growth State',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/308_HarvestFractionGrowthState/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Forest Ownership
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_forest_ownership_basemap: {
-    type: 'tile',
-    name: 'FIA Forest Ownership',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/501_ForestOwnership/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Carbon Growth Per Year
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_carbon_growth_basemap: {
-    type: 'tile',
-    name: 'FIA Carbon Growth Per Year',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonGrowth/MapServer/tile/{z}/{y}/{x}',
-  },
-  // USFS FIA Forest Atlas - Carbon Sequestered in Harvested Products
-  // Raster/tiled basemap service - visualization only, not queryable
-  // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
-  fia_carbon_harvest_basemap: {
-    type: 'tile',
-    name: 'FIA Carbon Sequestered in Harvested Products',
-    attribution: 'USDA Forest Service – FIA Forest Atlas',
-    tileUrl: 'https://apps.fs.usda.gov/arcx/rest/services/RDW_FIA_ForestAtlas/506_CarbonHarvest/MapServer/tile/{z}/{y}/{x}',
   },
   // NOAA DEM Global Mosaic Hillshade - Using ExportImage endpoint with raster function
   // Note: ImageServer service with Single Fused Map Cache: false
@@ -3600,13 +3378,35 @@ const MapView: React.FC<MapViewProps> = ({
             ).addTo(map);
           } else {
             // Standard tile layer
-            basemapLayer = L.tileLayer(baseBasemapConfig.tileUrl!, {
-              attribution: baseBasemapConfig.attribution,
+            // Check if this is an ArcGIS MapServer tile endpoint (uses {z}/{y}/{x} format)
+            const isArcGISMapServer = baseBasemapConfig.tileUrl && baseBasemapConfig.tileUrl.includes('/MapServer/tile/') && baseBasemapConfig.tileUrl.includes('{z}/{y}/{x}');
+            
+            const tileOptions: any = {
+              attribution: baseBasemapConfig.attribution || '',
               maxZoom: 15,
-              minZoom: 4,
+              minZoom: 0,
               noWrap: true,
               opacity: 1.0, // Full opacity - this is the base
-            }).addTo(map);
+              tileSize: 256,
+            };
+            
+            // For ArcGIS MapServer endpoints, use custom URL function to handle {z}/{y}/{x} format
+            if (isArcGISMapServer) {
+              // Convert {z}/{y}/{x} to Leaflet's expected format by using a function
+              const urlTemplate = baseBasemapConfig.tileUrl!;
+              basemapLayer = L.tileLayer(urlTemplate.replace('{z}/{y}/{x}', '{z}/{x}/{y}'), tileOptions);
+              // Override getTileUrl to swap x and y back for ArcGIS format
+              (basemapLayer as any).getTileUrl = function(coords: any) {
+                const z = coords.z;
+                const x = coords.x;
+                const y = coords.y;
+                return urlTemplate.replace('{z}', String(z)).replace('{y}', String(y)).replace('{x}', String(x));
+              };
+              basemapLayer.addTo(map);
+            } else {
+              // Standard Leaflet format {z}/{x}/{y}
+              basemapLayer = L.tileLayer(baseBasemapConfig.tileUrl!, tileOptions).addTo(map);
+            }
           }
         } else if (baseBasemapConfig.type === 'wms') {
           const wmsOptions: any = {
@@ -3729,13 +3529,35 @@ const MapView: React.FC<MapViewProps> = ({
                 ).addTo(map);
               } else {
                 // Standard tile layer
-                overlayLayer = L.tileLayer(thematicConfig.tileUrl!, {
-                  attribution: thematicConfig.attribution,
+                // Check if this is an ArcGIS MapServer tile endpoint (uses {z}/{y}/{x} format)
+                const isArcGISMapServer = thematicConfig.tileUrl && thematicConfig.tileUrl.includes('/MapServer/tile/') && thematicConfig.tileUrl.includes('{z}/{y}/{x}');
+                
+                const tileOptions: any = {
+                  attribution: thematicConfig.attribution || '',
                   maxZoom: 15,
-                  minZoom: 4,
+                  minZoom: 0,
                   noWrap: true,
                   opacity: 0.7, // Transparent overlay
-                }).addTo(map);
+                  tileSize: 256,
+                };
+                
+                // For ArcGIS MapServer endpoints, use custom URL function to handle {z}/{y}/{x} format
+                if (isArcGISMapServer) {
+                  // Convert {z}/{y}/{x} to Leaflet's expected format by using a function
+                  const urlTemplate = thematicConfig.tileUrl!;
+                  overlayLayer = L.tileLayer(urlTemplate.replace('{z}/{y}/{x}', '{z}/{x}/{y}'), tileOptions);
+                  // Override getTileUrl to swap x and y back for ArcGIS format
+                  (overlayLayer as any).getTileUrl = function(coords: any) {
+                    const z = coords.z;
+                    const x = coords.x;
+                    const y = coords.y;
+                    return urlTemplate.replace('{z}', String(z)).replace('{y}', String(y)).replace('{x}', String(x));
+                  };
+                  overlayLayer.addTo(map);
+                } else {
+                  // Standard Leaflet format {z}/{x}/{y}
+                  overlayLayer = L.tileLayer(thematicConfig.tileUrl!, tileOptions).addTo(map);
+                }
               }
             } else if (thematicConfig.type === 'wms') {
               const wmsOptions: any = {
@@ -4131,13 +3953,35 @@ const MapView: React.FC<MapViewProps> = ({
           ).addTo(map);
         } else {
           // Standard tile layer
-          newBasemapLayer = L.tileLayer(finalBaseConfig.tileUrl!, {
-            attribution: finalBaseConfig.attribution,
+          // Check if this is an ArcGIS MapServer tile endpoint (uses {z}/{y}/{x} format)
+          const isArcGISMapServer = finalBaseConfig.tileUrl && finalBaseConfig.tileUrl.includes('/MapServer/tile/') && finalBaseConfig.tileUrl.includes('{z}/{y}/{x}');
+          
+          const tileOptions: any = {
+            attribution: finalBaseConfig.attribution || '',
             maxZoom: 15,
-            minZoom: 4,
+            minZoom: 0,
             noWrap: true,
             opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
-          }).addTo(map);
+            tileSize: 256,
+          };
+          
+          // For ArcGIS MapServer endpoints, use custom URL function to handle {z}/{y}/{x} format
+          if (isArcGISMapServer) {
+            // Convert {z}/{y}/{x} to Leaflet's expected format by using a function
+            const urlTemplate = finalBaseConfig.tileUrl!;
+            newBasemapLayer = L.tileLayer(urlTemplate.replace('{z}/{y}/{x}', '{z}/{x}/{y}'), tileOptions);
+            // Override getTileUrl to swap x and y back for ArcGIS format
+            (newBasemapLayer as any).getTileUrl = function(coords: any) {
+              const z = coords.z;
+              const x = coords.x;
+              const y = coords.y;
+              return urlTemplate.replace('{z}', String(z)).replace('{y}', String(y)).replace('{x}', String(x));
+            };
+            newBasemapLayer.addTo(map);
+          } else {
+            // Standard Leaflet format {z}/{x}/{y}
+            newBasemapLayer = L.tileLayer(finalBaseConfig.tileUrl!, tileOptions).addTo(map);
+          }
         }
       } else if (finalBaseConfig.type === 'wms') {
         const wmsOptions: any = {
@@ -4293,13 +4137,35 @@ const MapView: React.FC<MapViewProps> = ({
               ).addTo(map);
             } else {
               // Standard tile layer
-              newOverlayLayer = L.tileLayer(thematicConfig.tileUrl!, {
-                attribution: thematicConfig.attribution,
+              // Check if this is an ArcGIS MapServer tile endpoint (uses {z}/{y}/{x} format)
+              const isArcGISMapServer = thematicConfig.tileUrl && thematicConfig.tileUrl.includes('/MapServer/tile/') && thematicConfig.tileUrl.includes('{z}/{y}/{x}');
+              
+              const tileOptions: any = {
+                attribution: thematicConfig.attribution || '',
                 maxZoom: 15,
-                minZoom: 4,
+                minZoom: 0,
                 noWrap: true,
                 opacity: 0.7, // Transparent overlay
-              }).addTo(map);
+                tileSize: 256,
+              };
+              
+              // For ArcGIS MapServer endpoints, use custom URL function to handle {z}/{y}/{x} format
+              if (isArcGISMapServer) {
+                // Convert {z}/{y}/{x} to Leaflet's expected format by using a function
+                const urlTemplate = thematicConfig.tileUrl!;
+                newOverlayLayer = L.tileLayer(urlTemplate.replace('{z}/{y}/{x}', '{z}/{x}/{y}'), tileOptions);
+                // Override getTileUrl to swap x and y back for ArcGIS format
+                (newOverlayLayer as any).getTileUrl = function(coords: any) {
+                  const z = coords.z;
+                  const x = coords.x;
+                  const y = coords.y;
+                  return urlTemplate.replace('{z}', String(z)).replace('{y}', String(y)).replace('{x}', String(x));
+                };
+                newOverlayLayer.addTo(map);
+              } else {
+                // Standard Leaflet format {z}/{x}/{y}
+                newOverlayLayer = L.tileLayer(thematicConfig.tileUrl!, tileOptions).addTo(map);
+              }
             }
             
             newOverlayLayer.on('tileerror', (_error: any, tile: any) => {

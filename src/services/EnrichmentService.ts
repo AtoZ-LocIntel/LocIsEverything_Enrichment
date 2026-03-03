@@ -769,8 +769,9 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
   const attempts = (USE_CORS_PROXY && !skipProxies) ? [url, proxied(url, 0), proxied(url, 1), proxied(url, 2)] : [url];
   let err: any;
   
-  // Request timeout (5 seconds max per attempt)
-  const REQUEST_TIMEOUT_MS = 5000;
+  // Request timeout - longer for Overpass API (30 seconds), shorter for others (5 seconds)
+  const isOverpassAPI = url.includes('overpass-api.de') || url.includes('overpass-api');
+  const REQUEST_TIMEOUT_MS = isOverpassAPI ? 30000 : 5000;
   
   for (let i = 0; i < attempts.length; i++) {
     const proxyKey = getProxyKey(url, i);
@@ -797,34 +798,50 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
         
         clearTimeout(timeoutId);
         
-        // Handle 504 Gateway Timeout with automatic retry (for OSM/Nominatim services)
+        // Handle 504 Gateway Timeout with automatic retry (for OSM/Nominatim/Overpass services)
         let responseToProcess = res;
         if (res.status === 504 && i === 0) { // Only retry direct URL for 504
-          const delay = 1000;
+          // Exponential backoff for Overpass: 2s, 4s, 8s
+          const maxRetries = isOverpassAPI ? 3 : 1;
+          let retryCount = 0;
+          let lastResponse = res;
           
-          await new Promise(r => setTimeout(r, delay));
-          const retryController = new AbortController();
-          const retryTimeoutId = setTimeout(() => retryController.abort(), REQUEST_TIMEOUT_MS);
-          
-          try {
-            const retryResponse = await fetch(attempts[i], { 
-              ...opts,
-              signal: retryController.signal,
-              headers: { 
-                "Accept": "application/json", 
-                ...(opts.headers || {}) 
-              } 
-            });
-            clearTimeout(retryTimeoutId);
-            
-            if (retryResponse.ok) {
-              responseToProcess = retryResponse;
-            } else {
-              throw new Error(`HTTP ${retryResponse.status}`);
+          while (retryCount < maxRetries && lastResponse.status === 504) {
+            const delay = isOverpassAPI ? 2000 * Math.pow(2, retryCount) : 1000; // 2s, 4s, 8s for Overpass
+            if (import.meta.env.DEV) {
+              console.log(`⚠️ Received 504 Gateway Timeout. Retrying in ${delay}ms... (retry ${retryCount + 1}/${maxRetries})`);
             }
-          } catch (retryError) {
-            clearTimeout(retryTimeoutId);
-            throw retryError;
+            await new Promise(r => setTimeout(r, delay));
+            
+            const retryController = new AbortController();
+            const retryTimeoutId = setTimeout(() => retryController.abort(), REQUEST_TIMEOUT_MS);
+            
+            try {
+              lastResponse = await fetch(attempts[i], { 
+                ...opts,
+                signal: retryController.signal,
+                headers: { 
+                  "Accept": "application/json", 
+                  ...(opts.headers || {}) 
+                } 
+              });
+              clearTimeout(retryTimeoutId);
+              
+              if (lastResponse.ok) {
+                responseToProcess = lastResponse;
+                break;
+              }
+            } catch (retryError) {
+              clearTimeout(retryTimeoutId);
+              // Continue to next retry attempt
+            }
+            
+            retryCount++;
+          }
+          
+          // If all retries failed with 504, throw error
+          if (lastResponse.status === 504) {
+            throw new Error(`HTTP 504 (Gateway Timeout after ${maxRetries} retries)`);
           }
         }
         
@@ -13996,19 +14013,23 @@ out center;`;
           queryParts.push(`  relation["aeroway"~"aerodrome|airstrip|heliport|helipad"](around:${radiusMeters}, ${lat}, ${lon});`);
         } else {
           // Standard exact match for other POI types
+          // Use around: syntax for radius-based queries (faster than bbox for small-medium radii)
+          // Convert radius from miles to meters for around: syntax
+          const radiusMeters = Math.round(radiusMiles * 1609.34);
           filters.forEach(filter => {
             // Fix: Overpass needs separate quotes around key and value: ["key"="value"]
             const [key, value] = filter.split('=');
-            // Overpass expects bbox in parentheses: (south,west,north,east)
-            // The bbox variable already contains the comma-separated values
-            queryParts.push(`  node["${key}"="${value}"](${bbox});`);
-            queryParts.push(`  way["${key}"="${value}"](${bbox});`);
-            queryParts.push(`  relation["${key}"="${value}"](${bbox});`);
+            // Use around: syntax for better performance (server-side filtering is faster)
+            queryParts.push(`  node["${key}"="${value}"](around:${radiusMeters}, ${lat}, ${lon});`);
+            queryParts.push(`  way["${key}"="${value}"](around:${radiusMeters}, ${lat}, ${lon});`);
+            queryParts.push(`  relation["${key}"="${value}"](around:${radiusMeters}, ${lat}, ${lon});`);
           });
         }
       }
       
-             const q = `[out:json][timeout:900];
+             // Use reasonable timeout (25 seconds) - Overpass API recommends 25-180 seconds
+             // Lower timeout = faster failure, higher timeout = more time for complex queries
+             const q = `[out:json][timeout:25];
 (
 ${queryParts.join('\n')}
 );
@@ -14022,11 +14043,38 @@ out center tags;`;
       console.log(`🔍 Query Parts:`, queryParts);
       console.log(`📝 Final Query: ${q}`);
       
-      const res = await fetchJSONSmart("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        body: q,
-        headers: { "Content-Type": "text/plain;charset=UTF-8" }
-      });
+      // Try primary Overpass server first, then fallback to alternative servers
+      let res: any;
+      const overpassServers = [
+        "https://overpass-api.de/api/interpreter",
+        "https://lz4.overpass-api.de/api/interpreter",
+        "https://z.overpass-api.de/api/interpreter"
+      ];
+      
+      let lastError: any;
+      for (const serverUrl of overpassServers) {
+        try {
+          res = await fetchJSONSmart(serverUrl, {
+            method: "POST",
+            body: q,
+            headers: { "Content-Type": "text/plain;charset=UTF-8" }
+          });
+          break; // Success, exit loop
+        } catch (error) {
+          lastError = error;
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (import.meta.env.DEV) {
+            console.warn(`⚠️ Overpass server ${serverUrl} failed:`, errorMessage);
+          }
+          // Try next server
+          continue;
+        }
+      }
+      
+      // If all servers failed, throw the last error
+      if (!res) {
+        throw lastError || new Error("All Overpass API servers failed");
+      }
       
       console.log(`📊 Overpass API response:`, res);
       
