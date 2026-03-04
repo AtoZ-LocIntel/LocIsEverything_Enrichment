@@ -1546,7 +1546,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       
       // Add basemap layers to appropriate categories
       const usfsBasemapEnrichments = Object.entries(BASEMAP_CONFIGS)
-        .filter(([key, config]) => key.startsWith('usfs_'))
+        .filter(([key]) => key.startsWith('usfs_'))
         .map(([key, config]) => ({
           id: key,
           label: config.name,
@@ -1560,7 +1560,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         if (category.id === 'noaa') {
           // Add NOAA basemaps from BASEMAP_CONFIGS to NOAA category
           const noaaBasemapEnrichments = Object.entries(BASEMAP_CONFIGS)
-            .filter(([key, config]) => key.startsWith('noaa_'))
+            .filter(([key]) => key.startsWith('noaa_'))
             .map(([key, config]) => ({
               id: key,
               label: config.name,
