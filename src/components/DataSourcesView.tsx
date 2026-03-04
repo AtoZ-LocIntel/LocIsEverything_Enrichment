@@ -9174,6 +9174,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer"
         },
+        {
+          name: "USFS FHAAST Oak Species (O-W)",
+          description: "USDA Forest Service FHAAST Hosts Oak O-W - Frequency distribution layers for Oregon White Oak, Overcup Oak, Pin Oak, Post Oak, Scarlet Oak, Shingle Oak, Shumard Oak, Silverleaf Oak, Southern Red Oak, Swamp Chestnut Oak, Swamp White Oak, Texas Red Oak, Turkey Oak, Water Oak, White Oak, and Willow Oak species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_O_W/MapServer"
+        },
+        {
+          name: "USFS FHAAST Walnut Species",
+          description: "USDA Forest Service FHAAST Hosts Walnut - Frequency distribution layers for Walnut Species, Arizona Walnut, Black Walnut, Butternut, and Southern California Black Walnut species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Walnut/MapServer"
+        },
         ]
     }
   ];
