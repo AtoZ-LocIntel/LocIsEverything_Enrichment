@@ -9134,6 +9134,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer"
         },
+        {
+          name: "USFS FHAAST Cottonwood Species",
+          description: "USDA Forest Service FHAAST Hosts Cottonwood - Frequency distribution layers for Cottonwood Species, Balsam Poplar, Bigtooth Aspen, Black Cottonwood, Eastern Cottonwood, Fremont Cottonwood, Narrowleaf Cottonwood, Plains Cottonwood, Quaking Aspen, and Swamp Cottonwood species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer"
+        },
         ]
     }
   ];

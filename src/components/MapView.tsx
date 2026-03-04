@@ -778,6 +778,88 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
     exportMapLayerId: 210,
   },
+  // USFS FHAAST Cottonwood Species - Cottonwood Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cottonwood_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Cottonwood Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cottonwood Species - Balsam Poplar Frequency
+  usfs_fhaast_cottonwood_balsam_poplar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Balsam Poplar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 21,
+  },
+  // USFS FHAAST Cottonwood Species - Bigtooth Aspen Frequency
+  usfs_fhaast_cottonwood_bigtooth_aspen_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Bigtooth Aspen Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 42,
+  },
+  // USFS FHAAST Cottonwood Species - Black Cottonwood Frequency
+  usfs_fhaast_cottonwood_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Black Cottonwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 63,
+  },
+  // USFS FHAAST Cottonwood Species - Eastern Cottonwood Frequency
+  usfs_fhaast_cottonwood_eastern_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Eastern Cottonwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 84,
+  },
+  // USFS FHAAST Cottonwood Species - Fremont Cottonwood Frequency
+  usfs_fhaast_cottonwood_fremont_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Fremont Cottonwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 105,
+  },
+  // USFS FHAAST Cottonwood Species - Narrowleaf Cottonwood Frequency
+  usfs_fhaast_cottonwood_narrowleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Narrowleaf Cottonwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 126,
+  },
+  // USFS FHAAST Cottonwood Species - Plains Cottonwood Frequency
+  usfs_fhaast_cottonwood_plains_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Plains Cottonwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 147,
+  },
+  // USFS FHAAST Cottonwood Species - Quaking Aspen Frequency
+  usfs_fhaast_cottonwood_quaking_aspen_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Quaking Aspen Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 168,
+  },
+  // USFS FHAAST Cottonwood Species - Swamp Cottonwood Frequency
+  usfs_fhaast_cottonwood_swamp_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cottonwood Species - Swamp Cottonwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cottonwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
+    exportMapLayerId: 189,
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',
