@@ -2072,6 +2072,87 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_DateOfThaw/MapServer',
     exportMapLayerId: 14, // Layer ID for ExportMap endpoint
   },
+  // USFS EDW Historical and Future Snow Trends - Snow Residence Time Percent Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_residence_time_percent_change: {
+    type: 'tile',
+    name: 'USFS EDW Snow Residence Time - Percent Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 39, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Residence Time Absolute Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // Note: Layer ID inferred from pattern (between 39 and 35, likely 37)
+  usfs_edw_snow_residence_time_absolute_change: {
+    type: 'tile',
+    name: 'USFS EDW Snow Residence Time - Absolute Change (days)',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 37, // Layer ID for ExportMap endpoint (inferred from pattern)
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Residence Time 2080s
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_residence_time_2080s: {
+    type: 'tile',
+    name: 'USFS EDW Snow Residence Time - 2080s (days)',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 35, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Residence Time 1975-2005
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_residence_time_1975_2005: {
+    type: 'tile',
+    name: 'USFS EDW Snow Residence Time - 1975-2005 (days)',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 31, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Water Equivalent (April 1) Percent Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_water_equivalent_percent_change: {
+    type: 'tile',
+    name: 'USFS EDW Snow Water Equivalent (April 1) - Percent Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 27, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Water Equivalent (April 1) Absolute Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_water_equivalent_absolute_change: {
+    type: 'tile',
+    name: 'USFS EDW Snow Water Equivalent (April 1) - Absolute Change (mm)',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 23, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Water Equivalent (April 1) 2080s
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_water_equivalent_2080s: {
+    type: 'tile',
+    name: 'USFS EDW Snow Water Equivalent (April 1) - 2080s (mm)',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 19, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Historical and Future Snow Trends - Snow Water Equivalent (April 1) 1975-2005
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_snow_water_equivalent_1975_2005: {
+    type: 'tile',
+    name: 'USFS EDW Snow Water Equivalent (April 1) - 1975-2005 (mm)',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
+    exportMapLayerId: 15, // Layer ID for ExportMap endpoint
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',

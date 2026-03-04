@@ -9272,7 +9272,7 @@ export const getDataSources = (): DataSourceCategory[] => {
         },
         {
           name: "USFS EDW Weather & Climate Data",
-          description: "USDA Forest Service EDW Weather & Climate - Snow Residence Time (Historical), Change in Number of Frost-Free Days, Historical Change in Number of Frost-Free Days, Change in Date of Freeze, Historical Change in Date of Freeze, Change in Date of Thaw, and Historical Change in Date of Thaw",
+          description: "USDA Forest Service EDW Weather & Climate - Snow Residence Time (Historical), Change in Number of Frost-Free Days, Historical Change in Number of Frost-Free Days, Change in Date of Freeze, Historical Change in Date of Freeze, Change in Date of Thaw, Historical Change in Date of Thaw, Snow Residence Time (Percent Change, Absolute Change, 2080s, 1975-2005), and Snow Water Equivalent April 1 (Percent Change, Absolute Change, 2080s, 1975-2005)",
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
