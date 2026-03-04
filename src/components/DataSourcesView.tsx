@@ -9190,6 +9190,86 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Walnut/MapServer"
         },
+        {
+          name: "USFS FHAAST Magnolia Species",
+          description: "USDA Forest Service FHAAST Hosts Magnolia - Frequency distribution layers for Bigleaf Magnolia, Cucumbertree, Mountain Magnolia, Southern Magnolia, Sweetbay, and Yellow-Poplar species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer"
+        },
+        {
+          name: "USFS FHAAST Hemlock Species",
+          description: "USDA Forest Service FHAAST Hosts Hemlock - Frequency distribution layers for Hemlock Species, Carolina Hemlock, Eastern Hemlock, Mountain Hemlock, and Western Hemlock species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hemlock/MapServer"
+        },
+        {
+          name: "USFS FHAAST Hickory Species",
+          description: "USDA Forest Service FHAAST Hosts Hickory - Frequency distribution layers for Hickory Species, Bitternut Hickory, Black Hickory, Mockernut Hickory, Pecan, Pignut Hickory, Shagbark Hickory, and Water Hickory species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer"
+        },
+        {
+          name: "USFS FHAAST Laurel Species",
+          description: "USDA Forest Service FHAAST Hosts Laurel - Frequency distribution layers for California Laurel, Redbay, and Sassafras species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Laurel/MapServer"
+        },
+        {
+          name: "USFS FHAAST Larch Species",
+          description: "USDA Forest Service FHAAST Hosts Larch - Frequency distribution layers for Larch Species, Subalpine Larch, Tamarack, and Western Larch species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Larch/MapServer"
+        },
+        {
+          name: "USFS FHAAST Gum Species",
+          description: "USDA Forest Service FHAAST Hosts Gum - Frequency distribution layers for Blackgum, Ogeechee Tupelo, Swamp Tupelo, and Water Tupelo species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Gum/MapServer"
+        },
+        {
+          name: "USFS FHAAST Dogwood Species",
+          description: "USDA Forest Service FHAAST Hosts Dogwood - Frequency distribution layers for Flowering Dogwood and Pacific Dogwood species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Dogwood/MapServer"
+        },
+        {
+          name: "USFS FHAAST Cypress Species",
+          description: "USDA Forest Service FHAAST Hosts Cypress - Frequency distribution layers for Alaska Yellow Cedar, Arizona Cypress, Atlantic White Cedar, Baker Cypress, Bald Cypress, Incense Cedar, Monterey Cypress, Northern White Cedar, Pond Cypress, Port Orford Cedar, Sargent's Cypress, and Western Red Cedar species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer"
+        },
+        {
+          name: "USFS FHAAST Buckeye Species",
+          description: "USDA Forest Service FHAAST Hosts Buckeye - Frequency distribution layers for Buckeye and Horsechestnut Species, California Buckeye, Ohio Buckeye, and Yellow Buckeye species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Buckeye/MapServer"
+        },
+        {
+          name: "USFS FHAAST Hackberry Species",
+          description: "USDA Forest Service FHAAST Hosts Hackberry - Frequency distribution layers for Hackberry Species, Hackberry, Netleaf Hackberry, and Sugarberry species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer"
+        },
         ]
     }
   ];

@@ -1480,6 +1480,528 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Walnut/MapServer',
     exportMapLayerId: 85, // Layer ID for ExportMap endpoint
   },
+  // USFS FHAAST Magnolia Species - Bigleaf Magnolia Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_magnolia_bigleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Magnolia Species - Bigleaf Magnolia Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Magnolia',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Magnolia Species - Cucumbertree Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_magnolia_cucumbertree_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Magnolia Species - Cucumbertree Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Magnolia',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Magnolia Species - Mountain Magnolia Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_magnolia_mountain_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Magnolia Species - Mountain Magnolia Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Magnolia',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer',
+    exportMapLayerId: 50, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Magnolia Species - Southern Magnolia Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_magnolia_southern_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Magnolia Species - Southern Magnolia Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Magnolia',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer',
+    exportMapLayerId: 71, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Magnolia Species - Sweetbay Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_magnolia_sweetbay_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Magnolia Species - Sweetbay Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Magnolia',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer',
+    exportMapLayerId: 92, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Magnolia Species - Yellow-Poplar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_magnolia_yellow_poplar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Magnolia Species - Yellow-Poplar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Magnolia',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Magnolia/MapServer',
+    exportMapLayerId: 113, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hemlock Species - Hemlock Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hemlock_species_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hemlock Species - Hemlock Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hemlock',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hemlock/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hemlock Species - Carolina Hemlock Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hemlock_carolina_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hemlock Species - Carolina Hemlock Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hemlock',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hemlock/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hemlock Species - Eastern Hemlock Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hemlock_eastern_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hemlock Species - Eastern Hemlock Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hemlock',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hemlock/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hemlock Species - Mountain Hemlock Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hemlock_mountain_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hemlock Species - Mountain Hemlock Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hemlock',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hemlock/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hemlock Species - Western Hemlock Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hemlock_western_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hemlock Species - Western Hemlock Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hemlock',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hemlock/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Hickory Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_species_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Hickory Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Bitternut Hickory Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_bitternut_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Bitternut Hickory Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Black Hickory Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Black Hickory Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Mockernut Hickory Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_mockernut_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Mockernut Hickory Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Pecan Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_pecan_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Pecan Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Pignut Hickory Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // Note: User provided layer ID 84, but Pecan also uses 84. Using 105 based on pattern (likely typo in user input)
+  usfs_fhaast_hickory_pignut_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Pignut Hickory Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 105, // Layer ID for ExportMap endpoint (corrected from 84 to follow pattern)
+  },
+  // USFS FHAAST Hickory Species - Shagbark Hickory Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_shagbark_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Shagbark Hickory Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 126, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hickory Species - Water Hickory Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hickory_water_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hickory Species - Water Hickory Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hickory',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hickory/MapServer',
+    exportMapLayerId: 147, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Laurel Species - California Laurel Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_laurel_california_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Laurel Species - California Laurel Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Laurel',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Laurel/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Laurel Species - Redbay Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_laurel_redbay_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Laurel Species - Redbay Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Laurel',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Laurel/MapServer',
+    exportMapLayerId: 40, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Laurel Species - Sassafras Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_laurel_sassafras_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Laurel Species - Sassafras Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Laurel',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Laurel/MapServer',
+    exportMapLayerId: 60, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Larch Species - Larch Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_larch_species_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Larch Species - Larch Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Larch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Larch/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Larch Species - Subalpine Larch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_larch_subalpine_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Larch Species - Subalpine Larch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Larch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Larch/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Larch Species - Tamarack Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_larch_tamarack_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Larch Species - Tamarack Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Larch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Larch/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Larch Species - Western Larch Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_larch_western_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Larch Species - Western Larch Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Larch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Larch/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Gum Species - Blackgum Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_gum_blackgum_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Gum Species - Blackgum Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Gum',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Gum/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Gum Species - Ogeechee Tupelo Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_gum_ogeechee_tupelo_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Gum Species - Ogeechee Tupelo Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Gum',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Gum/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Gum Species - Swamp Tupelo Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_gum_swamp_tupelo_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Gum Species - Swamp Tupelo Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Gum',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Gum/MapServer',
+    exportMapLayerId: 50, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Gum Species - Water Tupelo Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_gum_water_tupelo_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Gum Species - Water Tupelo Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Gum',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Gum/MapServer',
+    exportMapLayerId: 71, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Dogwood Species - Flowering Dogwood Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_dogwood_flowering_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Dogwood Species - Flowering Dogwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Dogwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Dogwood/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Dogwood Species - Pacific Dogwood Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_dogwood_pacific_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Dogwood Species - Pacific Dogwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Dogwood',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Dogwood/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Alaska Yellow Cedar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_alaska_yellow_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Alaska Yellow Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Arizona Cypress Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_arizona_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Arizona Cypress Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Atlantic White Cedar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_atlantic_white_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Atlantic White Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 50, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Baker Cypress Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_baker_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Baker Cypress Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 71, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Bald Cypress Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_bald_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Bald Cypress Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 92, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Incense Cedar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_incense_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Incense Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 113, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Monterey Cypress Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_monterey_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Monterey Cypress Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 134, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Northern White Cedar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_northern_white_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Northern White Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 155, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Pond Cypress Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_pond_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Pond Cypress Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 176, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Port Orford Cedar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_port_orford_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Port Orford Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 197, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Sargent's Cypress Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_sargents_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Sargent\'s Cypress Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 218, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cypress Species - Western Red Cedar Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cypress_western_red_cedar_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cypress Species - Western Red Cedar Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cypress',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cypress/MapServer',
+    exportMapLayerId: 239, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Buckeye Species - Buckeye and Horsechestnut Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_buckeye_species_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Buckeye Species - Buckeye and Horsechestnut Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Buckeye',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Buckeye/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Buckeye Species - California Buckeye Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_buckeye_california_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Buckeye Species - California Buckeye Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Buckeye',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Buckeye/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Buckeye Species - Ohio Buckeye Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_buckeye_ohio_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Buckeye Species - Ohio Buckeye Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Buckeye',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Buckeye/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Buckeye Species - Yellow Buckeye Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  // Note: User provided layer ID 42, but Ohio Buckeye also uses 42. Using 63 based on pattern (likely typo in user input)
+  usfs_fhaast_buckeye_yellow_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Buckeye Species - Yellow Buckeye Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Buckeye',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Buckeye/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint (corrected from 42 to follow pattern)
+  },
+  // USFS FHAAST Hackberry Species - Hackberry Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hackberry_species_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hackberry Species - Hackberry Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hackberry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hackberry Species - Hackberry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hackberry_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hackberry Species - Hackberry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hackberry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hackberry Species - Netleaf Hackberry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hackberry_netleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hackberry Species - Netleaf Hackberry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hackberry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Hackberry Species - Sugarberry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_hackberry_sugarberry_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Hackberry Species - Sugarberry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Hackberry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',
@@ -4359,6 +4881,10 @@ const MapView: React.FC<MapViewProps> = ({
     'Alaska': false,
   });
   const [showThematicThemes, setShowThematicThemes] = useState<boolean>(false); // Toggle to show/hide thematic themes list
+  // Search queries for basemap sections
+  const [noaaSearchQuery, setNoaaSearchQuery] = useState<string>('');
+  const [usfsSearchQuery, setUsfsSearchQuery] = useState<string>('');
+  const [nationalmapSearchQuery, setNationalmapSearchQuery] = useState<string>('');
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
@@ -41581,8 +42107,45 @@ const MapView: React.FC<MapViewProps> = ({
                         </button>
                         {expandedBasemapSections['USGS National Map'] && (
                           <div className="pb-1 bg-white">
+                            {/* Search bar for USGS National Map */}
+                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Search USGS National Map basemaps..."
+                                  value={nationalmapSearchQuery}
+                                  onChange={(e) => setNationalmapSearchQuery(e.target.value)}
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  style={{ color: '#000000' }}
+                                />
+                                <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                                {nationalmapSearchQuery && (
+                                  <button
+                                    onClick={() => setNationalmapSearchQuery('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                              {nationalmapSearchQuery && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
+                                    key.startsWith('usgs_') && 
+                                    (BASEMAP_CONFIGS[key].name.toLowerCase().includes(nationalmapSearchQuery.toLowerCase()) ||
+                                     key.toLowerCase().includes(nationalmapSearchQuery.toLowerCase()))
+                                  ).length} of {Object.entries(BASEMAP_CONFIGS).filter(([key]) => key.startsWith('usgs_')).length} basemaps
+                                </div>
+                              )}
+                            </div>
                             {Object.entries(BASEMAP_CONFIGS)
-                              .filter(([key]) => key.startsWith('usgs_'))
+                              .filter(([key]) => {
+                                if (!key.startsWith('usgs_')) return false;
+                                if (!nationalmapSearchQuery) return true;
+                                const searchLower = nationalmapSearchQuery.toLowerCase();
+                                return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
+                                       key.toLowerCase().includes(searchLower);
+                              })
                               .map(([key, config]) => (
                                 <button
                                   key={key}
@@ -41615,8 +42178,45 @@ const MapView: React.FC<MapViewProps> = ({
                         </button>
                         {expandedBasemapSections['NOAA'] && (
                           <div className="pb-1 bg-white">
+                            {/* Search bar for NOAA */}
+                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Search NOAA basemaps..."
+                                  value={noaaSearchQuery}
+                                  onChange={(e) => setNoaaSearchQuery(e.target.value)}
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  style={{ color: '#000000' }}
+                                />
+                                <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                                {noaaSearchQuery && (
+                                  <button
+                                    onClick={() => setNoaaSearchQuery('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                              {noaaSearchQuery && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
+                                    key.startsWith('noaa_') && 
+                                    (BASEMAP_CONFIGS[key].name.toLowerCase().includes(noaaSearchQuery.toLowerCase()) ||
+                                     key.toLowerCase().includes(noaaSearchQuery.toLowerCase()))
+                                  ).length} of {Object.entries(BASEMAP_CONFIGS).filter(([key]) => key.startsWith('noaa_')).length} basemaps
+                                </div>
+                              )}
+                            </div>
                             {Object.entries(BASEMAP_CONFIGS)
-                              .filter(([key]) => key.startsWith('noaa_'))
+                              .filter(([key]) => {
+                                if (!key.startsWith('noaa_')) return false;
+                                if (!noaaSearchQuery) return true;
+                                const searchLower = noaaSearchQuery.toLowerCase();
+                                return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
+                                       key.toLowerCase().includes(searchLower);
+                              })
                               .map(([key, config]) => (
                                 <button
                                   key={key}
@@ -41649,8 +42249,54 @@ const MapView: React.FC<MapViewProps> = ({
                         </button>
                         {expandedBasemapSections['USFS'] && (
                           <div className="pb-1 bg-white">
+                            {/* Search bar for USFS */}
+                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Search USFS basemaps..."
+                                  value={usfsSearchQuery}
+                                  onChange={(e) => setUsfsSearchQuery(e.target.value)}
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  style={{ color: '#000000' }}
+                                />
+                                <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                                {usfsSearchQuery && (
+                                  <button
+                                    onClick={() => setUsfsSearchQuery('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                              {usfsSearchQuery && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => {
+                                    const matchesFilter = (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || 
+                                                         (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'));
+                                    if (!matchesFilter) return false;
+                                    if (!usfsSearchQuery) return true;
+                                    const searchLower = usfsSearchQuery.toLowerCase();
+                                    return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
+                                           key.toLowerCase().includes(searchLower);
+                                  }).length} of {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
+                                    (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || 
+                                    (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'))
+                                  ).length} basemaps
+                                </div>
+                              )}
+                            </div>
                             {Object.entries(BASEMAP_CONFIGS)
-                              .filter(([key]) => (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska')))
+                              .filter(([key]) => {
+                                const matchesFilter = (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || 
+                                                     (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'));
+                                if (!matchesFilter) return false;
+                                if (!usfsSearchQuery) return true;
+                                const searchLower = usfsSearchQuery.toLowerCase();
+                                return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
+                                       key.toLowerCase().includes(searchLower);
+                              })
                               .map(([key, config]) => (
                                 <button
                                   key={key}

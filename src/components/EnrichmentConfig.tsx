@@ -151,6 +151,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
   const [categorySearchQuery, setCategorySearchQuery] = useState<string>('');
   const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
+  // Separate search queries for each basemap section
+  const [noaaSearchQuery, setNoaaSearchQuery] = useState<string>('');
+  const [usfsSearchQuery, setUsfsSearchQuery] = useState<string>('');
+  const [nationalmapSearchQuery, setNationalmapSearchQuery] = useState<string>('');
   
   // Helper function to close sub-category view and restore scroll position
   const handleCloseSubCategoryView = (setViewingSubCategories: (value: boolean) => void) => {
@@ -1540,6 +1544,96 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         };
       });
       
+      // Add basemap layers to appropriate categories
+      const usfsBasemapEnrichments = Object.entries(BASEMAP_CONFIGS)
+        .filter(([key, config]) => key.startsWith('usfs_'))
+        .map(([key, config]) => ({
+          id: key,
+          label: config.name,
+          description: `${config.attribution} - ${config.name}`,
+          isPOI: false,
+          defaultRadius: 0,
+          category: 'usfs'
+        }));
+      
+      categories.forEach(category => {
+        if (category.id === 'noaa') {
+          // Add NOAA basemaps from BASEMAP_CONFIGS to NOAA category
+          const noaaBasemapEnrichments = Object.entries(BASEMAP_CONFIGS)
+            .filter(([key, config]) => key.startsWith('noaa_'))
+            .map(([key, config]) => ({
+              id: key,
+              label: config.name,
+              description: `${config.attribution} - ${config.name}`,
+              isPOI: false,
+              defaultRadius: 0,
+              category: category.id
+            }));
+          
+          // Only add if not already present
+          const existingIds = new Set(category.enrichments.map(e => e.id));
+          const newBasemaps = noaaBasemapEnrichments.filter(e => !existingIds.has(e.id));
+          category.enrichments = [...category.enrichments, ...newBasemaps];
+          console.log(`✅ Added ${newBasemaps.length} NOAA basemaps to NOAA category`);
+        } else if (category.id === 'nationalmap') {
+          // Add USGS National Map basemaps from BASEMAP_CONFIGS to nationalmap category
+          const nationalmapBasemapEnrichments = Object.entries(BASEMAP_CONFIGS)
+            .filter(([key, config]) => 
+              key.startsWith('usgs_') || 
+              key.includes('national_map') || 
+              key.includes('tnm_') ||
+              config.attribution.includes('USGS The National Map')
+            )
+            .map(([key, config]) => ({
+              id: key,
+              label: config.name,
+              description: `${config.attribution} - ${config.name}`,
+              isPOI: false,
+              defaultRadius: 0,
+              category: category.id
+            }));
+          
+          // Only add if not already present
+          const existingIds = new Set(category.enrichments.map(e => e.id));
+          const newBasemaps = nationalmapBasemapEnrichments.filter(e => !existingIds.has(e.id));
+          category.enrichments = [...category.enrichments, ...newBasemaps];
+          console.log(`✅ Added ${newBasemaps.length} USGS National Map basemaps to nationalmap category`);
+        }
+      });
+      
+      // Check if there's a USFS category, if not, find a category that should have USFS basemaps
+      let usfsCategory = categories.find(c => c.id === 'usfs');
+      if (!usfsCategory) {
+        // Look for a category that might contain USFS content (like public_lands or environment)
+        usfsCategory = categories.find(c => 
+          c.id === 'public_lands' || 
+          c.id === 'environment' ||
+          c.enrichments.some(e => e.description.includes('Forest Service') || e.description.includes('USFS'))
+        );
+      }
+      
+      // Add USFS basemaps to the appropriate category
+      if (usfsBasemapEnrichments.length > 0) {
+        if (usfsCategory) {
+          const existingIds = new Set(usfsCategory.enrichments.map(e => e.id));
+          const newBasemaps = usfsBasemapEnrichments.filter(e => !existingIds.has(e.id));
+          usfsCategory.enrichments = [...usfsCategory.enrichments, ...newBasemaps];
+          console.log(`✅ Added ${newBasemaps.length} USFS basemaps to ${usfsCategory.id} category`);
+        } else {
+          // Create a new USFS category if none exists
+          const newUSFSCategory: EnrichmentCategory = {
+            id: 'usfs',
+            title: 'USFS',
+            icon: SECTION_ICONS['usfs'] || <span className="text-xl">🌲</span>,
+            description: 'USDA Forest Service data and basemap layers',
+            enrichments: usfsBasemapEnrichments,
+            subCategories: []
+          };
+          categories.push(newUSFSCategory);
+          console.log(`✅ Created new USFS category with ${usfsBasemapEnrichments.length} basemaps`);
+        }
+      }
+      
       console.log('🔍 [CATEGORIES DEBUG] All categories created:', categories.length);
       console.log('🔍 [CATEGORIES DEBUG] EU category:', categories.find(c => c.id === 'eu'));
       const euCategory = categories.find(c => c.id === 'eu');
@@ -1602,21 +1696,41 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   // Includes both queryable enrichment layers and visual basemap layers
   const totalLayersCount = useMemo(() => {
     let total = 0;
+    
+    // Track which basemaps are already counted as enrichments in categories
+    const basemapsInCategories = new Set<string>();
+    
     enrichmentCategories.forEach(category => {
       // Count direct enrichments
-      total += category.enrichments.length;
+      category.enrichments.forEach(enrichment => {
+        // Check if this enrichment is a basemap (exists in BASEMAP_CONFIGS)
+        if (enrichment.id in BASEMAP_CONFIGS) {
+          basemapsInCategories.add(enrichment.id);
+        }
+        total += 1;
+      });
       
       // Count sub-category enrichments
       if (category.subCategories && category.subCategories.length > 0) {
         category.subCategories.forEach(subCategory => {
-          total += subCategory.enrichments.length;
+          subCategory.enrichments.forEach(enrichment => {
+            // Check if this enrichment is a basemap (exists in BASEMAP_CONFIGS)
+            if (enrichment.id in BASEMAP_CONFIGS) {
+              basemapsInCategories.add(enrichment.id);
+            }
+            total += 1;
+          });
         });
       }
     });
     
-    // Add basemap layers count (visual layers available in basemap dropdown)
-    const basemapCount = Object.keys(BASEMAP_CONFIGS).length;
-    total += basemapCount;
+    // Add basemap layers that are NOT already counted as enrichments in categories
+    // (e.g., base basemaps like OpenFreeMap styles, Alaska basemaps, etc.)
+    Object.keys(BASEMAP_CONFIGS).forEach(basemapKey => {
+      if (!basemapsInCategories.has(basemapKey)) {
+        total += 1;
+      }
+    });
     
     return total;
   }, [enrichmentCategories]);
@@ -3356,17 +3470,41 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               
               console.log('✅ DEBUG: Category found:', category.id);
               console.log('✅ DEBUG: About to render search bar');
+              
+              // Determine which search query to use based on category
+              // Check if this category contains basemaps (NOAA, USFS, or USGS National Map)
+              const hasUSFSBasemaps = category.enrichments.some(e => 
+                e.id.startsWith('usfs_') && e.id in BASEMAP_CONFIGS
+              );
+              const isBasemapSection = category.id === 'noaa' || category.id === 'nationalmap' || category.id === 'usfs' || hasUSFSBasemaps;
+              console.log('🔍 BASEMAP SECTION DETECTION:', {
+                categoryId: category.id,
+                isBasemapSection,
+                hasUSFSBasemaps,
+                enrichmentsCount: category.enrichments.length,
+                basemapEnrichments: category.enrichments.filter(e => e.id in BASEMAP_CONFIGS).map(e => e.id)
+              });
+              let activeSearchQuery = '';
+              if (category.id === 'noaa') {
+                activeSearchQuery = noaaSearchQuery;
+              } else if (category.id === 'nationalmap') {
+                activeSearchQuery = nationalmapSearchQuery;
+              } else if (category.id === 'usfs' || hasUSFSBasemaps) {
+                activeSearchQuery = usfsSearchQuery;
+              } else {
+                activeSearchQuery = layerSearchQuery;
+              }
                   
-                  // Filter enrichments based on search query
-                  const filteredEnrichments = layerSearchQuery.trim() === '' 
-                    ? category.enrichments 
-                    : category.enrichments.filter(e => 
-                        e.label.toLowerCase().includes(layerSearchQuery.toLowerCase()) ||
-                        e.description.toLowerCase().includes(layerSearchQuery.toLowerCase()) ||
-                        e.id.toLowerCase().includes(layerSearchQuery.toLowerCase())
-                      );
+              // Filter enrichments based on search query
+              const filteredEnrichments = activeSearchQuery.trim() === '' 
+                ? category.enrichments 
+                : category.enrichments.filter(e => 
+                    e.label.toLowerCase().includes(activeSearchQuery.toLowerCase()) ||
+                    e.description.toLowerCase().includes(activeSearchQuery.toLowerCase()) ||
+                    e.id.toLowerCase().includes(activeSearchQuery.toLowerCase())
+                  );
                   
-                  const categoryEnrichments = filteredEnrichments;
+              const categoryEnrichments = filteredEnrichments;
               const selectedCount = categoryEnrichments.filter(e => selectedEnrichments.includes(e.id)).length;
               console.log('📋 Category Enrichments:', {
                 categoryId: category.id,
@@ -3410,31 +3548,52 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                         id="layer-search-bar-container"
                         style={{ 
                         width: '100%',
-                        backgroundColor: '#f9fafb',
+                        backgroundColor: isBasemapSection ? '#e0f2fe' : '#f9fafb', // Light blue background for basemap sections
                         padding: '12px 16px',
-                        borderBottom: '2px solid #3b82f6',
+                        borderBottom: isBasemapSection ? '3px solid #3b82f6' : '2px solid #3b82f6', // Thicker border for basemap sections
                         position: 'sticky',
                         top: '60px',
                         zIndex: 10003,
-                        minHeight: '50px'
+                        minHeight: '50px',
+                        display: 'block' // Ensure it's visible
                       }}>
                         <div className="max-w-7xl mx-auto">
+                          {isBasemapSection && (
+                            <div style={{ 
+                              marginBottom: '8px', 
+                              fontSize: '12px', 
+                              color: '#1e40af',
+                              fontWeight: '600',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px'
+                            }}>
+                              🔍 Search {category.title} Basemaps
+                            </div>
+                          )}
                           <div style={{ position: 'relative', width: '100%' }}>
                             <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px', zIndex: 10, pointerEvents: 'none' }}>🔍</span>
                             <input
                               id="layer-search-input"
                               type="text"
-                              placeholder="Search layers..."
-                              value={layerSearchQuery}
+                              placeholder={isBasemapSection ? `Search ${category.title} basemaps...` : "Search layers..."}
+                              value={activeSearchQuery}
                               onChange={(e) => {
                                 console.log('🔍 DEBUG: Search input changed:', e.target.value);
-                                setLayerSearchQuery(e.target.value);
+                                if (category.id === 'noaa') {
+                                  setNoaaSearchQuery(e.target.value);
+                                } else if (category.id === 'nationalmap') {
+                                  setNationalmapSearchQuery(e.target.value);
+                                } else if (category.id === 'usfs' || hasUSFSBasemaps) {
+                                  setUsfsSearchQuery(e.target.value);
+                                } else {
+                                  setLayerSearchQuery(e.target.value);
+                                }
                               }}
                               style={{ 
                                 width: '100%',
                                 backgroundColor: '#ffffff',
                                 paddingLeft: '44px',
-                                paddingRight: layerSearchQuery ? '44px' : '16px',
+                                paddingRight: activeSearchQuery ? '44px' : '16px',
                                 paddingTop: '10px',
                                 paddingBottom: '10px',
                                 border: '2px solid #3b82f6',
@@ -3455,11 +3614,19 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
                               }}
                             />
-                            {layerSearchQuery && (
+                            {activeSearchQuery && (
                               <button
                                 onClick={() => {
                                   console.log('🔍 DEBUG: Clear button clicked');
-                                  setLayerSearchQuery('');
+                                  if (category.id === 'noaa') {
+                                    setNoaaSearchQuery('');
+                                  } else if (category.id === 'nationalmap') {
+                                    setNationalmapSearchQuery('');
+                                  } else if (category.id === 'usfs' || hasUSFSBasemaps) {
+                                    setUsfsSearchQuery('');
+                                  } else {
+                                    setLayerSearchQuery('');
+                                  }
                                 }}
                                 type="button"
                                 style={{ 
@@ -3480,6 +3647,29 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               </button>
                             )}
                           </div>
+                          {/* Show count when filtering basemap sections */}
+                          {isBasemapSection && activeSearchQuery.trim() !== '' && (
+                            <div style={{ 
+                              marginTop: '8px', 
+                              fontSize: '12px', 
+                              color: '#6b7280',
+                              textAlign: 'center'
+                            }}>
+                              Showing {categoryEnrichments.length} of {category.enrichments.length} {category.title} basemaps
+                            </div>
+                          )}
+                          {/* Debug indicator for basemap sections */}
+                          {isBasemapSection && (
+                            <div style={{ 
+                              marginTop: '4px', 
+                              fontSize: '10px', 
+                              color: '#3b82f6',
+                              textAlign: 'center',
+                              fontWeight: 'bold'
+                            }}>
+                              🔍 Basemap Section Search Active ({category.title})
+                            </div>
+                          )}
                         </div>
                       </div>
                   

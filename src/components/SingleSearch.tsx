@@ -83,13 +83,16 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
             ) : (
               <div className="flex items-center space-x-2">
                 {onViewMap && (
-                  <button
-                    onClick={onViewMap}
-                    className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
-                    title="Explore Basemaps"
-                  >
-                    <Map className="w-5 h-5" />
-                  </button>
+                  <div className="relative">
+                    <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 whitespace-nowrap">Map</span>
+                    <button
+                      onClick={onViewMap}
+                      className="p-2 text-blue-400 hover:text-blue-300 transition-colors"
+                      title="Explore Basemaps"
+                    >
+                      <Map className="w-5 h-5" />
+                    </button>
+                  </div>
                 )}
                 <button
                   onClick={() => setShowProTips(!showProTips)}
