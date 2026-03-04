@@ -235,8 +235,6 @@ function App() {
         console.log(`  scrollHeight: ${scrollHeight}, clientHeight: ${clientHeight}, canScroll: ${canScroll}`);
         
         // Manually handle wheel events to ensure scroll works
-        let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-        
         manualScrollHandler = (e: WheelEvent) => {
           const currentScroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
           const maxScroll = Math.max(0, scrollHeight - clientHeight);
@@ -285,7 +283,7 @@ function App() {
       
       // Enable manual scroll handler immediately
       setTimeout(() => {
-        const debugInfo = debugScroll();
+        debugScroll();
         checkEventListeners();
         
         // Always enable manual scroll handler as fallback

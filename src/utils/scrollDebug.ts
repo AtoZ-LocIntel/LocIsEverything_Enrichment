@@ -55,7 +55,7 @@ export const debugScroll = () => {
     const styles = window.getComputedStyle(el);
     const className = typeof el.className === 'string' 
       ? el.className 
-      : (el.className?.baseVal || Array.from(el.classList || []).join(' ') || '');
+      : ((el.className as any)?.baseVal || Array.from(el.classList || []).join(' ') || '');
     console.log(`  [${i}]`, {
       tag: el.tagName,
       classes: className,
@@ -78,7 +78,7 @@ export const debugScroll = () => {
       const styles = window.getComputedStyle(el);
       const className = typeof el.className === 'string' 
         ? el.className.substring(0, 50) 
-        : (el.className?.baseVal || Array.from(el.classList || []).join(' ') || '').substring(0, 50);
+        : ((el.className as any)?.baseVal || Array.from(el.classList || []).join(' ') || '').substring(0, 50);
       console.log(`  [${i}]`, {
         tag: el.tagName,
         classes: className,
@@ -142,7 +142,7 @@ export const debugScroll = () => {
     const styles = window.getComputedStyle(el);
     const className = typeof el.className === 'string' 
       ? el.className.substring(0, 80) 
-      : (el.className?.baseVal || Array.from(el.classList || []).join(' ') || '').substring(0, 80);
+      : ((el.className as any)?.baseVal || Array.from(el.classList || []).join(' ') || '').substring(0, 80);
     console.log(`  [${i}]`, {
       tag: el.tagName,
       classes: className,
@@ -227,7 +227,6 @@ export const checkEventListeners = () => {
   console.group('🎧 EVENT LISTENER CHECK');
   
   // Check if we can detect passive listeners (limited browser support)
-  const testEl = document.createElement('div');
   let hasPassiveSupport = false;
   
   try {
@@ -237,8 +236,9 @@ export const checkEventListeners = () => {
         return false;
       }
     });
-    window.addEventListener('test', () => {}, opts);
-    window.removeEventListener('test', () => {}, opts);
+    const testHandler = () => {};
+    window.addEventListener('test', testHandler, opts);
+    window.removeEventListener('test', testHandler, opts);
   } catch (e) {
     // Passive not supported
   }
