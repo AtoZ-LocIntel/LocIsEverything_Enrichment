@@ -9270,6 +9270,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer"
         },
+        {
+          name: "USFS EDW Weather & Climate Data",
+          description: "USDA Forest Service EDW Weather & Climate - Snow Residence Time (Historical), Change in Number of Frost-Free Days, Historical Change in Number of Frost-Free Days, Change in Date of Freeze, Historical Change in Date of Freeze, Change in Date of Thaw, and Historical Change in Date of Thaw",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate"
+        },
         ]
     }
   ];

@@ -2002,6 +2002,76 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer',
     exportMapLayerId: 63, // Layer ID for ExportMap endpoint
   },
+  // USFS EDW Snow Residence Time - Historical
+  // ImageServer ExportImage service - visualization only, not queryable
+  // Note: Uses Export Image REST endpoint for dynamic raster rendering
+  usfs_edw_snow_residence_time_historical: {
+    type: 'tile',
+    name: 'USFS EDW Snow Residence Time - Historical',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_SnowResidenceTime_Historical/ImageServer/exportImage',
+    exportImageRasterFunction: 'None', // Use None raster function for default rendering
+  },
+  // USFS EDW Number of Frost-Free Days - Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_frost_free_days_change: {
+    type: 'tile',
+    name: 'USFS EDW Number of Frost-Free Days - Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_NumberOfFrostFreeDays/MapServer',
+    exportMapLayerId: 14, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Number of Frost-Free Days - Historical Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_frost_free_days_historical_change: {
+    type: 'tile',
+    name: 'USFS EDW Number of Frost-Free Days - Historical Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_NumberOfFrostFreeDays/MapServer',
+    exportMapLayerId: 6, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Date of Freeze - Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_date_of_freeze_change: {
+    type: 'tile',
+    name: 'USFS EDW Date of Freeze - Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_DateOfFreeze/MapServer',
+    exportMapLayerId: 4, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Date of Freeze - Historical Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_date_of_freeze_historical_change: {
+    type: 'tile',
+    name: 'USFS EDW Date of Freeze - Historical Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_DateOfFreeze/MapServer',
+    exportMapLayerId: 12, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Date of Thaw - Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_date_of_thaw_change: {
+    type: 'tile',
+    name: 'USFS EDW Date of Thaw - Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_DateOfThaw/MapServer',
+    exportMapLayerId: 6, // Layer ID for ExportMap endpoint
+  },
+  // USFS EDW Date of Thaw - Historical Change
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_edw_date_of_thaw_historical_change: {
+    type: 'tile',
+    name: 'USFS EDW Date of Thaw - Historical Change',
+    attribution: 'USDA Forest Service - Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_DateOfThaw/MapServer',
+    exportMapLayerId: 14, // Layer ID for ExportMap endpoint
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',
@@ -5231,6 +5301,8 @@ const MapView: React.FC<MapViewProps> = ({
             attribution: baseBasemapConfig.attribution,
             interactive: false,
           });
+          // Mark basemap with key for comparison
+          (basemapLayer as any)._basemapKey = selectedBaseBasemap;
           basemapLayer.addTo(map);
         } else if (baseBasemapConfig.type === 'tile') {
           if (baseBasemapConfig.exportMapLayerId !== undefined && baseBasemapConfig.tileUrl) {
@@ -5246,7 +5318,10 @@ const MapView: React.FC<MapViewProps> = ({
                 opacity: 1.0, // Full opacity - this is the base
                 tileSize: 256,
               }
-            ).addTo(map);
+            );
+            // Mark basemap with key for comparison
+            (basemapLayer as any)._basemapKey = selectedBaseBasemap;
+            basemapLayer.addTo(map);
           } else if (baseBasemapConfig.exportImageRasterFunction && baseBasemapConfig.tileUrl) {
             // ImageServer ExportImage endpoint
             basemapLayer = createExportImageTileLayer(
@@ -5260,7 +5335,10 @@ const MapView: React.FC<MapViewProps> = ({
                 opacity: 1.0, // Full opacity - this is the base
                 tileSize: 256,
               }
-            ).addTo(map);
+            );
+            // Mark basemap with key for comparison
+            (basemapLayer as any)._basemapKey = selectedBaseBasemap;
+            basemapLayer.addTo(map);
           } else {
             // Standard tile layer
             // Check if this is an ArcGIS MapServer tile endpoint (uses {z}/{y}/{x} format)
@@ -5287,10 +5365,15 @@ const MapView: React.FC<MapViewProps> = ({
                 const y = coords.y;
                 return urlTemplate.replace('{z}', String(z)).replace('{y}', String(y)).replace('{x}', String(x));
               };
+              // Mark basemap with key for comparison
+              (basemapLayer as any)._basemapKey = selectedBaseBasemap;
               basemapLayer.addTo(map);
             } else {
               // Standard Leaflet format {z}/{x}/{y}
-              basemapLayer = L.tileLayer(baseBasemapConfig.tileUrl!, tileOptions).addTo(map);
+              basemapLayer = L.tileLayer(baseBasemapConfig.tileUrl!, tileOptions);
+              // Mark basemap with key for comparison
+              (basemapLayer as any)._basemapKey = selectedBaseBasemap;
+              basemapLayer.addTo(map);
             }
           }
         } else if (baseBasemapConfig.type === 'wms') {
@@ -5316,6 +5399,8 @@ const MapView: React.FC<MapViewProps> = ({
           }
           
           basemapLayer = L.tileLayer.wms(baseBasemapConfig.wmsUrl!, wmsOptions);
+          // Mark basemap with key for comparison
+          (basemapLayer as any)._basemapKey = selectedBaseBasemap;
           basemapLayer.addTo(map);
         }
         } else {
@@ -5701,11 +5786,25 @@ const MapView: React.FC<MapViewProps> = ({
 
     const map = mapInstanceRef.current;
     
+    // CRITICAL: Skip if basemap is already correct and map is initialized
+    // This prevents flashing when isInitialized changes from false to true
+    // Only remove/replace if the basemap actually needs to change
+    const currentBasemapKey = basemapLayerRef.current ? 
+      (basemapLayerRef.current._basemapKey || null) : null;
+    // Check if we need to change the basemap - only if:
+    // 1. No basemap exists yet, OR
+    // 2. The basemap key doesn't match the selected one, OR  
+    // 3. The basemap layer is not actually on the map
+    const needsBasemapChange = !basemapLayerRef.current || 
+      currentBasemapKey !== selectedBaseBasemap || 
+      !map.hasLayer(basemapLayerRef.current);
+    
     // Remove old layers FIRST to ensure clean state
     // This ensures only one basemap from "Basemaps" section is ever visible
     // CRITICAL: Must remove all layers completely before adding new ones to prevent stacking
     // Remove ALL tile layers that might be basemaps to prevent any stacking
-    if (basemapLayerRef.current) {
+    // Only do this if we actually need to change the basemap
+    if (basemapLayerRef.current && needsBasemapChange) {
       try {
         const oldLayer = basemapLayerRef.current;
         // For maplibre layers, we need defensive cleanup to prevent stacking
@@ -5790,7 +5889,8 @@ const MapView: React.FC<MapViewProps> = ({
     // CRITICAL: Use selectedBaseBasemap exactly as-is - NEVER reset or change it
     
     // Step 1: Add base basemap from "Basemaps" section (if toggle is ON)
-    if (showBaseBasemap) {
+    // Only create new basemap if we need to change it
+    if (showBaseBasemap && needsBasemapChange) {
       const baseBasemapConfig = BASEMAP_CONFIGS[selectedBaseBasemap];
       if (!baseBasemapConfig) {
         console.warn('Base basemap config not found for:', selectedBaseBasemap, 'using liberty as fallback');
@@ -5805,7 +5905,10 @@ const MapView: React.FC<MapViewProps> = ({
           style: finalBaseConfig.styleUrl,
           attribution: finalBaseConfig.attribution,
           interactive: false,
-        }).addTo(map);
+        });
+        // Store basemap key for comparison
+        (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
+        newBasemapLayer.addTo(map);
       } else if (finalBaseConfig.type === 'tile') {
         // Tile basemaps (USA Topo, NatGeo) - these REPLACE maplibre basemaps, not stack on top
         if (finalBaseConfig.exportMapLayerId !== undefined && finalBaseConfig.tileUrl) {
@@ -5821,7 +5924,10 @@ const MapView: React.FC<MapViewProps> = ({
               opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
               tileSize: 256,
             }
-          ).addTo(map);
+          );
+          // Mark basemap with key for comparison
+          (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
+          newBasemapLayer.addTo(map);
         } else if (finalBaseConfig.exportImageRasterFunction && finalBaseConfig.tileUrl) {
           // ImageServer ExportImage endpoint
           newBasemapLayer = createExportImageTileLayer(
@@ -5835,7 +5941,10 @@ const MapView: React.FC<MapViewProps> = ({
               opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
               tileSize: 256,
             }
-          ).addTo(map);
+          );
+          // Mark basemap with key for comparison
+          (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
+          newBasemapLayer.addTo(map);
         } else {
           // Standard tile layer
           // Check if this is an ArcGIS MapServer tile endpoint (uses {z}/{y}/{x} format)
@@ -5862,10 +5971,15 @@ const MapView: React.FC<MapViewProps> = ({
               const y = coords.y;
               return urlTemplate.replace('{z}', String(z)).replace('{y}', String(y)).replace('{x}', String(x));
             };
+            // Mark basemap with key for comparison
+            (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
             newBasemapLayer.addTo(map);
           } else {
             // Standard Leaflet format {z}/{x}/{y}
-            newBasemapLayer = L.tileLayer(finalBaseConfig.tileUrl!, tileOptions).addTo(map);
+            newBasemapLayer = L.tileLayer(finalBaseConfig.tileUrl!, tileOptions);
+            // Mark basemap with key for comparison
+            (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
+            newBasemapLayer.addTo(map);
           }
         }
       } else if (finalBaseConfig.type === 'wms') {
@@ -5891,6 +6005,8 @@ const MapView: React.FC<MapViewProps> = ({
         }
         
         newBasemapLayer = L.tileLayer.wms(finalBaseConfig.wmsUrl!, wmsOptions);
+        // Mark basemap with key for comparison
+        (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
         newBasemapLayer.addTo(map);
       }
     } else {
