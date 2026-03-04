@@ -860,6 +860,416 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer',
     exportMapLayerId: 189,
   },
+  // USFS FHAAST Cherry Species - Cherry and Plum Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cherry_plum_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cherry Species - Cherry and Plum Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cherry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cherry Species - American Plum Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cherry_american_plum_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cherry Species - American Plum Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cherry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint (Frequency American plum Image layer)
+  },
+  // USFS FHAAST Cherry Species - Bitter Cherry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cherry_bitter_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cherry Species - Bitter Cherry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cherry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cherry Species - Black Cherry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cherry_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cherry Species - Black Cherry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cherry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cherry Species - Choke Cherry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cherry_choke_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cherry Species - Choke Cherry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cherry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Cherry Species - Pin Cherry Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_cherry_pin_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Cherry Species - Pin Cherry Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Cherry',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer',
+    exportMapLayerId: 105, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Mangrove Species - American Mangrove Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_mangrove_american_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Mangrove Species - American Mangrove Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Mangrove',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Mangrove/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Mangrove Species - Black Mangrove Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_mangrove_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Mangrove Species - Black Mangrove Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Mangrove',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Mangrove/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Mangrove Species - Buttonwood Mangrove Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_mangrove_buttonwood_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Mangrove Species - Buttonwood Mangrove Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Mangrove',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Mangrove/MapServer',
+    exportMapLayerId: 50, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Mangrove Species - White Mangrove Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_mangrove_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Mangrove Species - White Mangrove Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Mangrove',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Mangrove/MapServer',
+    exportMapLayerId: 71, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Oak Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_species_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Oak Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Arizona White Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_arizona_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Arizona White Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 21, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Bear Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_bear_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Bear Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 42, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Black Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Black Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 63, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Blackjack Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_blackjack_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Blackjack Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 84, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Blue Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_blue_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Blue Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 105, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Bluejack Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_bluejack_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Bluejack Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 126, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Buckley Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_buckley_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Buckley Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 147, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Bur Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_bur_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Bur Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 168, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - California Black Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_california_black_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - California Black Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 189, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - California White Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_california_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - California White Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 210, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Canyon Live Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_canyon_live_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Canyon Live Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 231, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Cherrybark Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_cherrybark_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Cherrybark Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 252, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Chestnut Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_chestnut_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Chestnut Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 273, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Chinkapin Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_chinkapin_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Chinkapin Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 294, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Coast Live Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_coast_live_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Coast Live Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak A-C',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer',
+    exportMapLayerId: 315, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Durand Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_durand_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Durand Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 336, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Dwarf Live Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_dwarf_live_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Dwarf Live Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 357, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Dwarf Post Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_dwarf_post_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Dwarf Post Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 378, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Emory Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_emory_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Emory Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 399, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Engelmann Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_engelmann_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Engelmann Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 420, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Gambel Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_gambel_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Gambel Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 441, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Gray Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_gray_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Gray Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 462, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Interior Live Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_interior_live_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Interior Live Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 483, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Lacey Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_lacey_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Lacey Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 504, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Laurel Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_laurel_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Laurel Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 525, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Live Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_live_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Live Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 546, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Mexican Blue Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_mexican_blue_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Mexican Blue Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 567, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Netleaf Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_netleaf_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Netleaf Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 588, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Northern Pin Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_northern_pin_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Northern Pin Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 609, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Oak Species - Northern Red Oak Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_oak_northern_red_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Oak Species - Northern Red Oak Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Oak D-N',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer',
+    exportMapLayerId: 630, // Layer ID for ExportMap endpoint
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',

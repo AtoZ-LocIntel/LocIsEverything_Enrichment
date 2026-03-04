@@ -25,6 +25,7 @@ html {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: auto; /* Ensure vertical scrolling is enabled */
   /* Better mobile viewport handling */
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
@@ -50,6 +51,7 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: auto; /* Ensure vertical scrolling is enabled */
   margin: 0;
   padding: 0;
   /* Better mobile touch handling */
@@ -70,6 +72,8 @@ body.modal-open {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  /* CRITICAL: Don't make #root the scroll container - let body scroll instead */
+  overflow-y: visible; /* Changed from auto - body should scroll, not #root */
 }
 
 @layer base {
@@ -83,6 +87,77 @@ body.modal-open {
   
   #root {
     @apply bg-black min-h-screen;
+    /* CRITICAL: Don't make #root the scroll container - body should scroll */
+    overflow-y: visible; /* Changed from auto - body should scroll, not #root */
+  }
+}
+
+/* Ensure App wrapper doesn't block scrolling - DESKTOP SPECIFIC */
+@media (min-width: 768px) {
+  /* CRITICAL FIX: Ensure App wrapper doesn't create scroll jail on desktop */
+  /* The flex container with min-h-screen was preventing body scroll */
+  .bg-black.flex.flex-col.min-h-screen {
+    min-height: 100vh !important;
+    height: auto !important; /* Allow height to grow with content */
+    overflow: visible !important; /* Don't block scrolling */
+    position: relative !important; /* Ensure it's in normal flow */
+    max-height: none !important; /* Remove any max-height constraints */
+    /* CRITICAL: Don't let flex container be the scroll container */
+    flex-shrink: 0 !important;
+    /* CRITICAL: Ensure flex container doesn't prevent body scroll */
+    touch-action: auto !important;
+  }
+
+  /* CRITICAL: Ensure body can scroll when content is taller than viewport - DESKTOP */
+  body:not(.modal-open) {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    max-height: none !important;
+    /* CRITICAL: Body must be the scroll container, not flex wrapper */
+    display: block !important;
+    /* CRITICAL: Ensure touch/scroll actions work */
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Ensure html can scroll on desktop */
+  html {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* CRITICAL: #root should NOT be the scroll container - body should scroll */
+  #root {
+    overflow-y: visible !important; /* Changed from auto - body scrolls, not #root */
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100vh;
+    max-height: none !important;
+  }
+
+  /* Ensure main-container on home page doesn't block scrolling */
+  .main-container {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Ensure main-content on home page doesn't block scrolling */
+  .main-content {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Prevent flex container from blocking scroll events */
+  .flex.flex-col {
+    overflow: visible !important;
   }
 }
 
@@ -935,6 +1010,7 @@ body.modal-open {
     height: 100% !important;
     height: 100dvh !important;
     overflow-x: hidden !important;
+    overflow-y: auto !important; /* Ensure vertical scrolling is enabled on mobile */
   }
   
   #root {

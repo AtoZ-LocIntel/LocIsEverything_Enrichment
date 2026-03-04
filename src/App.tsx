@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { debugScroll, monitorWheelEvents, checkEventListeners } from './utils/scrollDebug';
 
 import Header from './components/Header';
 import SingleSearch from './components/SingleSearch';
@@ -45,17 +46,276 @@ function App() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [totalLayersCount, setTotalLayersCount] = useState(0);
 
-  // Detect mobile device
+  // Detect mobile device and ensure desktop scrolling works
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      const isMobileDevice = window.innerWidth < 768;
+      setIsMobile(isMobileDevice);
+      
+      // Desktop-specific: Ensure scrolling is enabled
+      if (!isMobileDevice && viewMode === 'config') {
+        // Remove any scroll-blocking styles
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.maxHeight = '';
+        
+        // Ensure html and body allow scrolling on desktop
+        document.documentElement.style.overflowY = 'auto';
+        document.documentElement.style.overflowX = 'hidden';
+        document.documentElement.style.height = 'auto';
+        document.documentElement.style.maxHeight = '';
+        document.body.style.overflowY = 'auto';
+        document.body.style.overflowX = 'hidden';
+        document.body.style.height = 'auto';
+        document.body.style.maxHeight = '';
+        
+        // CRITICAL: #root should NOT be the scroll container - body should scroll
+        const root = document.getElementById('root');
+        if (root) {
+          root.style.overflowY = 'visible'; // Changed from 'auto' - body scrolls, not #root
+          root.style.overflowX = 'hidden';
+          root.style.height = 'auto';
+          root.style.maxHeight = '';
+        }
+        
+        // Ensure App wrapper doesn't block scroll
+        const appWrapper = document.querySelector('.bg-black.flex.flex-col.min-h-screen');
+        if (appWrapper) {
+          const wrapperEl = appWrapper as HTMLElement;
+          wrapperEl.style.overflow = 'visible';
+          wrapperEl.style.height = 'auto';
+          wrapperEl.style.maxHeight = '';
+          wrapperEl.style.position = 'relative';
+          // CRITICAL: Ensure flex wrapper doesn't prevent body scroll
+          wrapperEl.style.flexShrink = '0';
+        }
+        
+        // CRITICAL: Force body to be scroll container
+        // Remove any height constraints that might prevent scroll
+        document.body.style.display = 'block';
+        document.body.style.position = 'relative';
+        
+        // CRITICAL: Remove ALL inline styles that might block scroll
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('overflow-y');
+        document.body.style.removeProperty('overflow-x');
+        // Then set the correct values
+        document.body.style.setProperty('overflow-y', 'auto', 'important');
+        document.body.style.setProperty('overflow-x', 'hidden', 'important');
+        
+        // Ensure html can scroll
+        document.documentElement.style.position = 'relative';
+        document.documentElement.style.display = 'block';
+        document.documentElement.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('overflow-y');
+        document.documentElement.style.setProperty('overflow-y', 'auto', 'important');
+        
+        // DEBUG: Log scroll state
+        console.log('🔧 Desktop scroll fix applied for config view');
+        setTimeout(() => {
+          debugScroll();
+          // Try to manually scroll to verify it works
+          console.log('🧪 Testing scroll capability...');
+          window.scrollTo(0, 1);
+          setTimeout(() => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            console.log('🧪 Scroll test result:', scrollTop > 0 ? '✅ SCROLL WORKS' : '❌ SCROLL STILL BLOCKED');
+            if (scrollTop > 0) {
+              window.scrollTo(0, 0); // Reset
+            }
+          }, 100);
+        }, 200);
+      }
     };
     
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
+    // Also run on viewMode change to ensure scroll is enabled
+    if (viewMode === 'config' && !isMobile) {
+      setTimeout(checkMobile, 100);
+    }
+    
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [viewMode, isMobile]);
+
+  // DEBUG: Monitor scroll on home page and results page
+  useEffect(() => {
+    if ((viewMode === 'config' || viewMode === 'desktop-results') && !isMobile) {
+      const pageName = viewMode === 'config' ? 'HOME PAGE' : 'RESULTS PAGE';
+      console.log(`🏠 ${pageName} LOADED - Starting scroll debug...`);
+      
+      // CRITICAL: Force enable scroll immediately
+      const forceEnableScroll = () => {
+        // Remove ALL possible scroll blockers
+        document.body.classList.remove('modal-open');
+        
+        // CRITICAL: Remove any height constraints that prevent body from growing
+        document.body.style.removeProperty('height');
+        document.body.style.removeProperty('max-height');
+        document.body.style.removeProperty('min-height');
+        document.documentElement.style.removeProperty('height');
+        document.documentElement.style.removeProperty('max-height');
+        
+        // Force body to be scrollable with !important via setProperty
+        document.body.style.setProperty('overflow-y', 'auto', 'important');
+        document.body.style.setProperty('overflow-x', 'hidden', 'important');
+        document.body.style.setProperty('position', 'relative', 'important');
+        // CRITICAL: Don't set height: auto - let it be unset so it can grow naturally
+        document.body.style.removeProperty('height');
+        
+        // Force html to be scrollable
+        document.documentElement.style.setProperty('overflow-y', 'auto', 'important');
+        document.documentElement.style.setProperty('overflow-x', 'hidden', 'important');
+        // CRITICAL: Don't set height: auto - let it be unset so it can grow naturally
+        document.documentElement.style.removeProperty('height');
+        
+        // Ensure #root doesn't block - it should NOT be the scroll container
+        const root = document.getElementById('root');
+        if (root) {
+          root.style.setProperty('overflow-y', 'visible', 'important');
+          root.style.setProperty('overflow-x', 'hidden', 'important');
+          // CRITICAL: Remove height constraints so content can flow naturally
+          root.style.removeProperty('height');
+          root.style.removeProperty('max-height');
+        }
+        
+        // Ensure App wrapper doesn't block
+        const appWrapper = document.querySelector('.bg-black.flex.flex-col.min-h-screen');
+        if (appWrapper) {
+          const wrapperEl = appWrapper as HTMLElement;
+          wrapperEl.style.setProperty('overflow', 'visible', 'important');
+          wrapperEl.style.setProperty('overflow-y', 'visible', 'important');
+          // CRITICAL: Remove height constraints - let content determine height
+          wrapperEl.style.removeProperty('height');
+          wrapperEl.style.removeProperty('max-height');
+          // Keep min-height but ensure it doesn't prevent scrolling
+          wrapperEl.style.setProperty('min-height', '100vh', 'important');
+        }
+        
+        // CRITICAL: Ensure main-container and main-content don't block
+        const mainContainer = document.querySelector('.main-container');
+        if (mainContainer) {
+          (mainContainer as HTMLElement).style.setProperty('overflow', 'visible', 'important');
+          (mainContainer as HTMLElement).style.removeProperty('height');
+          (mainContainer as HTMLElement).style.removeProperty('max-height');
+        }
+        
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+          (mainContent as HTMLElement).style.setProperty('overflow', 'visible', 'important');
+          (mainContent as HTMLElement).style.removeProperty('height');
+          (mainContent as HTMLElement).style.removeProperty('max-height');
+        }
+      };
+      
+      // Run immediately and after delays
+      forceEnableScroll();
+      setTimeout(forceEnableScroll, 100);
+      setTimeout(forceEnableScroll, 500);
+      
+      // CRITICAL: Manually handle wheel events to ensure scroll works
+      let manualScrollHandler: ((e: WheelEvent) => void) | null = null;
+      
+      const enableManualScroll = () => {
+        // Check if scroll is actually possible
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = window.innerHeight;
+        const canScroll = scrollHeight > clientHeight;
+        
+        if (!canScroll) {
+          console.warn('⚠️ Content is not taller than viewport - cannot scroll');
+          return;
+        }
+        
+        console.log('🔧 Enabling manual scroll handler');
+        console.log(`  scrollHeight: ${scrollHeight}, clientHeight: ${clientHeight}, canScroll: ${canScroll}`);
+        
+        // Manually handle wheel events to ensure scroll works
+        let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+        
+        manualScrollHandler = (e: WheelEvent) => {
+          const currentScroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+          const maxScroll = Math.max(0, scrollHeight - clientHeight);
+          
+          // Store scroll position before potential browser scroll
+          const scrollBefore = currentScroll;
+          lastScrollTop = scrollBefore;
+          
+          // Wait a bit to see if browser handled the scroll
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              const scrollAfter = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+              
+              // If scroll didn't change significantly and we have a valid deltaY, manually scroll
+              if (Math.abs(scrollAfter - scrollBefore) < 5 && Math.abs(e.deltaY) > 0) {
+                const scrollAmount = e.deltaY;
+                const newPosition = Math.max(0, Math.min(maxScroll, scrollBefore + scrollAmount));
+                
+                // Only scroll if we're not at the limits
+                if ((scrollBefore > 0 && scrollAmount < 0) || (scrollBefore < maxScroll && scrollAmount > 0)) {
+                  // Manually scroll using multiple methods to ensure it works
+                  window.scrollTo({ top: newPosition, behavior: 'auto' });
+                  document.documentElement.scrollTop = newPosition;
+                  document.body.scrollTop = newPosition;
+                  
+                  // Verify it worked
+                  setTimeout(() => {
+                    const finalScroll = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+                    if (Math.abs(finalScroll - newPosition) > 1) {
+                      // Force scroll again if it didn't work
+                      window.scrollTo(0, newPosition);
+                      document.documentElement.scrollTop = newPosition;
+                      document.body.scrollTop = newPosition;
+                    }
+                  }, 10);
+                }
+              }
+            }, 30);
+          });
+        };
+        
+        // Add manual scroll handler with high priority (capture phase)
+        document.addEventListener('wheel', manualScrollHandler, { passive: true, capture: true });
+        window.addEventListener('wheel', manualScrollHandler, { passive: true, capture: true });
+      };
+      
+      // Enable manual scroll handler immediately
+      setTimeout(() => {
+        const debugInfo = debugScroll();
+        checkEventListeners();
+        
+        // Always enable manual scroll handler as fallback
+        enableManualScroll();
+      }, 500);
+      
+      // Monitor wheel events
+      const cleanupWheelMonitor = monitorWheelEvents();
+      
+      // Add keyboard shortcut for manual debug (Ctrl+Shift+D)
+      const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+          e.preventDefault();
+          console.log('🔍 MANUAL SCROLL DEBUG TRIGGERED');
+          forceEnableScroll();
+          debugScroll();
+        }
+      };
+      
+      window.addEventListener('keydown', handleKeyPress);
+      
+      return () => {
+        cleanupWheelMonitor();
+        window.removeEventListener('keydown', handleKeyPress);
+        if (manualScrollHandler) {
+          document.removeEventListener('wheel', manualScrollHandler, { capture: true });
+        }
+      };
+    }
+  }, [viewMode, isMobile]);
 
   // Handle Stripe checkout return
   useEffect(() => {
@@ -269,7 +529,16 @@ function App() {
   };
 
   return (
-    <div className={`${viewMode === 'map' ? 'h-screen' : 'min-h-screen'} bg-black flex flex-col`}>
+    <div 
+      className={`${viewMode === 'map' ? 'h-screen' : 'min-h-screen'} bg-black flex flex-col`} 
+      style={{ 
+        overflow: 'visible',
+        // CRITICAL: Ensure flex container doesn't block body scroll
+        height: viewMode === 'map' ? '100vh' : 'auto',
+        minHeight: viewMode === 'map' ? '100vh' : '100vh',
+        maxHeight: 'none'
+      }}
+    >
       {/* Loading Modal with Jokes */}
       <LoadingModal 
         isVisible={isLoading} 

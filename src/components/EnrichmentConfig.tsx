@@ -277,21 +277,60 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     checkMobile();
     window.addEventListener('resize', checkMobile);
     
+    // Ensure body scroll is not locked on initial mount - clear any lingering modal-open class
+    // This fixes cases where the class might persist from a previous session or navigation
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    
+    // Ensure html and body elements allow scrolling
+    document.documentElement.style.overflowY = 'auto';
+    document.documentElement.style.height = 'auto';
+    document.body.style.overflowY = 'auto';
+    document.body.style.height = 'auto';
+    
+    // Ensure #root allows scrolling
+    const root = document.getElementById('root');
+    if (root) {
+      root.style.overflowY = 'auto';
+      root.style.height = 'auto';
+    }
+    
+    // Force enable scrolling - remove any height constraints that might block scroll
+    setTimeout(() => {
+      document.documentElement.style.overflowY = 'auto';
+      document.body.style.overflowY = 'auto';
+      if (root) {
+        root.style.overflowY = 'auto';
+      }
+    }, 100);
+    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
 
   // Handle modal body scroll prevention (desktop only)
   useEffect(() => {
+    // Only add modal-open class when there's an active modal AND we're on desktop
+    // Always ensure the class is removed if either condition is false
     if (activeModal && !isMobile) {
       document.body.classList.add('modal-open');
     } else {
       document.body.classList.remove('modal-open');
+      // Also ensure overflow is restored (in case CSS didn't handle it)
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     }
 
-    // Cleanup on unmount
+    // Cleanup on unmount - always remove the class
     return () => {
       document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, [activeModal, isMobile]);
 

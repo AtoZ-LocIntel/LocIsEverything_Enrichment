@@ -134,12 +134,19 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
     const prevOverflow = document.body.style.overflow;
     const prevTouchAction = document.body.style.touchAction;
 
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
+    // Only lock scroll on mobile
+    if (window.innerWidth < 768) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    }
 
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.touchAction = prevTouchAction;
+      // CRITICAL: Always restore scroll when leaving this page
+      document.body.style.overflow = prevOverflow || '';
+      document.body.style.touchAction = prevTouchAction || '';
+      // Also ensure overflowY is restored
+      document.body.style.overflowY = '';
+      document.body.style.overflowX = '';
     };
   }, []);
 

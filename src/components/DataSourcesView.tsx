@@ -9142,6 +9142,38 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cottonwood/MapServer"
         },
+        {
+          name: "USFS FHAAST Cherry Species",
+          description: "USDA Forest Service FHAAST Hosts Cherry - Frequency distribution layers for Cherry and Plum Species, American Plum, Bitter Cherry, Black Cherry, Choke Cherry, and Pin Cherry species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Cherry/MapServer"
+        },
+        {
+          name: "USFS FHAAST Mangrove Species",
+          description: "USDA Forest Service FHAAST Hosts Mangrove - Frequency distribution layers for American Mangrove, Black Mangrove, Buttonwood Mangrove, and White Mangrove species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Mangrove/MapServer"
+        },
+        {
+          name: "USFS FHAAST Oak Species (A-C)",
+          description: "USDA Forest Service FHAAST Hosts Oak A-C - Frequency distribution layers for Oak Species, Arizona White Oak, Bear Oak, Black Oak, Blackjack Oak, Blue Oak, Bluejack Oak, Buckley Oak, Bur Oak, California Black Oak, California White Oak, Canyon Live Oak, Cherrybark Oak, Chestnut Oak, Chinkapin Oak, and Coast Live Oak species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_A_C/MapServer"
+        },
+        {
+          name: "USFS FHAAST Oak Species (D-N)",
+          description: "USDA Forest Service FHAAST Hosts Oak D-N - Frequency distribution layers for Durand Oak, Dwarf Live Oak, Dwarf Post Oak, Emory Oak, Engelmann Oak, Gambel Oak, Gray Oak, Interior Live Oak, Lacey Oak, Laurel Oak, Live Oak, Mexican Blue Oak, Netleaf Oak, Northern Pin Oak, and Northern Red Oak species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Oak_D_N/MapServer"
+        },
         ]
     }
   ];
