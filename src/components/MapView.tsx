@@ -688,6 +688,96 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer',
     exportMapLayerId: 252,
   },
+  // USFS FHAAST Fir Species - Fir Species Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_fir_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Fir Species Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Fir Species - Balsam Fir Frequency
+  usfs_fhaast_fir_balsam_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Balsam Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 21,
+  },
+  // USFS FHAAST Fir Species - California Red Fir Frequency
+  usfs_fhaast_fir_california_red_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - California Red Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 42,
+  },
+  // USFS FHAAST Fir Species - Corkbark Fir Frequency
+  usfs_fhaast_fir_corkbark_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Corkbark Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 63,
+  },
+  // USFS FHAAST Fir Species - Fraser Fir Frequency
+  usfs_fhaast_fir_fraser_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Fraser Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 84,
+  },
+  // USFS FHAAST Fir Species - Grand Fir Frequency
+  usfs_fhaast_fir_grand_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Grand Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 105,
+  },
+  // USFS FHAAST Fir Species - Noble Fir Frequency
+  usfs_fhaast_fir_noble_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Noble Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 126,
+  },
+  // USFS FHAAST Fir Species - Pacific Fir Frequency
+  usfs_fhaast_fir_pacific_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Pacific Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 147,
+  },
+  // USFS FHAAST Fir Species - Shasta Red Fir Frequency
+  usfs_fhaast_fir_shasta_red_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Shasta Red Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 168,
+  },
+  // USFS FHAAST Fir Species - Subalpine Fir Frequency
+  usfs_fhaast_fir_subalpine_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - Subalpine Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 189,
+  },
+  // USFS FHAAST Fir Species - White Fir Frequency
+  usfs_fhaast_fir_white_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Fir Species - White Fir Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Fir',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer',
+    exportMapLayerId: 210,
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',
@@ -40641,6 +40731,7 @@ const MapView: React.FC<MapViewProps> = ({
       </div>
     );
   }
+
 
   // Desktop: Original layout with header
   return (

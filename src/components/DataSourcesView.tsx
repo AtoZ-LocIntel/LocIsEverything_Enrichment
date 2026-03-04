@@ -9126,6 +9126,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Maple/MapServer"
         },
+        {
+          name: "USFS FHAAST Fir Species",
+          description: "USDA Forest Service FHAAST Hosts Fir - Frequency distribution layers for Balsam Fir, California Red Fir, Corkbark Fir, Fraser Fir, Grand Fir, Noble Fir, Pacific Fir, Shasta Red Fir, Subalpine Fir, White Fir, and general Fir species distribution",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Fir/MapServer"
+        },
         ]
     }
   ];
