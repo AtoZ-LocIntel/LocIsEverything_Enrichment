@@ -241,7 +241,6 @@ function App() {
           
           // Store scroll position before potential browser scroll
           const scrollBefore = currentScroll;
-          lastScrollTop = scrollBefore;
           
           // Wait a bit to see if browser handled the scroll
           requestAnimationFrame(() => {
