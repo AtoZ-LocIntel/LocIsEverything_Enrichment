@@ -3353,6 +3353,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_osm_financial_institutions': { icon: '💰', color: '#1e3a8a', title: 'Financial Institutions' },
   'poi_airports': { icon: '✈️', color: '#6366f1', title: 'Airports' },
   'noaa_weather_radar_impact_zones': { icon: '🌩️', color: '#ef4444', title: 'NOAA Weather Radar Impact Zones' },
+  'portwatch_disruptions': { icon: '🌊', color: '#dc2626', title: 'Port Watch Disruptions' },
+  'portwatch_chokepoints': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Chokepoints' },
+  'acled': { icon: '⚔️', color: '#dc2626', title: 'ACLED Conflict Events' },
   'noaa_maritime_overview': { icon: '🌊', color: '#3b82f6', title: 'NOAA Maritime Limits - Overview' },
   'noaa_maritime_12nm': { icon: '🌊', color: '#06b6d4', title: 'NOAA Maritime Limits - 12NM Territorial Sea' },
   'noaa_maritime_24nm': { icon: '🌊', color: '#10b981', title: 'NOAA Maritime Limits - 24NM Contiguous Zone' },
@@ -13004,6 +13007,131 @@ const MapView: React.FC<MapViewProps> = ({
             };
           } else {
             legendAccumulator[legendKey].count = chokepointFeatureCount || enrichments.portwatch_chokepoints_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Draw ACLED conflict events as markers on the map
+      if (enrichments.acled_all && Array.isArray(enrichments.acled_all)) {
+        let acledFeatureCount = 0;
+        const acledIcon = '⚔️';
+        
+        enrichments.acled_all.forEach((event: any) => {
+          const lat = event.latitude;
+          const lon = event.longitude;
+          
+          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+            try {
+              // Determine color based on disorder type
+              let eventColor = '#dc2626'; // Default red for violence
+              if (event.disorder_type === 'Demonstrations') {
+                eventColor = '#f59e0b'; // Orange for demonstrations
+              } else if (event.disorder_type === 'Strategic developments') {
+                eventColor = '#3b82f6'; // Blue for strategic developments
+              }
+              
+              // Determine icon based on event type
+              let eventIcon = '⚔️';
+              if (event.event_type?.toLowerCase().includes('protest')) {
+                eventIcon = '📢';
+              } else if (event.event_type?.toLowerCase().includes('riot')) {
+                eventIcon = '🔥';
+              } else if (event.event_type?.toLowerCase().includes('violence')) {
+                eventIcon = '⚔️';
+              } else if (event.event_type?.toLowerCase().includes('battle')) {
+                eventIcon = '🎯';
+              }
+              
+              const iconHtml = `<div style="
+                width: 16px;
+                height: 16px;
+                background-color: ${eventColor};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+              ">${eventIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [16, 16],
+                  iconAnchor: [8, 8]
+                })
+              });
+
+              const eventDate = event.event_date || 'N/A';
+              const eventType = event.event_type || 'Unknown';
+              const subEventType = event.sub_event_type || '';
+              const disorderType = event.disorder_type || 'Unknown';
+              const country = event.country || 'Unknown';
+              const location = event.location || 'Unknown';
+              const admin1 = event.admin1 || '';
+              const admin2 = event.admin2 || '';
+              const fatalities = event.fatalities || 0;
+              const actor1 = event.actor1 || 'Unknown';
+              const actor2 = event.actor2 || '';
+              const notes = event.notes || '';
+              const source = event.source || 'Unknown';
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${acledIcon} ${eventType}${subEventType ? ` - ${subEventType}` : ''}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Date:</strong> ${eventDate}</div>
+                    <div><strong>Disorder Type:</strong> ${disorderType}</div>
+                    <div><strong>Country:</strong> ${country}</div>
+                    <div><strong>Location:</strong> ${location}</div>
+                    ${admin1 ? `<div><strong>Admin 1:</strong> ${admin1}</div>` : ''}
+                    ${admin2 ? `<div><strong>Admin 2:</strong> ${admin2}</div>` : ''}
+                    <div><strong>Actor 1:</strong> ${actor1}</div>
+                    ${actor2 ? `<div><strong>Actor 2:</strong> ${actor2}</div>` : ''}
+                    ${fatalities > 0 ? `<div style="color: #dc2626; font-weight: 600;"><strong>Fatalities:</strong> ${fatalities}</div>` : ''}
+                    ${notes ? `<div style="margin-top: 8px;"><strong>Notes:</strong> ${notes.substring(0, 200)}${notes.length > 200 ? '...' : ''}</div>` : ''}
+                    <div style="margin-top: 8px; font-size: 11px; color: #9ca3af;"><strong>Source:</strong> ${source}</div>
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'acled';
+              (marker as any).__layerTitle = 'ACLED Conflict Events';
+              bounds.extend([lat, lon]);
+              acledFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing ACLED event marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (acledFeatureCount > 0 || enrichments.acled_count !== undefined) {
+          const legendKey = 'acled';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: acledIcon,
+              color: '#dc2626',
+              title: 'ACLED Conflict Events',
+              count: acledFeatureCount || enrichments.acled_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = acledFeatureCount || enrichments.acled_count || 0;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
@@ -41239,6 +41367,11 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip Port Watch Chokepoints - handled separately with point markers
         if (key === 'portwatch_chokepoints_all') {
+          return;
+        }
+
+        // Skip ACLED - handled separately with event markers
+        if (key === 'acled_all') {
           return;
         }
 

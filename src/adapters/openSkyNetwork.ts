@@ -52,8 +52,10 @@ export async function getAllOpenSkyAircraftStates(): Promise<OpenSkyAircraftStat
         const velocity = state[9] !== null && state[9] !== undefined ? state[9] : null;
         const heading = state[10] !== null && state[10] !== undefined ? state[10] : null;
         const vertical_rate = state[11] !== null && state[11] !== undefined ? state[11] : null;
-        const _sensors = state[12] || null; // Unused but kept for potential future use
-        const _geo_altitude = state[13] !== null && state[13] !== undefined ? state[13] : null; // Unused but kept for potential future use
+        // Sensors and geo_altitude are available in state[12] and state[13] but not currently used
+        // Keeping commented for potential future use:
+        // const sensors = state[12] || null;
+        // const geo_altitude = state[13] !== null && state[13] !== undefined ? state[13] : null;
         const squawk = state[14] || null;
         const spi = state[15] !== null && state[15] !== undefined ? state[15] : null;
         const position_source = state[16] !== null && state[16] !== undefined ? state[16] : null;

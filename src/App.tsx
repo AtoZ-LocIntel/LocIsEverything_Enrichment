@@ -503,7 +503,7 @@ function App() {
   const handleViewGlobalRiskMap = async () => {
     // Navigate to map view with all Global Risk layers pre-selected
     // Query ALL Global Risk layer data globally (no spatial constraints) for instant visualization
-    const globalRiskLayers = ['portwatch_disruptions', 'portwatch_chokepoints'];
+    const globalRiskLayers = ['portwatch_disruptions', 'portwatch_chokepoints', 'acled'];
     setSelectedEnrichments(globalRiskLayers);
     setPreviousViewMode('enrichment-category');
     
@@ -514,11 +514,13 @@ function App() {
       // Import the global query functions
       const { getAllPortWatchDisruptionsData } = await import('./adapters/portWatchDisruptions');
       const { getAllPortWatchChokepointsData } = await import('./adapters/portWatchChokepoints');
+      const { getAllACLEDData } = await import('./adapters/acled');
       
       // Query all features globally in parallel
-      const [allDisruptions, allChokepoints] = await Promise.all([
+      const [allDisruptions, allChokepoints, allACLEDEvents] = await Promise.all([
         getAllPortWatchDisruptionsData(),
-        getAllPortWatchChokepointsData()
+        getAllPortWatchChokepointsData(),
+        getAllACLEDData()
       ]);
       
       // Format enrichments to match expected structure
@@ -534,6 +536,12 @@ function App() {
         enrichments.portwatch_chokepoints_count = allChokepoints.length;
         enrichments.portwatch_chokepoints_summary = `Found ${allChokepoints.length} chokepoint ports globally`;
         enrichments.portwatch_chokepoints_all = allChokepoints;
+      }
+      
+      if (allACLEDEvents.length > 0) {
+        enrichments.acled_count = allACLEDEvents.length;
+        enrichments.acled_summary = `Found ${allACLEDEvents.length} ACLED conflict events globally`;
+        enrichments.acled_all = allACLEDEvents;
       }
       
       // Create enrichment result with minimal location (won't be displayed)

@@ -192,6 +192,11 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      // Special handling for ACLED - show count only for _all array
+      if (key.includes('acled_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       // Special handling for OpenSky Flights - show count only for _all array
       if (key.includes('opensky_flights_all')) {
         return null; // Skip the _all array (handled separately)
@@ -832,7 +837,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NOAA';
       } else if (key.startsWith('nws_')) {
         category = 'Watching the Weather';
-      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints')) {
+      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled')) {
         category = 'Global Risk';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';

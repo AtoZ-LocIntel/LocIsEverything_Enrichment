@@ -300,6 +300,7 @@ import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysi
 import { getPortWatchDisruptionsData } from '../adapters/portWatchDisruptions';
 import { getPortWatchChokepointsData } from '../adapters/portWatchChokepoints';
 import { getAllOpenSkyAircraftStates } from '../adapters/openSkyNetwork';
+import { getACLEDData } from '../adapters/acled';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -1546,6 +1547,92 @@ export class EnrichmentService {
     }
   }
   
+  private async getACLED(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚔️ ACLED query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const events = await getACLEDData(lat, lon, radiusMiles);
+      
+      if (!events || events.length === 0) {
+        return {
+          acled_count: 0,
+          acled_summary: `No ACLED conflict events found within ${radiusMiles} miles`,
+          acled_all: [],
+          acled_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Group by event type
+      const eventTypeCounts: Record<string, number> = {};
+      const disorderTypeCounts: Record<string, number> = {};
+      const countryCounts: Record<string, number> = {};
+      let totalFatalities = 0;
+      
+      events.forEach(event => {
+        const eventType = event.event_type || 'Unknown';
+        const disorderType = event.disorder_type || 'Unknown';
+        const country = event.country || 'Unknown';
+        
+        eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
+        disorderTypeCounts[disorderType] = (disorderTypeCounts[disorderType] || 0) + 1;
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+        totalFatalities += event.fatalities || 0;
+      });
+      
+      // Build summary
+      let summary = `Found ${events.length} ACLED conflict event${events.length !== 1 ? 's' : ''} within ${radiusMiles} miles`;
+      
+      const disorderTypes = Object.keys(disorderTypeCounts);
+      if (disorderTypes.length > 0) {
+        summary += `. Disorder types: ${disorderTypes.join(', ')}`;
+      }
+      
+      if (totalFatalities > 0) {
+        summary += `. Total fatalities: ${totalFatalities}`;
+      }
+      
+      return {
+        acled_count: events.length,
+        acled_summary: summary,
+        acled_event_types: eventTypeCounts,
+        acled_disorder_types: disorderTypeCounts,
+        acled_countries: countryCounts,
+        acled_total_fatalities: totalFatalities,
+        acled_proximity_distance: radiusMiles,
+        acled_all: events.map(event => ({
+          event_id_cnty: event.event_id_cnty,
+          event_date: event.event_date,
+          year: event.year,
+          disorder_type: event.disorder_type,
+          event_type: event.event_type,
+          sub_event_type: event.sub_event_type,
+          actor1: event.actor1,
+          actor2: event.actor2,
+          country: event.country,
+          region: event.region,
+          location: event.location,
+          admin1: event.admin1,
+          admin2: event.admin2,
+          admin3: event.admin3,
+          latitude: event.latitude,
+          longitude: event.longitude,
+          fatalities: event.fatalities,
+          source: event.source,
+          notes: event.notes,
+          tags: event.tags
+        }))
+      };
+    } catch (error) {
+      console.error('Error in ACLED query:', error);
+      return {
+        acled_count: 0,
+        acled_summary: 'Error querying ACLED data',
+        acled_all: [],
+        acled_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
   private async getPortWatchChokepoints(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`🌊 Port Watch Chokepoints query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
@@ -2633,6 +2720,10 @@ export class EnrichmentService {
       // Global Risk - Port Watch Chokepoints
       case 'portwatch_chokepoints':
         return await this.getPortWatchChokepoints(lat, lon, radius);
+      
+      // Global Risk - ACLED Conflict Events
+      case 'acled':
+        return await this.getACLED(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

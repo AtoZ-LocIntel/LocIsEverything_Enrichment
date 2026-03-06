@@ -156,6 +156,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         return 'N/A'; // Skip the _all array (handled separately)
       }
       
+      // Special handling for ACLED - show count only for _all array
+      if (key.includes('acled_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
       // Special handling for OpenSky Flights - show count only for _all array
       if (key.includes('opensky_flights_all')) {
         return 'N/A'; // Skip the _all array (handled separately)
@@ -268,7 +273,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // Global Risk - check before Natural Hazards
-    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints')) {
+    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled')) {
       return 'Global Risk';
     }
     
@@ -891,6 +896,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // Port Watch Chokepoints fields - only show if Port Watch Chokepoints enrichment is selected
       if (key.includes('portwatch_chokepoints')) {
         return selectedEnrichments.includes('portwatch_chokepoints');
+      }
+      
+      // ACLED fields - only show if ACLED enrichment is selected
+      if (key.includes('acled')) {
+        return selectedEnrichments.includes('acled');
       }
       
       // OpenSky Flights fields - only show if OpenSky Flights enrichment is selected
