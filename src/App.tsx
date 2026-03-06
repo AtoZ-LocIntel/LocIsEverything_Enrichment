@@ -542,7 +542,8 @@ function App() {
         lat: 0,
         lon: 0,
         name: '',
-        confidence: 'high'
+        confidence: 1,
+        source: 'global'
       };
       
       const globalResult: EnrichmentResult = {
