@@ -1,4 +1,3 @@
-import { fetchJSONSmart } from '../services/EnrichmentService';
 
 export interface ACLEDEvent {
   event_id_cnty: string;
@@ -85,7 +84,7 @@ async function getAccessToken(): Promise<string> {
     });
 
     if (loginResponse.ok) {
-      const loginData = await loginResponse.json();
+      await loginResponse.json(); // Check response is valid JSON
       console.log('✅ Cookie-based authentication successful');
       
       // For cookie-based auth, we don't need a token, but we'll use a placeholder
