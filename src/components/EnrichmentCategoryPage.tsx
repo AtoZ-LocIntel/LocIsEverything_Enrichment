@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Settings, Check, Search, X } from 'lucide-react';
+import { ArrowLeft, Settings, Check, Search, X, Map } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentItem {
@@ -28,6 +28,7 @@ interface EnrichmentCategoryPageProps {
   onPoiRadiiChange: (radii: Record<string, number>) => void;
   onPoiYearsChange?: (years: Record<string, number>) => void;
   onBackToConfig: () => void;
+  onViewMap?: () => void;
 }
 
 const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
@@ -38,7 +39,8 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   onSelectionChange,
   onPoiRadiiChange,
   onPoiYearsChange,
-  onBackToConfig
+  onBackToConfig,
+  onViewMap
 }) => {
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
   const headerRef = useRef<HTMLElement>(null);
@@ -222,22 +224,35 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
         </div>
 
         {/* Search Bar */}
-        <div className="relative">
-          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search layers..."
-            value={layerSearchQuery}
-            onChange={(e) => setLayerSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent"
-            style={{ backdropFilter: 'blur(10px)' }}
-          />
-          {layerSearchQuery && (
+        <div className="relative flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search layers..."
+              value={layerSearchQuery}
+              onChange={(e) => setLayerSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent"
+              style={{ backdropFilter: 'blur(10px)' }}
+            />
+            {layerSearchQuery && (
+              <button
+                onClick={() => setLayerSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          {/* Map Icon Button - Only for Global Risk category */}
+          {category.id === 'global_risk' && onViewMap && (
             <button
-              onClick={() => setLayerSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
+              onClick={onViewMap}
+              className="p-2.5 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white hover:bg-opacity-30 transition-colors flex-shrink-0"
+              style={{ backdropFilter: 'blur(10px)' }}
+              title="View Global Risk layers on map"
             >
-              <X className="w-4 h-4" />
+              <Map className="w-5 h-5" />
             </button>
           )}
         </div>

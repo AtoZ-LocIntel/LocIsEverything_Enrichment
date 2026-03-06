@@ -297,6 +297,9 @@ import { getDCPropertyAndLandData } from '../adapters/dcPropertyAndLand';
 import { getUSHistoricalCulturalPoliticalPointsData } from '../adapters/usHistoricalCulturalPoliticalPoints';
 import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalHydrographicPoints';
 import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
+import { getPortWatchDisruptionsData } from '../adapters/portWatchDisruptions';
+import { getPortWatchChokepointsData } from '../adapters/portWatchChokepoints';
+import { getAllOpenSkyAircraftStates } from '../adapters/openSkyNetwork';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -1375,7 +1378,268 @@ export class EnrichmentService {
       };
     }
   }
-
+  
+  private async getPortWatchDisruptions(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Port Watch Disruptions query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const disruptions = await getPortWatchDisruptionsData(lat, lon, radiusMiles);
+      
+      if (!disruptions || disruptions.length === 0) {
+        return {
+          portwatch_disruptions_count: 0,
+          portwatch_disruptions_summary: `No port disruptions found within ${radiusMiles} miles`,
+          portwatch_disruptions_all: [],
+          portwatch_disruptions_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Count containing vs proximity disruptions
+      const containingDisruptions = disruptions.filter(d => d.isContaining);
+      const proximityDisruptions = disruptions.filter(d => !d.isContaining);
+      
+      // Group by event type
+      const eventTypeCounts: Record<string, number> = {};
+      disruptions.forEach(d => {
+        const eventType = d.eventtype || 'Unknown';
+        eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
+      });
+      
+      // Count by alert level
+      const alertLevelCounts: Record<string, number> = {};
+      disruptions.forEach(d => {
+        const alertLevel = d.alertlevel || 'Unknown';
+        alertLevelCounts[alertLevel] = (alertLevelCounts[alertLevel] || 0) + 1;
+      });
+      
+      // Build summary
+      let summary = `Found ${disruptions.length} port disruption event${disruptions.length !== 1 ? 's' : ''}`;
+      if (containingDisruptions.length > 0) {
+        summary += ` (${containingDisruptions.length} containing location`;
+        if (proximityDisruptions.length > 0) {
+          summary += `, ${proximityDisruptions.length} within ${radiusMiles} miles`;
+        }
+        summary += ')';
+      } else if (proximityDisruptions.length > 0) {
+        summary += ` within ${radiusMiles} miles`;
+      }
+      
+      // Add event type breakdown
+      const eventTypes = Object.keys(eventTypeCounts);
+      if (eventTypes.length > 0) {
+        summary += `. Event types: ${eventTypes.join(', ')}`;
+      }
+      
+      return {
+        portwatch_disruptions_count: disruptions.length,
+        portwatch_disruptions_summary: summary,
+        portwatch_disruptions_containing_count: containingDisruptions.length,
+        portwatch_disruptions_proximity_count: proximityDisruptions.length,
+        portwatch_disruptions_event_types: eventTypeCounts,
+        portwatch_disruptions_alert_levels: alertLevelCounts,
+        portwatch_disruptions_proximity_distance: radiusMiles,
+        portwatch_disruptions_all: disruptions.map(d => ({
+          eventid: d.eventid,
+          eventtype: d.eventtype,
+          eventname: d.eventname,
+          htmlname: d.htmlname,
+          htmldescription: d.htmldescription,
+          alertlevel: d.alertlevel,
+          country: d.country,
+          fromdate: d.fromdate,
+          year: d.year,
+          todate: d.todate,
+          severitytext: d.severitytext,
+          lat: d.lat,
+          long: d.long,
+          editdate: d.editdate,
+          affectedports: d.affectedports,
+          n_affectedports: d.n_affectedports,
+          affectedpopulation: d.affectedpopulation,
+          pageid: d.pageid,
+          ObjectId: d.ObjectId,
+          distance_miles: d.distance_miles,
+          isContaining: d.isContaining,
+          geometry: d.geometry
+        }))
+      };
+    } catch (error) {
+      console.error('Error in Port Watch Disruptions query:', error);
+      return {
+        portwatch_disruptions_count: 0,
+        portwatch_disruptions_summary: 'Error querying Port Watch Disruptions data',
+        portwatch_disruptions_all: [],
+        portwatch_disruptions_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
+  private async getOpenSkyFlights(): Promise<Record<string, any>> {
+    try {
+      console.log(`✈️ Querying OpenSky Network for global aircraft states`);
+      const aircraftStates = await getAllOpenSkyAircraftStates();
+      
+      if (!aircraftStates || aircraftStates.length === 0) {
+        return {
+          opensky_flights_count: 0,
+          opensky_flights_summary: 'No aircraft data available from OpenSky Network',
+          opensky_flights_all: [],
+        };
+      }
+      
+      // Group by country
+      const countryCounts: Record<string, number> = {};
+      aircraftStates.forEach(aircraft => {
+        const country = aircraft.origin_country || 'Unknown';
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+      });
+      
+      // Calculate statistics
+      const inFlight = aircraftStates.filter(a => a.on_ground === false).length;
+      const onGround = aircraftStates.filter(a => a.on_ground === true).length;
+      const withAltitude = aircraftStates.filter(a => a.baro_altitude !== null).length;
+      const avgAltitude = withAltitude > 0
+        ? aircraftStates
+            .filter(a => a.baro_altitude !== null)
+            .reduce((sum, a) => sum + (a.baro_altitude || 0), 0) / withAltitude
+        : 0;
+      
+      let summary = `Found ${aircraftStates.length} aircraft globally`;
+      if (inFlight > 0) {
+        summary += ` (${inFlight} in flight, ${onGround} on ground)`;
+      }
+      if (withAltitude > 0) {
+        summary += `. Average altitude: ${Math.round(avgAltitude)}m`;
+      }
+      
+      return {
+        opensky_flights_count: aircraftStates.length,
+        opensky_flights_in_flight: inFlight,
+        opensky_flights_on_ground: onGround,
+        opensky_flights_avg_altitude: Math.round(avgAltitude),
+        opensky_flights_countries: countryCounts,
+        opensky_flights_summary: summary,
+        opensky_flights_all: aircraftStates.map(aircraft => ({
+          icao24: aircraft.icao24,
+          callsign: aircraft.callsign,
+          origin_country: aircraft.origin_country,
+          longitude: aircraft.longitude,
+          latitude: aircraft.latitude,
+          baro_altitude: aircraft.baro_altitude,
+          velocity: aircraft.velocity,
+          heading: aircraft.heading,
+          on_ground: aircraft.on_ground,
+          vertical_rate: aircraft.vertical_rate,
+          squawk: aircraft.squawk,
+          time_position: aircraft.time_position,
+          last_contact: aircraft.last_contact
+        }))
+      };
+    } catch (error) {
+      console.error('Error in OpenSky Flights query:', error);
+      return {
+        opensky_flights_count: 0,
+        opensky_flights_summary: 'Error querying OpenSky Network data',
+        opensky_flights_all: [],
+        opensky_flights_error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+  
+  private async getPortWatchChokepoints(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Port Watch Chokepoints query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const chokepoints = await getPortWatchChokepointsData(lat, lon, radiusMiles);
+      
+      if (!chokepoints || chokepoints.length === 0) {
+        return {
+          portwatch_chokepoints_count: 0,
+          portwatch_chokepoints_summary: `No chokepoint ports found within ${radiusMiles} miles`,
+          portwatch_chokepoints_all: [],
+          portwatch_chokepoints_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Group by country
+      const countryCounts: Record<string, number> = {};
+      chokepoints.forEach(cp => {
+        const country = cp.country || 'Unknown';
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+      });
+      
+      // Group by continent
+      const continentCounts: Record<string, number> = {};
+      chokepoints.forEach(cp => {
+        const continent = cp.continent || 'Unknown';
+        continentCounts[continent] = (continentCounts[continent] || 0) + 1;
+      });
+      
+      // Calculate total vessel counts
+      const totalVessels = chokepoints.reduce((sum, cp) => sum + (cp.vessel_count_total || 0), 0);
+      const totalContainers = chokepoints.reduce((sum, cp) => sum + (cp.vessel_count_container || 0), 0);
+      const totalTankers = chokepoints.reduce((sum, cp) => sum + (cp.vessel_count_tanker || 0), 0);
+      
+      // Build summary
+      let summary = `Found ${chokepoints.length} chokepoint port${chokepoints.length !== 1 ? 's' : ''} within ${radiusMiles} miles`;
+      const countries = Object.keys(countryCounts);
+      if (countries.length > 0 && countries.length <= 5) {
+        summary += ` (${countries.join(', ')})`;
+      } else if (countries.length > 5) {
+        summary += ` (${countries.length} countries)`;
+      }
+      if (totalVessels > 0) {
+        summary += `. Total vessels: ${totalVessels.toLocaleString()}`;
+      }
+      
+      return {
+        portwatch_chokepoints_count: chokepoints.length,
+        portwatch_chokepoints_summary: summary,
+        portwatch_chokepoints_countries: countryCounts,
+        portwatch_chokepoints_continents: continentCounts,
+        portwatch_chokepoints_total_vessels: totalVessels,
+        portwatch_chokepoints_total_containers: totalContainers,
+        portwatch_chokepoints_total_tankers: totalTankers,
+        portwatch_chokepoints_proximity_distance: radiusMiles,
+        portwatch_chokepoints_all: chokepoints.map(cp => ({
+          portid: cp.portid,
+          portname: cp.portname,
+          country: cp.country,
+          ISO3: cp.ISO3,
+          continent: cp.continent,
+          fullname: cp.fullname,
+          lat: cp.lat,
+          lon: cp.lon,
+          vessel_count_total: cp.vessel_count_total,
+          vessel_count_container: cp.vessel_count_container,
+          vessel_count_dry_bulk: cp.vessel_count_dry_bulk,
+          vessel_count_general_cargo: cp.vessel_count_general_cargo,
+          vessel_count_RoRo: cp.vessel_count_RoRo,
+          vessel_count_tanker: cp.vessel_count_tanker,
+          industry_top1: cp.industry_top1,
+          industry_top2: cp.industry_top2,
+          industry_top3: cp.industry_top3,
+          share_country_maritime_import: cp.share_country_maritime_import,
+          share_country_maritime_export: cp.share_country_maritime_export,
+          LOCODE: cp.LOCODE,
+          pageid: cp.pageid,
+          countrynoaccents: cp.countrynoaccents,
+          ObjectId: cp.ObjectId,
+          distance_miles: cp.distance_miles,
+          geometry: cp.geometry
+        }))
+      };
+    } catch (error) {
+      console.error('Error in Port Watch Chokepoints query:', error);
+      return {
+        portwatch_chokepoints_count: 0,
+        portwatch_chokepoints_summary: 'Error querying Port Watch Chokepoints data',
+        portwatch_chokepoints_all: [],
+        portwatch_chokepoints_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
   private async getEarthquakes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`USGS Earthquake query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
@@ -2361,6 +2625,18 @@ export class EnrichmentService {
         return await this.getPADUSPublicAccess(lat, lon, radius);
       case 'poi_padus_protection_status':
         return await this.getPADUSProtectionStatus(lat, lon, radius);
+      
+      // Global Risk - Port Watch Disruptions
+      case 'portwatch_disruptions':
+        return await this.getPortWatchDisruptions(lat, lon, radius);
+      
+      // Global Risk - Port Watch Chokepoints
+      case 'portwatch_chokepoints':
+        return await this.getPortWatchChokepoints(lat, lon, radius);
+      
+      // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
+      case 'opensky_flights':
+        return await this.getOpenSkyFlights();
       
       // USDA Local Food Portal - Farmers Markets & Local Food
       case 'poi_usda_agritourism':

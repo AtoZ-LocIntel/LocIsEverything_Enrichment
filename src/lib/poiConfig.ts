@@ -22,6 +22,12 @@ export interface POISection {
 // Default POI sections
 export const DEFAULT_POI_SECTIONS: POISection[] = [
   {
+    id: 'global_risk',
+    title: 'Global Risk',
+    description: 'Global risk assessments and analysis',
+    icon: 'global_risk.webp'
+  },
+  {
     id: 'wildfire',
     title: 'Natural Hazards',
     description: 'Natural hazard assessments including wildfire, flood, volcano, and earthquake risk',
@@ -529,6 +535,9 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
 
 // Default POI types (built-in)
 export const DEFAULT_POI_TYPES: POIConfig[] = [
+  // Global Risk (at top)
+  { id: 'portwatch_disruptions', label: 'Port Watch Disruptions', description: 'Port Watch Disruptions Database - Global port disruption events including conflicts, natural disasters, and other disruptions affecting maritime ports (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 0, maxRadius: 100, category: 'portwatch', section: 'global_risk' },
+  { id: 'portwatch_chokepoints', label: 'Port Watch Chokepoints', description: 'Port Watch Chokepoints Database - Global maritime chokepoint ports with vessel traffic and trade data (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 5, maxRadius: 100, category: 'portwatch', section: 'global_risk' },
   // TNM Structures (at top)
   { id: 'tnm_structures', label: 'TNM Structures', description: 'USGS The National Map Structures - Schools, Fire Stations, Hospitals, Post Offices, Campgrounds, Trailheads, Visitor Centers, and more (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'tnmstructures', section: 'nationalmap' },
   { id: 'usgs_trails', label: 'USGS Trails', description: 'USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'usgstrails', section: 'nationalmap' },

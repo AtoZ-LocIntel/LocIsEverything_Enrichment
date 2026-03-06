@@ -182,6 +182,21 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      // Special handling for Port Watch Disruptions - show count only for _all array
+      if (key.includes('portwatch_disruptions_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Port Watch Chokepoints - show count only for _all array
+      if (key.includes('portwatch_chokepoints_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for OpenSky Flights - show count only for _all array
+      if (key.includes('opensky_flights_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
@@ -410,6 +425,16 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // Soil carbon density fields - only show if soil carbon density enrichment is selected
         if (key.includes('soil_') && (key.includes('carbon') || key.includes('organic'))) {
           return selectedEnrichments.includes('soil_organic_carbon_density');
+        }
+        
+        // Port Watch Disruptions fields - only show if Port Watch Disruptions enrichment is selected
+        if (key.includes('portwatch_disruptions')) {
+          return selectedEnrichments.includes('portwatch_disruptions');
+        }
+        
+        // Port Watch Chokepoints fields - only show if Port Watch Chokepoints enrichment is selected
+        if (key.includes('portwatch_chokepoints')) {
+          return selectedEnrichments.includes('portwatch_chokepoints');
         }
         
         // US National Grid fields - handle usng_ prefix in field keys
@@ -807,6 +832,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NOAA';
       } else if (key.startsWith('nws_')) {
         category = 'Watching the Weather';
+      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints')) {
+        category = 'Global Risk';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';
       } else if (key.includes('hospital') || key.includes('healthcare')) {

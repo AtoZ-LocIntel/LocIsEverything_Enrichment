@@ -188,6 +188,106 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // Add Port Watch Disruptions data - individual disruptions
+  if (enrichments.portwatch_disruptions_all && Array.isArray(enrichments.portwatch_disruptions_all)) {
+    enrichments.portwatch_disruptions_all.forEach((disruption: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Port Watch',
+        (location.confidence || 'N/A').toString(),
+        'PORTWATCH_DISRUPTIONS',
+        disruption.eventname || disruption.htmlname || 'Port Disruption',
+        (disruption.lat || location.lat).toString(),
+        (disruption.long || location.lon).toString(),
+        (disruption.distance_miles || (disruption.isContaining ? 0 : 'N/A')).toString(),
+        'Global Risk Assessment',
+        `${disruption.eventtype || 'Unknown'} - ${disruption.alertlevel || 'Unknown'} Alert`,
+        disruption.country || 'Unknown',
+        disruption.fromdate || '',
+        'Port Watch',
+        `Affected Ports: ${disruption.affectedports || 'N/A'}`,
+        disruption.htmldescription || '',
+        disruption.severitytext || '',
+        disruption.year?.toString() || '',
+        disruption.todate || '',
+        disruption.n_affectedports?.toString() || '0',
+        disruption.affectedpopulation || ''
+      ]);
+    });
+  } else if (enrichments.portwatch_disruptions_count !== undefined) {
+    // Fallback to summary row if no individual disruptions
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Port Watch',
+      (location.confidence || 'N/A').toString(),
+      'PORTWATCH_DISRUPTIONS',
+      'Port Disruptions',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.portwatch_disruptions_proximity_distance || 0).toFixed(1),
+      'Global Risk Assessment',
+      `${enrichments.portwatch_disruptions_count || 0} found`,
+      enrichments.portwatch_disruptions_summary || '',
+      '',
+      'Port Watch'
+    ]);
+  }
+
+  // Add Port Watch Chokepoints data - individual chokepoints
+  if (enrichments.portwatch_chokepoints_all && Array.isArray(enrichments.portwatch_chokepoints_all)) {
+    enrichments.portwatch_chokepoints_all.forEach((chokepoint: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Port Watch',
+        (location.confidence || 'N/A').toString(),
+        'PORTWATCH_CHOKEPOINTS',
+        chokepoint.portname || chokepoint.fullname || 'Chokepoint Port',
+        (chokepoint.lat || location.lat).toString(),
+        (chokepoint.lon || location.lon).toString(),
+        (chokepoint.distance_miles || 'N/A').toString(),
+        'Global Risk Assessment',
+        chokepoint.fullname || chokepoint.portname || 'Unknown',
+        chokepoint.country || 'Unknown',
+        chokepoint.continent || '',
+        'Port Watch',
+        `Vessels: ${chokepoint.vessel_count_total || 0}`,
+        chokepoint.LOCODE || '',
+        `Containers: ${chokepoint.vessel_count_container || 0}`,
+        `Tankers: ${chokepoint.vessel_count_tanker || 0}`,
+        chokepoint.industry_top1 || '',
+        chokepoint.industry_top2 || '',
+        chokepoint.industry_top3 || '',
+        chokepoint.share_country_maritime_import?.toString() || '0',
+        chokepoint.share_country_maritime_export?.toString() || '0'
+      ]);
+    });
+  } else if (enrichments.portwatch_chokepoints_count !== undefined) {
+    // Fallback to summary row if no individual chokepoints
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Port Watch',
+      (location.confidence || 'N/A').toString(),
+      'PORTWATCH_CHOKEPOINTS',
+      'Chokepoint Ports',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.portwatch_chokepoints_proximity_distance || 0).toFixed(1),
+      'Global Risk Assessment',
+      `${enrichments.portwatch_chokepoints_count || 0} found`,
+      enrichments.portwatch_chokepoints_summary || '',
+      '',
+      'Port Watch'
+    ]);
+  }
+
   // Add USGS Wildfire data
   if (enrichments.poi_wildfires_count !== undefined) {
     rows.push([

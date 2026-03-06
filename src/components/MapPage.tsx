@@ -8,9 +8,10 @@ interface MapPageProps {
   onBack: () => void;
   previousViewMode?: string;
   poiRadii?: Record<string, number>;
+  hideLocationMarker?: boolean;
 }
 
-const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode, poiRadii }) => {
+const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode, poiRadii, hideLocationMarker }) => {
   return (
     <div
       className="mobile-map-page bg-black text-white overflow-hidden"
@@ -28,6 +29,7 @@ const MapPage: React.FC<MapPageProps> = ({ results, onBack, previousViewMode, po
           isMobile={true}
           previousViewMode={previousViewMode}
           poiRadii={poiRadii}
+          hideLocationMarker={hideLocationMarker}
         />
       </main>
     </div>

@@ -500,6 +500,68 @@ function App() {
     setPreviousViewMode('config');
   };
 
+  const handleViewGlobalRiskMap = async () => {
+    // Navigate to map view with all Global Risk layers pre-selected
+    // Query ALL Global Risk layer data globally (no spatial constraints) for instant visualization
+    const globalRiskLayers = ['portwatch_disruptions', 'portwatch_chokepoints'];
+    setSelectedEnrichments(globalRiskLayers);
+    setPreviousViewMode('enrichment-category');
+    
+    // Set loading state
+    setIsLoading(true);
+    
+    try {
+      // Import the global query functions
+      const { getAllPortWatchDisruptionsData } = await import('./adapters/portWatchDisruptions');
+      const { getAllPortWatchChokepointsData } = await import('./adapters/portWatchChokepoints');
+      
+      // Query all features globally in parallel
+      const [allDisruptions, allChokepoints] = await Promise.all([
+        getAllPortWatchDisruptionsData(),
+        getAllPortWatchChokepointsData()
+      ]);
+      
+      // Format enrichments to match expected structure
+      const enrichments: Record<string, any> = {};
+      
+      if (allDisruptions.length > 0) {
+        enrichments.portwatch_disruptions_count = allDisruptions.length;
+        enrichments.portwatch_disruptions_summary = `Found ${allDisruptions.length} port disruption events globally`;
+        enrichments.portwatch_disruptions_all = allDisruptions;
+      }
+      
+      if (allChokepoints.length > 0) {
+        enrichments.portwatch_chokepoints_count = allChokepoints.length;
+        enrichments.portwatch_chokepoints_summary = `Found ${allChokepoints.length} chokepoint ports globally`;
+        enrichments.portwatch_chokepoints_all = allChokepoints;
+      }
+      
+      // Create enrichment result with minimal location (won't be displayed)
+      // Use world center as placeholder location
+      const globalLocation: GeocodeResult = {
+        lat: 0,
+        lon: 0,
+        name: '',
+        confidence: 'high'
+      };
+      
+      const globalResult: EnrichmentResult = {
+        location: globalLocation,
+        enrichments: enrichments
+      };
+      
+      setEnrichmentResults([globalResult]);
+      setViewMode('map');
+    } catch (error) {
+      console.error('Error loading Global Risk layers:', error);
+      // Still navigate to map even if query fails
+      setEnrichmentResults([]);
+      setViewMode('map');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleViewEnrichmentCategory = (category: any) => {
     // Save current scroll position before navigating to category view
     setSavedScrollPosition(window.pageYOffset || document.documentElement.scrollTop);
@@ -704,6 +766,7 @@ function App() {
             onPoiRadiiChange={setPoiRadii}
             onPoiYearsChange={setPoiYears}
             onBackToConfig={handleBackToConfig}
+            onViewMap={activeCategory?.id === 'global_risk' ? handleViewGlobalRiskMap : undefined}
           />
         ) : (
           <EnrichmentCategoryView
@@ -715,6 +778,7 @@ function App() {
             onPoiRadiiChange={setPoiRadii}
             onPoiYearsChange={setPoiYears}
             onBackToConfig={handleBackToConfig}
+            onViewMap={activeCategory?.id === 'global_risk' ? handleViewGlobalRiskMap : undefined}
           />
         )
       ) : viewMode === 'map' ? (
@@ -724,6 +788,14 @@ function App() {
             onBack={handleBackToConfig}
             previousViewMode={previousViewMode || undefined}
             poiRadii={poiRadii}
+            hideLocationMarker={
+              enrichmentResults.length > 0 && 
+              enrichmentResults[0]?.location?.lat === 0 && 
+              enrichmentResults[0]?.location?.lon === 0 && 
+              enrichmentResults[0]?.location?.name === '' &&
+              (selectedEnrichments.includes('portwatch_disruptions') || 
+               selectedEnrichments.includes('portwatch_chokepoints'))
+            }
           />
         ) : (
           <div className="flex-1 h-full">
@@ -732,9 +804,34 @@ function App() {
               onBackToConfig={handleBackToConfig}
               isMobile={isMobile}
               previousViewMode={previousViewMode}
-              initialCenter={enrichmentResults.length === 0 ? [37.0902, -95.7129] as [number, number] : undefined}
-              initialZoom={enrichmentResults.length === 0 ? 4 : undefined}
+              initialCenter={
+                enrichmentResults.length === 0 
+                  ? (selectedEnrichments.includes('portwatch_disruptions') || selectedEnrichments.includes('portwatch_chokepoints')
+                      ? [0, 0] as [number, number] // Global center for Global Risk layers
+                      : [37.0902, -95.7129] as [number, number]) // US center for other cases
+                  : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
+                      ? [0, 0] as [number, number] // Global center for global view
+                      : undefined)
+              }
+              initialZoom={
+                enrichmentResults.length === 0 
+                  ? (selectedEnrichments.includes('portwatch_disruptions') || selectedEnrichments.includes('portwatch_chokepoints')
+                      ? 3 // Continent level zoom for Global Risk layers
+                      : 4) // US zoom for other cases
+                  : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
+                      ? 3 // Continent level zoom for global view
+                      : undefined)
+              }
               poiRadii={poiRadii}
+              hideLocationMarker={
+                enrichmentResults.length > 0 && 
+                enrichmentResults[0]?.location?.lat === 0 && 
+                enrichmentResults[0]?.location?.lon === 0 && 
+                enrichmentResults[0]?.location?.name === '' &&
+                (selectedEnrichments.includes('portwatch_disruptions') || 
+                 selectedEnrichments.includes('portwatch_chokepoints') || 
+                 selectedEnrichments.includes('opensky_flights'))
+              }
             />
           </div>
         )

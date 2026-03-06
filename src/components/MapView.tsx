@@ -15,6 +15,7 @@ interface MapViewProps {
   initialCenter?: [number, number];
   initialZoom?: number;
   poiRadii?: Record<string, number>;
+  hideLocationMarker?: boolean; // For global view mode - skip location marker and popup
 }
 
 interface LegendItem {
@@ -2272,6 +2273,26 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service - FHAAST Hosts Pea',
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
     exportMapLayerId: 186, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Persimmon Species - Common Persimmon Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_persimmon_common_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Persimmon Species - Common Persimmon Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Persimmon',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Persimmon/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Persimmon Species - Texas Persimmon Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_persimmon_texas_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Persimmon Species - Texas Persimmon Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Persimmon',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Persimmon/MapServer',
+    exportMapLayerId: 29, // Layer ID for ExportMap endpoint
   },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
@@ -5046,10 +5067,13 @@ const MapView: React.FC<MapViewProps> = ({
   initialCenter,
   initialZoom,
   poiRadii = {},
+  hideLocationMarker = false,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
+  const openskyRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const openskyMarkersRef = useRef<L.Marker[]>([]); // Track OpenSky markers for easy removal
   
   // Helper function to get radius from poiRadii, trying multiple key variations
   // Falls back to POI config defaultRadius if poiRadii is empty
@@ -5142,6 +5166,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedThematicBasemap, setSelectedThematicBasemap] = useState<string | null>(null); // Thematic basemap from other sections (WMS, tile, etc.) - optional overlay
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
+  const [showFlights, setShowFlights] = useState<boolean>(false);
   const [showBasemapInfo, setShowBasemapInfo] = useState<boolean>(false); // Info tooltip state
   const basemapInfoRef = useRef<HTMLDivElement>(null);
   // Collapsible basemap sections state
@@ -5971,6 +5996,125 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [showWeatherRadar, isInitialized, results]);
 
+  // Handle flight tracker toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showFlights) {
+      // Clear flights when toggled off
+      if (openskyRefreshIntervalRef.current) {
+        clearInterval(openskyRefreshIntervalRef.current);
+        openskyRefreshIntervalRef.current = null;
+      }
+      
+      // Remove all flight markers
+      if (layerGroupsRef.current) {
+        const { primary } = layerGroupsRef.current;
+        openskyMarkersRef.current.forEach(marker => {
+          primary.removeLayer(marker);
+        });
+        openskyMarkersRef.current = [];
+      }
+      return;
+    }
+    
+    // Function to fetch and display flights
+    const fetchAndDisplayFlights = async () => {
+      try {
+        console.log('✈️ Fetching OpenSky flights data...');
+        const { getAllOpenSkyAircraftStates } = await import('../adapters/openSkyNetwork');
+        const newAircraftStates = await getAllOpenSkyAircraftStates();
+        
+        if (newAircraftStates && newAircraftStates.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          const { primary } = layerGroupsRef.current;
+          
+          // Remove old OpenSky markers
+          openskyMarkersRef.current.forEach(marker => {
+            primary.removeLayer(marker);
+          });
+          openskyMarkersRef.current = [];
+          
+          // Add new markers
+          newAircraftStates.forEach((aircraft: any) => {
+            const lat = aircraft.latitude;
+            const lon = aircraft.longitude;
+            
+            if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+              const heading = aircraft.heading !== null && aircraft.heading !== undefined ? aircraft.heading : 0;
+              const isInFlight = aircraft.on_ground === false;
+              const altitude = aircraft.baro_altitude !== null ? aircraft.baro_altitude : null;
+              const velocity = aircraft.velocity !== null ? aircraft.velocity : null;
+              const callsign = aircraft.callsign || 'N/A';
+              const originCountry = aircraft.origin_country || 'Unknown';
+              const icao24 = aircraft.icao24 || 'N/A';
+              
+              const iconHtml = isInFlight
+                ? `<div style="transform: rotate(${heading}deg); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 16px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">✈️</div>`
+                : `<div style="width: 12px; height: 12px; background-color: #6b7280; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: isInFlight ? [20, 20] : [12, 12],
+                  iconAnchor: isInFlight ? [10, 10] : [6, 6]
+                })
+              });
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ✈️ ${callsign !== 'N/A' ? callsign : 'Aircraft'}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>ICAO24:</strong> ${icao24}</div>
+                    <div><strong>Origin Country:</strong> ${originCountry}</div>
+                    <div><strong>Status:</strong> ${isInFlight ? 'In Flight' : 'On Ground'}</div>
+                    ${altitude !== null ? `<div><strong>Altitude:</strong> ${Math.round(altitude)}m (${Math.round(altitude * 3.28084)}ft)</div>` : ''}
+                    ${velocity !== null ? `<div><strong>Velocity:</strong> ${Math.round(velocity * 2.237)} mph (${Math.round(velocity * 3.6)} km/h)</div>` : ''}
+                    ${heading !== null && heading !== undefined ? `<div><strong>Heading:</strong> ${Math.round(heading)}°</div>` : ''}
+                    ${aircraft.vertical_rate !== null ? `<div><strong>Vertical Rate:</strong> ${Math.round(aircraft.vertical_rate)} m/s</div>` : ''}
+                    ${aircraft.squawk ? `<div><strong>Squawk:</strong> ${aircraft.squawk}</div>` : ''}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'opensky_flights';
+              (marker as any).__layerTitle = 'OpenSky Flight Tracker';
+              openskyMarkersRef.current.push(marker);
+            }
+          });
+          
+          console.log(`✈️ Refreshed OpenSky flights: ${newAircraftStates.length} aircraft`);
+        }
+      } catch (error) {
+        console.error('Error fetching OpenSky flights:', error);
+      }
+    };
+    
+    // Fetch flights immediately when enabled
+    fetchAndDisplayFlights();
+    
+    // Set up refresh interval (15 seconds)
+    openskyRefreshIntervalRef.current = setInterval(() => {
+      if (showFlights) {
+        fetchAndDisplayFlights();
+      }
+    }, 15000);
+    
+    // Cleanup function
+    return () => {
+      if (openskyRefreshIntervalRef.current) {
+        clearInterval(openskyRefreshIntervalRef.current);
+        openskyRefreshIntervalRef.current = null;
+      }
+    };
+  }, [showFlights, isInitialized]);
+
   // Handle basemap changes and OpenFreeMap toggle
   useEffect(() => {
     // On mobile, don't allow basemap changes - always use OpenFreeMap liberty
@@ -6598,6 +6742,12 @@ const MapView: React.FC<MapViewProps> = ({
     // Map is ready, proceed immediately
     addFeaturesToMap();
     
+    // Cleanup function
+    return () => {
+      // Cleanup handled in individual feature handlers
+    };
+  }, [results]);
+    
     function addFeaturesToMap() {
     if (!mapInstanceRef.current || !layerGroupsRef.current) {
       console.warn('🔍 [DEBUG] Map or layer groups not ready, skipping feature addition');
@@ -6638,8 +6788,8 @@ const MapView: React.FC<MapViewProps> = ({
     // Clear feature metadata for tabbed popup
     featuresMetadataRef.current = [];
     
-    // Add location marker (larger blue pin)
-    if (results[0]?.location) {
+    // Add location marker (larger blue pin) - skip if hideLocationMarker is true
+    if (results[0]?.location && !hideLocationMarker) {
       // Create a simpler icon for mobile, complex pin for desktop
       const locationIcon = isMobile 
         ? L.divIcon({
@@ -12677,6 +12827,290 @@ const MapView: React.FC<MapViewProps> = ({
           legendAccumulator[layerType].count += featureCount;
         }
       });
+
+      // Draw Port Watch Disruptions as polygons on the map
+      if (enrichments.portwatch_disruptions_all && Array.isArray(enrichments.portwatch_disruptions_all)) {
+        let portwatchFeatureCount = 0;
+        const portwatchColor = '#dc2626'; // Red color for disruptions
+        const portwatchIcon = '🌊';
+        
+        enrichments.portwatch_disruptions_all.forEach((disruption: any) => {
+          const geometry = disruption.geometry;
+          if (geometry && geometry.rings && !geometry.paths) {
+            try {
+              const rings = geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = disruption.isContaining || false;
+                const polygon = L.polygon(latlngs, {
+                  color: portwatchColor,
+                  weight: isContaining ? 3 : 2,
+                  opacity: isContaining ? 0.9 : 0.6,
+                  fillColor: portwatchColor,
+                  fillOpacity: isContaining ? 0.4 : 0.2
+                });
+
+                const eventName = disruption.eventname || disruption.htmlname || 'Port Disruption';
+                const eventType = disruption.eventtype || 'Unknown';
+                const alertLevel = disruption.alertlevel || 'Unknown';
+                const country = disruption.country || 'Unknown';
+                const affectedPorts = disruption.affectedports || 'N/A';
+                const distance = disruption.distance_miles ? disruption.distance_miles.toFixed(2) : (isContaining ? '0.00' : 'N/A');
+                const fromDate = disruption.fromdate || 'N/A';
+                const toDate = disruption.todate || 'N/A';
+                const severity = disruption.severitytext || 'N/A';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${portwatchIcon} ${eventName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${isContaining ? `<div style="color: #dc2626; font-weight: 600;">✓ Location is within disruption area</div>` : `<div><strong>Distance:</strong> ${distance} miles</div>`}
+                      <div><strong>Event Type:</strong> ${eventType}</div>
+                      <div><strong>Alert Level:</strong> ${alertLevel}</div>
+                      <div><strong>Country:</strong> ${country}</div>
+                      <div><strong>Affected Ports:</strong> ${affectedPorts}</div>
+                      <div><strong>From Date:</strong> ${fromDate}</div>
+                      <div><strong>To Date:</strong> ${toDate}</div>
+                      <div><strong>Severity:</strong> ${severity}</div>
+                      ${disruption.n_affectedports ? `<div><strong>Number of Affected Ports:</strong> ${disruption.n_affectedports}</div>` : ''}
+                      ${disruption.affectedpopulation ? `<div><strong>Affected Population:</strong> ${disruption.affectedpopulation}</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                (polygon as any).__layerType = 'portwatch_disruptions';
+                (polygon as any).__layerTitle = 'Port Watch Disruptions';
+                bounds.extend(polygon.getBounds());
+                portwatchFeatureCount++;
+              }
+            } catch (error) {
+              console.error('Error drawing Port Watch Disruption polygon:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (portwatchFeatureCount > 0 || enrichments.portwatch_disruptions_count !== undefined) {
+          const legendKey = 'portwatch_disruptions';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: portwatchIcon,
+              color: portwatchColor,
+              title: 'Port Watch Disruptions',
+              count: portwatchFeatureCount || enrichments.portwatch_disruptions_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = portwatchFeatureCount || enrichments.portwatch_disruptions_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Draw Port Watch Chokepoints as point markers on the map
+      if (enrichments.portwatch_chokepoints_all && Array.isArray(enrichments.portwatch_chokepoints_all)) {
+        let chokepointFeatureCount = 0;
+        const chokepointColor = '#dc2626'; // Red color for chokepoints
+        const chokepointIcon = '🌊';
+        
+        enrichments.portwatch_chokepoints_all.forEach((chokepoint: any) => {
+          const lat = chokepoint.lat || (chokepoint.geometry?.y);
+          const lon = chokepoint.lon || (chokepoint.geometry?.x);
+          
+          if (lat && lon) {
+            try {
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: `<div style="background-color: ${chokepointColor}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                  iconSize: [12, 12],
+                  iconAnchor: [6, 6]
+                })
+              });
+
+              const portName = chokepoint.portname || chokepoint.fullname || 'Chokepoint Port';
+              const country = chokepoint.country || 'Unknown';
+              const continent = chokepoint.continent || 'Unknown';
+              const distance = chokepoint.distance_miles ? chokepoint.distance_miles.toFixed(2) : 'N/A';
+              const vesselTotal = chokepoint.vessel_count_total || 0;
+              const vesselContainer = chokepoint.vessel_count_container || 0;
+              const vesselTanker = chokepoint.vessel_count_tanker || 0;
+              const loCode = chokepoint.LOCODE || 'N/A';
+              const industryTop1 = chokepoint.industry_top1 || 'N/A';
+              const importShare = chokepoint.share_country_maritime_import || 0;
+              const exportShare = chokepoint.share_country_maritime_export || 0;
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${chokepointIcon} ${portName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Distance:</strong> ${distance} miles</div>
+                    <div><strong>Country:</strong> ${country}</div>
+                    <div><strong>Continent:</strong> ${continent}</div>
+                    <div><strong>LOCODE:</strong> ${loCode}</div>
+                    <div><strong>Total Vessels:</strong> ${vesselTotal.toLocaleString()}</div>
+                    ${vesselContainer > 0 ? `<div><strong>Container Vessels:</strong> ${vesselContainer.toLocaleString()}</div>` : ''}
+                    ${vesselTanker > 0 ? `<div><strong>Tanker Vessels:</strong> ${vesselTanker.toLocaleString()}</div>` : ''}
+                    ${industryTop1 !== 'N/A' ? `<div><strong>Top Industry:</strong> ${industryTop1}</div>` : ''}
+                    ${importShare > 0 ? `<div><strong>Country Import Share:</strong> ${importShare.toFixed(2)}%</div>` : ''}
+                    ${exportShare > 0 ? `<div><strong>Country Export Share:</strong> ${exportShare.toFixed(2)}%</div>` : ''}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'portwatch_chokepoints';
+              (marker as any).__layerTitle = 'Port Watch Chokepoints';
+              bounds.extend([lat, lon]);
+              chokepointFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing Port Watch Chokepoint marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (chokepointFeatureCount > 0 || enrichments.portwatch_chokepoints_count !== undefined) {
+          const legendKey = 'portwatch_chokepoints';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: chokepointIcon,
+              color: chokepointColor,
+              title: 'Port Watch Chokepoints',
+              count: chokepointFeatureCount || enrichments.portwatch_chokepoints_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = chokepointFeatureCount || enrichments.portwatch_chokepoints_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Draw OpenSky Flight Tracker aircraft as markers on the map
+      if (enrichments.opensky_flights_all && Array.isArray(enrichments.opensky_flights_all)) {
+        let flightFeatureCount = 0;
+        const flightColor = '#3b82f6'; // Blue color for aircraft
+        const flightIcon = '✈️';
+        
+        enrichments.opensky_flights_all.forEach((aircraft: any) => {
+          const lat = aircraft.latitude;
+          const lon = aircraft.longitude;
+          
+          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+            try {
+              // Create aircraft marker with rotation based on heading
+              const heading = aircraft.heading !== null && aircraft.heading !== undefined ? aircraft.heading : 0;
+              const isInFlight = aircraft.on_ground === false;
+              const altitude = aircraft.baro_altitude !== null ? aircraft.baro_altitude : null;
+              const velocity = aircraft.velocity !== null ? aircraft.velocity : null;
+              const callsign = aircraft.callsign || 'N/A';
+              const originCountry = aircraft.origin_country || 'Unknown';
+              const icao24 = aircraft.icao24 || 'N/A';
+              
+              // Use different icon style for in-flight vs on-ground
+              const iconHtml = isInFlight
+                ? `<div style="
+                    transform: rotate(${heading}deg);
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                  ">✈️</div>`
+                : `<div style="
+                    width: 12px;
+                    height: 12px;
+                    background-color: #6b7280;
+                    border-radius: 50%;
+                    border: 2px solid white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                  "></div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: isInFlight ? [20, 20] : [12, 12],
+                  iconAnchor: isInFlight ? [10, 10] : [6, 6]
+                })
+              });
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${flightIcon} ${callsign !== 'N/A' ? callsign : 'Aircraft'}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>ICAO24:</strong> ${icao24}</div>
+                    <div><strong>Origin Country:</strong> ${originCountry}</div>
+                    <div><strong>Status:</strong> ${isInFlight ? 'In Flight' : 'On Ground'}</div>
+                    ${altitude !== null ? `<div><strong>Altitude:</strong> ${Math.round(altitude)}m (${Math.round(altitude * 3.28084)}ft)</div>` : ''}
+                    ${velocity !== null ? `<div><strong>Velocity:</strong> ${Math.round(velocity * 2.237)} mph (${Math.round(velocity * 3.6)} km/h)</div>` : ''}
+                    ${heading !== null && heading !== undefined ? `<div><strong>Heading:</strong> ${Math.round(heading)}°</div>` : ''}
+                    ${aircraft.vertical_rate !== null ? `<div><strong>Vertical Rate:</strong> ${Math.round(aircraft.vertical_rate)} m/s</div>` : ''}
+                    ${aircraft.squawk ? `<div><strong>Squawk:</strong> ${aircraft.squawk}</div>` : ''}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'opensky_flights';
+              (marker as any).__layerTitle = 'OpenSky Flight Tracker';
+              bounds.extend([lat, lon]);
+              openskyMarkersRef.current.push(marker); // Track for refresh cleanup
+              flightFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing OpenSky aircraft marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (flightFeatureCount > 0 || enrichments.opensky_flights_count !== undefined) {
+          const legendKey = 'opensky_flights';
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: flightIcon,
+              color: flightColor,
+              title: 'OpenSky Flight Tracker',
+              count: flightFeatureCount || enrichments.opensky_flights_count || 0,
+            };
+          } else {
+            legendAccumulator[legendKey].count = flightFeatureCount || enrichments.opensky_flights_count || 0;
+          }
+        }
+      }
+
 
       // Draw TIGER Places and County Subdivisions as polygons on the map
       const tigerPlacesLayers = [
@@ -40798,6 +41232,21 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        // Skip Port Watch Disruptions - handled separately with polygon geometry drawing
+        if (key === 'portwatch_disruptions_all') {
+          return;
+        }
+
+        // Skip Port Watch Chokepoints - handled separately with point markers
+        if (key === 'portwatch_chokepoints_all') {
+          return;
+        }
+
+        // Skip OpenSky Flights - handled separately with aircraft markers
+        if (key === 'opensky_flights_all') {
+          return;
+        }
+
         const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois|all)$/i, '');
 
         // Skip NH and USVI layers that are explicitly drawn above with custom popups
@@ -41340,7 +41789,6 @@ const MapView: React.FC<MapViewProps> = ({
         });
       });
     }
-  }, [results]);
 
 
   // Setup tabbed popup handler for overlapping features
@@ -42738,12 +43186,30 @@ const MapView: React.FC<MapViewProps> = ({
                 Shows current weather radar overlay
               </p>
             </div>
+            
+            {/* Flight Tracker Toggle */}
+            <div className="border-t border-gray-200 pt-3">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showFlights}
+                  onChange={(e) => setShowFlights(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-semibold text-black">
+                  ✈️ Flight Tracker
+                </span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Shows real-time global aircraft positions
+              </p>
+            </div>
           </div>
         )}
         
-        {/* Weather Radar Toggle - Mobile */}
+        {/* Weather Radar & Flight Toggle - Mobile */}
         {isMobile && (
-          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10">
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10 space-y-2">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -42753,6 +43219,17 @@ const MapView: React.FC<MapViewProps> = ({
               />
               <span className="text-sm font-semibold text-black">
                 🌦️ Radar
+              </span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showFlights}
+                onChange={(e) => setShowFlights(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-semibold text-black">
+                ✈️ Flights
               </span>
             </label>
           </div>

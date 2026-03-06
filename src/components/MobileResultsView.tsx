@@ -146,6 +146,21 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         return `${value.length} fires found (see CSV for details)`;
       }
       
+      // Special handling for Port Watch Disruptions - show count only for _all array
+      if (key.includes('portwatch_disruptions_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Port Watch Chokepoints - show count only for _all array
+      if (key.includes('portwatch_chokepoints_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for OpenSky Flights - show count only for _all array
+      if (key.includes('opensky_flights_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
       // Regular array handling for non-POI data
       return value.map((item: any) => {
         if (typeof item === 'object' && item !== null) {
@@ -250,6 +265,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     // National Risk Index (NRI) annualized frequency layers - treat as Natural Hazards
     if (key.includes('nri_') && key.includes('annualized_frequency')) {
       return 'Natural Hazards';
+    }
+    
+    // Global Risk - check before Natural Hazards
+    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints')) {
+      return 'Global Risk';
     }
     
     // Natural Hazards layers - check early to catch all Natural Hazards layers (including all FEMA NFHL layers)
@@ -861,6 +881,21 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // Skip the _all array (handled separately in display)
       if (key.includes('nh_nwi_plus') && key !== 'nh_nwi_plus_all') {
         return selectedEnrichments.includes('nh_nwi_plus');
+      }
+      
+      // Port Watch Disruptions fields - only show if Port Watch Disruptions enrichment is selected
+      if (key.includes('portwatch_disruptions')) {
+        return selectedEnrichments.includes('portwatch_disruptions');
+      }
+      
+      // Port Watch Chokepoints fields - only show if Port Watch Chokepoints enrichment is selected
+      if (key.includes('portwatch_chokepoints')) {
+        return selectedEnrichments.includes('portwatch_chokepoints');
+      }
+      
+      // OpenSky Flights fields - only show if OpenSky Flights enrichment is selected
+      if (key.includes('opensky_flights')) {
+        return selectedEnrichments.includes('opensky_flights');
       }
       
       return false;

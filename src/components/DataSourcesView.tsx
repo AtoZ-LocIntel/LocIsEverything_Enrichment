@@ -9279,6 +9279,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer"
         },
         {
+          name: "USFS FHAAST Persimmon Species",
+          description: "USDA Forest Service FHAAST Hosts Persimmon - Frequency distribution layers for Common Persimmon and Texas Persimmon species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Persimmon/MapServer"
+        },
+        {
           name: "USFS EDW Weather & Climate Data",
           description: "USDA Forest Service EDW Weather & Climate - Snow Residence Time (Historical), Change in Number of Frost-Free Days, Historical Change in Number of Frost-Free Days, Change in Date of Freeze, Historical Change in Date of Freeze, Change in Date of Thaw, Historical Change in Date of Thaw, Snow Residence Time (Percent Change, Absolute Change, 2080s, 1975-2005), and Snow Water Equivalent April 1 (Percent Change, Absolute Change, 2080s, 1975-2005)",
           coverage: "United States",
@@ -9293,6 +9301,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management"
+        },
+        {
+          name: "Port Watch Disruptions Database",
+          description: "Port Watch Disruptions Database - Global port disruption events including conflicts, natural disasters, and other disruptions affecting maritime ports. Supports point-in-polygon and proximity queries up to 100 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/portwatch_disruptions_database/FeatureServer"
+        },
+        {
+          name: "Port Watch Chokepoints Database",
+          description: "Port Watch Chokepoints Database - Global maritime chokepoint ports with vessel traffic counts, trade data, and industry information. Supports proximity queries up to 100 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/PortWatch_chokepoints_database/FeatureServer"
+        },
+        {
+          name: "OpenSky Network",
+          description: "OpenSky Network - Real-time global aircraft positions, altitude, heading, callsign, and flight information. Provides worldwide flight tracking data updated every 10-30 seconds.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://opensky-network.org/api/states/all"
         },
         ]
     }
