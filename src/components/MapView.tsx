@@ -2153,6 +2153,126 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_HistoricalAndFutureSnowTrends/MapServer',
     exportMapLayerId: 15, // Layer ID for ExportMap endpoint
   },
+  // USFS EDW Extent of US Rangelands
+  // ImageServer ExportImage service - visualization only, not queryable
+  // Note: Uses Export Image REST endpoint for dynamic raster rendering
+  usfs_edw_extent_of_us_rangelands: {
+    type: 'tile',
+    name: 'USFS EDW Extent of US Rangelands',
+    attribution: 'USDA Forest Service - Field Services and Innovation Center Geospatial Office',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_EDW_Extent_Of_US_Rangelands/ImageServer/exportImage',
+    exportImageRasterFunction: 'Extent_Of_US_Rangelands', // Use Extent_Of_US_Rangelands raster function
+  },
+  // USFS FHAAST Pea Species - Black Locust Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_black_locust_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Black Locust Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 8, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Desert Ironwood Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_desert_ironwood_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Desert Ironwood Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 25, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Eastern Redbud Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_eastern_redbud_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Eastern Redbud Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 34, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Honey Mesquite Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_honey_mesquite_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Honey Mesquite Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 55, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Honey Locust Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_honey_locust_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Honey Locust Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 76, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Kentucky Coffeetree Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_kentucky_coffeetree_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Kentucky Coffeetree Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 97, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - New Mexico Locust Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_new_mexico_locust_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - New Mexico Locust Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 118, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Screwbean Mesquite Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_screwbean_mesquite_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Screwbean Mesquite Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 135, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Sweet Acacia Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_sweet_acacia_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Sweet Acacia Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 144, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Velvet Mesquite Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_velvet_mesquite_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Velvet Mesquite Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 165, // Layer ID for ExportMap endpoint
+  },
+  // USFS FHAAST Pea Species - Water Locust Frequency
+  // MapServer ExportMap service - visualization only, not queryable
+  // Note: Uses Export Map REST endpoint for dynamic raster rendering
+  usfs_fhaast_pea_water_locust_frequency: {
+    type: 'tile',
+    name: 'USFS FHAAST Pea Species - Water Locust Frequency',
+    attribution: 'USDA Forest Service - FHAAST Hosts Pea',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer',
+    exportMapLayerId: 186, // Layer ID for ExportMap endpoint
+  },
   // USFS FHAAST Pine Species - Foxtail Pine Frequency
   usfs_fhaast_pine_foxtail_frequency: {
     type: 'tile',

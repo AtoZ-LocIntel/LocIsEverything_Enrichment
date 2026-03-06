@@ -9271,12 +9271,28 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Hackberry/MapServer"
         },
         {
+          name: "USFS FHAAST Pea Species",
+          description: "USDA Forest Service FHAAST Hosts Pea - Frequency distribution layers for Black Locust, Desert Ironwood, Eastern Redbud, Honey Mesquite, Honey Locust, Kentucky Coffeetree, New Mexico Locust, Screwbean Mesquite, Sweet Acacia, Velvet Mesquite, and Water Locust species",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management/USFS_FHAAST_Hosts_Pea/MapServer"
+        },
+        {
           name: "USFS EDW Weather & Climate Data",
           description: "USDA Forest Service EDW Weather & Climate - Snow Residence Time (Historical), Change in Number of Frost-Free Days, Historical Change in Number of Frost-Free Days, Change in Date of Freeze, Historical Change in Date of Freeze, Change in Date of Thaw, Historical Change in Date of Thaw, Snow Residence Time (Percent Change, Absolute Change, 2080s, 1975-2005), and Snow Water Equivalent April 1 (Percent Change, Absolute Change, 2080s, 1975-2005)",
           coverage: "United States",
           accuracy: "Very High",
           cost: "Free",
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate"
+        },
+        {
+          name: "USFS EDW Rangeland Data",
+          description: "USDA Forest Service EDW Rangeland - Extent of US Rangelands",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Forest_Management"
         },
         ]
     }
