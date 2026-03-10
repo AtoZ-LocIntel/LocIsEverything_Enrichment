@@ -63,7 +63,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 /**
  * Query USGS Earthquakes within a radius of a location
- * Supports proximity queries up to 500 miles
+ * Supports proximity queries up to 1000 miles
  * Returns ALL historical earthquakes (no time limit)
  */
 export async function getUSGSEarthquakesData(
@@ -72,7 +72,7 @@ export async function getUSGSEarthquakesData(
   radiusMiles?: number
 ): Promise<USGSEarthquakeInfo[]> {
   try {
-    const maxRadius = radiusMiles ? Math.min(radiusMiles, 500) : 500; // Cap at 500 miles
+    const maxRadius = radiusMiles ? Math.min(radiusMiles, 1000) : 1000; // Cap at 1000 miles
     
     // Convert miles to kilometers (USGS API uses kilometers)
     const maxRadiusKm = maxRadius * 1.60934;

@@ -9344,11 +9344,19 @@ export const getDataSources = (): DataSourceCategory[] => {
         },
         {
           name: "USGS Earthquake API",
-          description: "USGS Earthquake Hazards Program - Global earthquake data from the U.S. Geological Survey. Provides near-real-time earthquake information including magnitude, location, depth, time, tsunami alerts, and event details. The service aggregates seismic data from global networks (ANSS earthquake catalog). Supports proximity queries up to 500 miles. Data includes earthquakes from the last 30 days for proximity queries and last 48 hours for global map view.",
+          description: "USGS Earthquake Hazards Program - Global earthquake data from the U.S. Geological Survey. Provides near-real-time earthquake information including magnitude, location, depth, time, tsunami alerts, and event details. The service aggregates seismic data from global networks (ANSS earthquake catalog). Supports proximity queries up to 1000 miles. Data includes earthquakes from the last 30 days for proximity queries and last 48 hours for global map view.",
           coverage: "Global",
           accuracy: "High",
           cost: "Free",
           url: "https://earthquake.usgs.gov/fdsnws/event/1/query"
+        },
+        {
+          name: "Global Fishing Watch API",
+          description: "Global Fishing Watch - Comprehensive maritime data platform providing SAR (Synthetic-Aperture Radar) fixed infrastructure detections, fishing effort data, vessel encounters, port visits, and other maritime intelligence. SAR Fixed Infrastructure includes offshore oil platforms, wind farms, and unknown structures detected via satellite imagery from 2017 to present, classified with deep learning. Supports proximity queries up to 1000 miles. Note: SAR infrastructure data uses MVT (Mapbox Vector Tile) format requiring special parsing.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "API Key Required",
+          url: "https://gateway.api.globalfishingwatch.org/v3"
         },
         {
           name: "AIS Stream (AISStream.io)",

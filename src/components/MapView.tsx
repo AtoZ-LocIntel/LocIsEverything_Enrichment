@@ -5176,7 +5176,25 @@ const MapView: React.FC<MapViewProps> = ({
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
   const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
+  const [showWFIGSWildfires, setShowWFIGSWildfires] = useState<boolean>(false);
+  const [showNASAFIRMS, setShowNASAFIRMS] = useState<boolean>(false);
+  const [firmsRegions, setFirmsRegions] = useState<Record<string, boolean>>({
+    USA: false,
+    Canada: false,
+    Alaska: false,
+    SouthAmerica: false,
+    CentralAmerica: false,
+    Europe: false,
+    RussiaAsia: false,
+    AustraliaNewZealand: false,
+    SouthAsia: false,
+    SoutheastAsia: false,
+    NorthCentralAfrica: false,
+    SouthernAfrica: false
+  });
   const earthquakeMarkersRef = useRef<L.Marker[]>([]);
+  const wfigsWildfireMarkersRef = useRef<L.Marker[]>([]);
+  const nasaFIRMSMarkersRef = useRef<L.Marker[]>([]);
   
   // Global Risk TOC layer states
   const [globalRiskLayerStates, setGlobalRiskLayerStates] = useState<Record<string, boolean>>({
@@ -5334,6 +5352,7 @@ const MapView: React.FC<MapViewProps> = ({
     'Alaska': false,
   });
   const [showThematicThemes, setShowThematicThemes] = useState<boolean>(false); // Toggle to show/hide thematic themes list
+  const [showEventThemes, setShowEventThemes] = useState<boolean>(false); // Toggle to show/hide event themes list
   // Search queries for basemap sections
   const [noaaSearchQuery, setNoaaSearchQuery] = useState<string>('');
   const [usfsSearchQuery, setUsfsSearchQuery] = useState<string>('');
@@ -6410,6 +6429,300 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, [showEarthquakes, isInitialized]);
 
+  // Handle WFIGS Wildfire toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showWFIGSWildfires) {
+      // Clear wildfires when toggled off
+      if (layerGroupsRef.current) {
+        const { primary } = layerGroupsRef.current;
+        wfigsWildfireMarkersRef.current.forEach(marker => {
+          primary.removeLayer(marker);
+        });
+        wfigsWildfireMarkersRef.current = [];
+      }
+      return;
+    }
+    
+    // Function to fetch and display WFIGS wildfires
+    const fetchAndDisplayWFIGSWildfires = async () => {
+      try {
+        console.log('🔥 Fetching WFIGS wildfire incidents...');
+        const { getAllWFIGSWildfires } = await import('../adapters/wfigsWildfires');
+        const wildfires = await getAllWFIGSWildfires();
+        
+        if (wildfires && wildfires.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          const { primary } = layerGroupsRef.current;
+          
+          // Remove old wildfire markers
+          wfigsWildfireMarkersRef.current.forEach(marker => {
+            primary.removeLayer(marker);
+          });
+          wfigsWildfireMarkersRef.current = [];
+          
+          // Add new markers
+          wildfires.forEach((fire: any) => {
+            const lat = fire.latitude;
+            const lon = fire.longitude;
+            
+            if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+              // Determine color based on fire type and size
+              let fireColor = '#dc2626'; // Red for wildfires
+              let markerSize = 16;
+              const fireType = fire.incident_type || '';
+              const fireSize = fire.incident_size || 0;
+              
+              if (fireType === 'RX') {
+                fireColor = '#10b981'; // Green for prescribed fires
+              } else if (fireType === 'CX') {
+                fireColor = '#f59e0b'; // Orange for incident complexes
+              }
+              
+              // Size marker based on fire size
+              if (fireSize > 1000) {
+                markerSize = 24; // Large fires
+              } else if (fireSize > 100) {
+                markerSize = 20; // Medium fires
+              }
+              
+              const wildfireIcon = '🔥';
+              const contained = fire.percent_contained || 0;
+              
+              const iconHtml = `<div style="
+                width: ${markerSize}px;
+                height: ${markerSize}px;
+                background-color: ${fireColor};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: ${Math.max(12, markerSize - 4)}px;
+              ">${wildfireIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [markerSize, markerSize],
+                  iconAnchor: [markerSize / 2, markerSize / 2]
+                })
+              });
+
+              const fireName = fire.incident_name || 'Unnamed Fire';
+              const fireSizeStr = fireSize > 0 ? `${fireSize.toLocaleString()} acres` : 'Size unknown';
+              const containedStr = contained > 0 ? `${contained}% contained` : 'Not contained';
+              
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${wildfireIcon} ${fireName}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Type:</strong> ${fireType === 'WF' ? 'Wildfire' : fireType === 'RX' ? 'Prescribed Fire' : fireType === 'CX' ? 'Incident Complex' : fireType}</div>
+                    <div><strong>Size:</strong> ${fireSizeStr}</div>
+                    <div><strong>Contained:</strong> ${containedStr}</div>
+                    ${fire.poo_state ? `<div><strong>State:</strong> ${fire.poo_state}</div>` : ''}
+                    ${fire.poo_county ? `<div><strong>County:</strong> ${fire.poo_county}</div>` : ''}
+                    ${fire.fire_cause ? `<div><strong>Cause:</strong> ${fire.fire_cause}</div>` : ''}
+                    ${fire.discovery_date ? `<div><strong>Discovery Date:</strong> ${new Date(fire.discovery_date).toLocaleDateString()}</div>` : ''}
+                  </div>
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                    Data from WFIGS (Wildland Fire Interagency Geospatial Services)
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'wfigs_wildfires_toggle';
+              (marker as any).__layerTitle = 'WFIGS Current Wildfires';
+              wfigsWildfireMarkersRef.current.push(marker);
+            }
+          });
+          
+          console.log(`🔥 Loaded WFIGS Wildfires: ${wildfires.length} incidents`);
+        }
+      } catch (error) {
+        console.error('Error fetching WFIGS wildfires:', error);
+      }
+    };
+    
+    // Fetch wildfires immediately when enabled
+    fetchAndDisplayWFIGSWildfires();
+    
+    // Set up refresh interval (5 minutes - matches WFIGS update frequency)
+    const refreshInterval = setInterval(() => {
+      if (showWFIGSWildfires) {
+        fetchAndDisplayWFIGSWildfires();
+      }
+    }, 300000); // 5 minutes
+    
+    // Cleanup function
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [showWFIGSWildfires, isInitialized]);
+
+  // Handle NASA FIRMS Wildfire toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showNASAFIRMS) {
+      // Clear FIRMS fires when toggled off
+      if (layerGroupsRef.current) {
+        const { primary } = layerGroupsRef.current;
+        nasaFIRMSMarkersRef.current.forEach(marker => {
+          primary.removeLayer(marker);
+        });
+        nasaFIRMSMarkersRef.current = [];
+      }
+      return;
+    }
+    
+    // Get selected regions
+    const selectedRegions = Object.entries(firmsRegions)
+      .filter(([_, enabled]) => enabled)
+      .map(([regionName, _]) => regionName);
+    
+    if (selectedRegions.length === 0) {
+      // No regions selected, clear markers
+      if (layerGroupsRef.current) {
+        const { primary } = layerGroupsRef.current;
+        nasaFIRMSMarkersRef.current.forEach(marker => {
+          primary.removeLayer(marker);
+        });
+        nasaFIRMSMarkersRef.current = [];
+      }
+      return;
+    }
+    
+    // Function to fetch and display NASA FIRMS fires
+    const fetchAndDisplayNASAFIRMS = async () => {
+      try {
+        console.log(`🔥 Fetching NASA FIRMS fire detections for regions: ${selectedRegions.join(', ')}`);
+        const { getNASAFIRMSForRegions } = await import('../adapters/nasaFIRMS');
+        const fires = await getNASAFIRMSForRegions(selectedRegions);
+        
+        if (fires && fires.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          const { primary } = layerGroupsRef.current;
+          
+          // Remove old fire markers
+          nasaFIRMSMarkersRef.current.forEach(marker => {
+            primary.removeLayer(marker);
+          });
+          nasaFIRMSMarkersRef.current = [];
+          
+          // Add new markers
+          fires.forEach((fire: any) => {
+            const lat = fire.latitude;
+            const lon = fire.longitude;
+            
+            if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+              // Determine color based on confidence and brightness
+              let fireColor = '#dc2626'; // Red for high confidence
+              let markerSize = 12;
+              const confidence = fire.confidence || 0;
+              const brightness = fire.brightness || 0;
+              
+              if (confidence >= 80) {
+                fireColor = '#dc2626'; // Red for high confidence
+                markerSize = 16;
+              } else if (confidence >= 50) {
+                fireColor = '#f59e0b'; // Orange for medium confidence
+                markerSize = 14;
+              } else {
+                fireColor = '#f97316'; // Orange-red for low confidence
+                markerSize = 12;
+              }
+              
+              const fireIcon = '🔥';
+              
+              const iconHtml = `<div style="
+                width: ${markerSize}px;
+                height: ${markerSize}px;
+                background-color: ${fireColor};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: ${Math.max(10, markerSize - 4)}px;
+              ">${fireIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [markerSize, markerSize],
+                  iconAnchor: [markerSize / 2, markerSize / 2]
+                })
+              });
+
+              const satellite = fire.satellite || 'Unknown';
+              const acqDate = fire.acq_date || '';
+              const acqTime = fire.acq_time || '';
+              const frp = fire.frp ? `${fire.frp.toFixed(1)} MW` : 'N/A';
+              const daynight = fire.daynight === 'D' ? 'Day' : fire.daynight === 'N' ? 'Night' : 'Unknown';
+              
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${fireIcon} NASA FIRMS Fire Detection
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Satellite:</strong> ${satellite}</div>
+                    ${confidence !== undefined ? `<div><strong>Confidence:</strong> ${confidence}%</div>` : ''}
+                    ${brightness ? `<div><strong>Brightness:</strong> ${brightness} K</div>` : ''}
+                    ${frp !== 'N/A' ? `<div><strong>Fire Radiative Power:</strong> ${frp}</div>` : ''}
+                    ${acqDate ? `<div><strong>Acquisition Date:</strong> ${acqDate}</div>` : ''}
+                    ${acqTime ? `<div><strong>Acquisition Time:</strong> ${acqTime}</div>` : ''}
+                    <div><strong>Time:</strong> ${daynight}</div>
+                  </div>
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                    Data from NASA FIRMS (Fire Information for Resource Management System)
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'nasa_firms_toggle';
+              (marker as any).__layerTitle = 'NASA FIRMS Fire Detections';
+              nasaFIRMSMarkersRef.current.push(marker);
+            }
+          });
+          
+          console.log(`🔥 Loaded NASA FIRMS: ${fires.length} fire detections`);
+        }
+      } catch (error) {
+        console.error('Error fetching NASA FIRMS fires:', error);
+      }
+    };
+    
+    // Fetch fires immediately when enabled
+    fetchAndDisplayNASAFIRMS();
+    
+    // Set up refresh interval (30 minutes - FIRMS updates multiple times per day)
+    const refreshInterval = setInterval(() => {
+      if (showNASAFIRMS) {
+        fetchAndDisplayNASAFIRMS();
+      }
+    }, 1800000); // 30 minutes
+    
+    // Cleanup function
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [showNASAFIRMS, firmsRegions, isInitialized]);
+
   // Trigger re-render when Global Risk layers are toggled
   useEffect(() => {
     if (isGlobalRiskMode && mapInstanceRef.current && layerGroupsRef.current) {
@@ -6425,8 +6738,11 @@ const MapView: React.FC<MapViewProps> = ({
             layer.__layerType === 'climate_risks' ||
             layer.__layerType === 'spillovers_port_impact' ||
             layer.__layerType === 'usgs_earthquakes') {
-          // Don't remove toggle layers (usgs_earthquakes_toggle, opensky_flights)
-          if (layer.__layerType !== 'usgs_earthquakes_toggle' && layer.__layerType !== 'opensky_flights') {
+          // Don't remove toggle layers (usgs_earthquakes_toggle, opensky_flights, wildfire toggles)
+          if (layer.__layerType !== 'usgs_earthquakes_toggle' && 
+              layer.__layerType !== 'opensky_flights' &&
+              layer.__layerType !== 'wfigs_wildfires_toggle' &&
+              layer.__layerType !== 'nasa_firms_toggle') {
             primary.removeLayer(layer);
           }
         }
@@ -14013,7 +14329,7 @@ const MapView: React.FC<MapViewProps> = ({
           }
         }
       }
-
+      
       // Draw OpenSky Flight Tracker aircraft as markers on the map
       if (enrichments.opensky_flights_all && Array.isArray(enrichments.opensky_flights_all)) {
         let flightFeatureCount = 0;
@@ -44286,58 +44602,141 @@ const MapView: React.FC<MapViewProps> = ({
               </p>
             </div>
             
-            {/* Weather Radar Toggle */}
+            {/* Event Themes - Collapsible */}
             <div className="border-t border-gray-200 pt-3">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showWeatherRadar}
-                  onChange={(e) => setShowWeatherRadar(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm font-semibold text-black">
-                  🌦️ Weather Radar (NEXRAD)
+              <button
+                onClick={() => setShowEventThemes(!showEventThemes)}
+                className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-gray-100 rounded"
+              >
+                <span>⚡ Event Themes</span>
+                <span className={`transform transition-transform ${showEventThemes ? 'rotate-180' : ''}`}>
+                  ▼
                 </span>
-              </label>
-              <p className="text-xs text-gray-500 mt-1">
-                Shows current weather radar overlay
-              </p>
-            </div>
-            
-            {/* Flight Tracker Toggle */}
-            <div className="border-t border-gray-200 pt-3">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showFlights}
-                  onChange={(e) => setShowFlights(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm font-semibold text-black">
-                  ✈️ Flight Tracker
-                </span>
-              </label>
-              <p className="text-xs text-gray-500 mt-1">
-                Shows real-time global aircraft positions
-              </p>
-            </div>
-            
-            {/* Earthquake Toggle */}
-            <div className="border-t border-gray-200 pt-3">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showEarthquakes}
-                  onChange={(e) => setShowEarthquakes(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm font-semibold text-black">
-                  🌍 Earthquakes (Last 48h)
-                </span>
-              </label>
-              <p className="text-xs text-gray-500 mt-1">
-                Shows earthquakes from the last 48 hours globally
-              </p>
+              </button>
+              {showEventThemes && (
+                <div className="bg-gray-50 mt-2 space-y-3 pt-2">
+                  {/* Weather Radar Toggle */}
+                  <div className="px-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showWeatherRadar}
+                        onChange={(e) => setShowWeatherRadar(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        🌦️ Weather Radar (NEXRAD)
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Shows current weather radar overlay
+                    </p>
+                  </div>
+                  
+                  {/* Flight Tracker Toggle */}
+                  <div className="px-3 border-t border-gray-200 pt-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showFlights}
+                        onChange={(e) => setShowFlights(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        ✈️ Flight Tracker
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Shows real-time global aircraft positions
+                    </p>
+                  </div>
+                  
+                  {/* Earthquake Toggle */}
+                  <div className="px-3 border-t border-gray-200 pt-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showEarthquakes}
+                        onChange={(e) => setShowEarthquakes(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        🌍 Earthquakes (Last 48h)
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Shows earthquakes from the last 48 hours globally
+                    </p>
+                  </div>
+                  
+                  {/* WFIGS Wildfire Toggle */}
+                  <div className="px-3 border-t border-gray-200 pt-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showWFIGSWildfires}
+                        onChange={(e) => setShowWFIGSWildfires(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        🔥 Current Wildfires (WFIGS)
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Shows current wildland fire incidents in the United States
+                    </p>
+                  </div>
+                  
+                  {/* NASA FIRMS Wildfire Toggle */}
+                  <div className="px-3 border-t border-gray-200 pt-3 pb-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showNASAFIRMS}
+                        onChange={(e) => setShowNASAFIRMS(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        🔥 NASA FIRMS Fire Detections
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 mb-2 ml-6">
+                      Shows satellite fire detections - select regions below
+                    </p>
+                    
+                    {/* Region toggles - shown when main toggle is on */}
+                    {showNASAFIRMS && (
+                      <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-200 pl-3">
+                        <div className="text-xs font-semibold text-gray-600 mb-1">Select Regions:</div>
+                        {Object.entries({
+                          USA: 'USA',
+                          Canada: 'Canada',
+                          Alaska: 'Alaska',
+                          SouthAmerica: 'South America',
+                          CentralAmerica: 'Central America',
+                          Europe: 'Europe',
+                          RussiaAsia: 'Russia & Asia',
+                          AustraliaNewZealand: 'Australia & NZ',
+                          SouthAsia: 'South Asia',
+                          SoutheastAsia: 'Southeast Asia',
+                          NorthCentralAfrica: 'North & Central Africa',
+                          SouthernAfrica: 'Southern Africa'
+                        }).map(([key, label]) => (
+                          <label key={key} className="flex items-center space-x-2 cursor-pointer py-0.5">
+                            <input
+                              type="checkbox"
+                              checked={firmsRegions[key] || false}
+                              onChange={(e) => setFirmsRegions(prev => ({ ...prev, [key]: e.target.checked }))}
+                              className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-xs text-gray-700">{label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             
           </div>
@@ -44402,42 +44801,108 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         )}
         
-        {/* Weather Radar & Flight Toggle - Mobile */}
+        {/* Event Themes - Mobile */}
         {isMobile && !isGlobalRiskMode && (
-          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10 space-y-2">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showWeatherRadar}
-                onChange={(e) => setShowWeatherRadar(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-semibold text-black">
-                🌦️ Radar
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10" style={{ minWidth: '200px', maxWidth: '280px' }}>
+            <button
+              onClick={() => setShowEventThemes(!showEventThemes)}
+              className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-gray-100 rounded mb-2"
+            >
+              <span>⚡ Event Themes</span>
+              <span className={`transform transition-transform ${showEventThemes ? 'rotate-180' : ''}`}>
+                ▼
               </span>
-            </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showFlights}
-                onChange={(e) => setShowFlights(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-semibold text-black">
-                ✈️ Flights
-              </span>
-            </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showEarthquakes}
-                onChange={(e) => setShowEarthquakes(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-semibold text-black">
-                🌍 EQs (48h)
-              </span>
-            </label>
+            </button>
+            {showEventThemes && (
+              <div className="bg-gray-50 rounded space-y-2 pt-2">
+                <label className="flex items-center space-x-2 cursor-pointer px-3">
+                  <input
+                    type="checkbox"
+                    checked={showWeatherRadar}
+                    onChange={(e) => setShowWeatherRadar(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-semibold text-black">
+                    🌦️ Weather Radar
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
+                  <input
+                    type="checkbox"
+                    checked={showFlights}
+                    onChange={(e) => setShowFlights(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-semibold text-black">
+                    ✈️ Flight Tracker
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
+                  <input
+                    type="checkbox"
+                    checked={showEarthquakes}
+                    onChange={(e) => setShowEarthquakes(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-semibold text-black">
+                    🌍 Earthquakes (48h)
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
+                  <input
+                    type="checkbox"
+                    checked={showWFIGSWildfires}
+                    onChange={(e) => setShowWFIGSWildfires(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-semibold text-black">
+                    🔥 Current Wildfires
+                  </span>
+                </label>
+                <div className="px-3 border-t border-gray-200 pt-2 pb-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showNASAFIRMS}
+                      onChange={(e) => setShowNASAFIRMS(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-semibold text-black">
+                      🔥 NASA FIRMS
+                    </span>
+                  </label>
+                  {showNASAFIRMS && (
+                    <div className="ml-6 mt-2 space-y-1 border-l-2 border-gray-200 pl-3">
+                      <div className="text-xs font-semibold text-gray-600 mb-1">Regions:</div>
+                      {Object.entries({
+                        USA: 'USA',
+                        Canada: 'Canada',
+                        Alaska: 'Alaska',
+                        SouthAmerica: 'South America',
+                        CentralAmerica: 'Central America',
+                        Europe: 'Europe',
+                        RussiaAsia: 'Russia & Asia',
+                        AustraliaNewZealand: 'Australia & NZ',
+                        SouthAsia: 'South Asia',
+                        SoutheastAsia: 'Southeast Asia',
+                        NorthCentralAfrica: 'North & Central Africa',
+                        SouthernAfrica: 'Southern Africa'
+                      }).map(([key, label]) => (
+                        <label key={key} className="flex items-center space-x-2 cursor-pointer py-0.5">
+                          <input
+                            type="checkbox"
+                            checked={firmsRegions[key] || false}
+                            onChange={(e) => setFirmsRegions(prev => ({ ...prev, [key]: e.target.checked }))}
+                            className="w-3 h-3 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-xs text-gray-700">{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

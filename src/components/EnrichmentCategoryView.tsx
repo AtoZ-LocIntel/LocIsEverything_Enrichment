@@ -306,24 +306,53 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               radiusOptions = [0.5, 1.0, 2.5, 5.0];
             } else {
               // Generate options dynamically based on maxRadius
-              const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];
-              if (maxRadius > 25) {
-                // Add options up to maxRadius
-                if (maxRadius >= 50) {
-                  radiusOptions = [...baseOptions, 25, 50];
-                  if (maxRadius >= 75) radiusOptions.push(75);
-                  if (maxRadius >= 100) radiusOptions.push(100);
-                } else {
-                  radiusOptions = [...baseOptions, 25, maxRadius];
+              // Special handling for Global Risk layers - always include 500 and 1000 miles options
+              const enrichmentConfig = poiConfigManager.getPOIType(enrichment.id);
+              if (enrichmentConfig?.section === 'global_risk') {
+                // Global Risk layers: include options up to maxRadius, always include 500 and 1000 if maxRadius allows
+                const baseOptions = [1, 5, 10, 25, 50, 100, 250];
+                radiusOptions = [...baseOptions];
+                
+                // Add 500 if maxRadius allows
+                if (maxRadius >= 500) {
+                  radiusOptions.push(500);
                 }
-              } else {
-                radiusOptions = baseOptions.filter(opt => opt <= maxRadius);
-                if (maxRadius > 15 && !radiusOptions.includes(maxRadius)) {
+                
+                // Add 1000 if maxRadius allows
+                if (maxRadius >= 1000) {
+                  radiusOptions.push(1000);
+                }
+                
+                // Ensure we don't exceed maxRadius
+                radiusOptions = radiusOptions.filter(opt => opt <= maxRadius);
+                
+                // Add maxRadius if it's not already in the list and is a round number
+                if (maxRadius > 0 && !radiusOptions.includes(maxRadius) && maxRadius % 100 === 0) {
                   radiusOptions.push(maxRadius);
                 }
+                
+                radiusOptions.sort((a, b) => a - b);
+                console.log(`🔍 DEBUG EnrichmentCategoryView: Global Risk layer - Generated radiusOptions=${JSON.stringify(radiusOptions)} for maxRadius=${maxRadius}`);
+              } else {
+                const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];
+                if (maxRadius > 25) {
+                  // Add options up to maxRadius
+                  if (maxRadius >= 50) {
+                    radiusOptions = [...baseOptions, 25, 50];
+                    if (maxRadius >= 75) radiusOptions.push(75);
+                    if (maxRadius >= 100) radiusOptions.push(100);
+                  } else {
+                    radiusOptions = [...baseOptions, 25, maxRadius];
+                  }
+                } else {
+                  radiusOptions = baseOptions.filter(opt => opt <= maxRadius);
+                  if (maxRadius > 15 && !radiusOptions.includes(maxRadius)) {
+                    radiusOptions.push(maxRadius);
+                  }
+                }
+                radiusOptions.sort((a, b) => a - b);
+                console.log(`🔍 DEBUG EnrichmentCategoryView: Generated radiusOptions=${JSON.stringify(radiusOptions)} for maxRadius=${maxRadius}`);
               }
-              radiusOptions.sort((a, b) => a - b);
-              console.log(`🔍 DEBUG EnrichmentCategoryView: Generated radiusOptions=${JSON.stringify(radiusOptions)} for maxRadius=${maxRadius}`);
             }
             const formatMiles = (value: number) =>
               Number.isInteger(value) ? value.toString() : value.toFixed(1);

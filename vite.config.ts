@@ -127,6 +127,52 @@ export default defineConfig({
             }
           });
         }
+      },
+      // GFW proxy - requires server-side MVT parsing, so we proxy to GFW API directly
+      // Note: MVT parsing won't work in Vite dev, but at least requests will go through
+      '/api/gfw-proxy': {
+        target: 'https://gateway.api.globalfishingwatch.org',
+        changeOrigin: true,
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            // Extract endpoint from query string and rewrite the path
+            const url = new URL(req.url || '', `http://localhost:3000`);
+            const endpoint = url.searchParams.get('endpoint');
+            
+            if (endpoint) {
+              // Rewrite the path to use the endpoint
+              proxyReq.path = endpoint;
+              
+              // Preserve other query params (excluding 'endpoint')
+              const additionalParams = new URLSearchParams();
+              url.searchParams.forEach((value, key) => {
+                if (key !== 'endpoint') {
+                  additionalParams.append(key, value);
+                }
+              });
+              const queryString = additionalParams.toString();
+              if (queryString) {
+                proxyReq.path += `?${queryString}`;
+              }
+            }
+            
+            // Add GFW API key from the serverless function
+            const gfwApiKey = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImtpZEtleSJ9.eyJkYXRhIjp7Im5hbWUiOiJLbm93WW91ckxvY2F0aW9uIiwidXNlcklkIjo1NzM2MiwiYXBwbGljYXRpb25OYW1lIjoiS25vd1lvdXJMb2NhdGlvbiIsImlkIjo0ODQyLCJ0eXBlIjoidXNlci1hcHBsaWNhdGlvbiJ9LCJpYXQiOjE3NzMxNTI2MjIsImV4cCI6MjA4ODUxMjYyMiwiYXVkIjoiZ2Z3IiwiaXNzIjoiZ2Z3In0.nmObatF1FPGO8eLkEQSxI_4gTLGtLySyV6E4bC0XkOGz8d-Xqyl8I7rqkbvdK1wv45y9W8vkpXtVDVPNylkfWzsarJK1Tc4lYDOk_3B7QG99POQZ8JHUP4QfWqvtiNBbPkayV82hS4eiJnMkgqxhtlQTRnK4-7JB2QOd81RTorKCN-O95kgLDSWqUNYTccrlxnWNpXq-iaq3hkZK1TIY5G1uREHYxlsL3e7T7o8Ato19qeTpTcr1KCQg14IDXepdScL5xQ5mne4zW0WHCbXSXeH-3U6QCDn9P6L8tlSvIrpd3aAQVhsUDOvjA80h4Z6POReQF7xrwrWOSnXI1IYq_sfSkTozJGB02POU0z4lpZW7TwHso439bl-KmrUUw74AcjJZSgFE_gMpt6_QaXYXTLbD6GPTiGkxgMubLS-7LB2gDFwiqo5aY8gCwbUi8NFdMONtOyhPpGZ8urvUUZ6Ut5OYesbIAdBl0LrFQE1XJbXwEqkxWeCPmG7Ejzfk4_io';
+            proxyReq.setHeader('Authorization', `Bearer ${gfwApiKey}`);
+            proxyReq.setHeader('Content-Type', 'application/json');
+            
+            console.log(`🔗 [Vite GFW Proxy] Proxying to: ${proxyReq.path}`);
+          });
+          
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            // MVT format will be parsed client-side using @mapbox/vector-tile
+            // Let it pass through - the adapter will handle parsing
+            const contentType = proxyRes.headers['content-type'];
+            if (contentType && (contentType.includes('application/vnd.mapbox-vector-tile') || contentType.includes('application/x-protobuf'))) {
+              console.log('✅ [Vite GFW Proxy] MVT tile received, will be parsed client-side');
+            }
+          });
+        }
       }
     }
   },

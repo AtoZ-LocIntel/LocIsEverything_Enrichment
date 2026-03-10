@@ -46,16 +46,36 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   const [headerHeight, setHeaderHeight] = useState<number>(120);
   const listRef = useRef<HTMLElement>(null);
   
+  // Early validation: ensure category and enrichments exist
+  if (!category || !Array.isArray(category.enrichments)) {
+    console.warn('EnrichmentCategoryPage: category or category.enrichments is missing', { category });
+    return (
+      <div className="h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center p-8">
+          <p className="text-xl mb-4">No layers available</p>
+          <button
+            onClick={onBackToConfig}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Back to Configuration
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   // Filter enrichments based on search query
   const filteredEnrichments = useMemo(() => {
-    if (layerSearchQuery.trim() === '') return category.enrichments;
+    // Defensive check: ensure category.enrichments is an array
+    const enrichments = Array.isArray(category?.enrichments) ? category.enrichments : [];
+    if (layerSearchQuery.trim() === '') return enrichments;
     const q = layerSearchQuery.toLowerCase();
-    return category.enrichments.filter(e =>
-      e.label.toLowerCase().includes(q) ||
-      e.description.toLowerCase().includes(q) ||
-      e.id.toLowerCase().includes(q)
+    return enrichments.filter(e =>
+      e?.label?.toLowerCase().includes(q) ||
+      e?.description?.toLowerCase().includes(q) ||
+      e?.id?.toLowerCase().includes(q)
     );
-  }, [category.enrichments, layerSearchQuery]);
+  }, [category?.enrichments, layerSearchQuery]);
   
   const handleToggleEnrichment = (enrichmentId: string) => {
     const isSelected = selectedEnrichments.includes(enrichmentId);
@@ -211,9 +231,9 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
             <h1 className="text-lg font-bold text-white">{category.title}</h1>
             <p className="text-xs text-white text-opacity-90 mt-0.5">
               {selectedCount} of {filteredEnrichments.length} selected
-              {layerSearchQuery && filteredEnrichments.length !== category.enrichments.length && (
+              {layerSearchQuery && filteredEnrichments.length !== (Array.isArray(category?.enrichments) ? category.enrichments.length : 0) && (
                 <span className="block text-xs text-white text-opacity-70 mt-0.5">
-                  (filtered from {category.enrichments.length})
+                  (filtered from {Array.isArray(category?.enrichments) ? category.enrichments.length : 0})
                 </span>
               )}
             </p>
@@ -268,15 +288,21 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
           </div>
 
           {/* Enrichment Options */}
-          {filteredEnrichments.length === 0 ? (
+          {!filteredEnrichments || filteredEnrichments.length === 0 ? (
             <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
-              <p className="text-gray-400 text-base mb-3">No layers found matching &quot;{layerSearchQuery}&quot;</p>
-              <button
-                onClick={() => setLayerSearchQuery('')}
-                className="text-blue-400 hover:text-blue-300 underline text-sm"
-              >
-                Clear search
-              </button>
+              <p className="text-gray-400 text-base mb-3">
+                {layerSearchQuery 
+                  ? `No layers found matching "${layerSearchQuery}"`
+                  : 'No layers available in this category'}
+              </p>
+              {layerSearchQuery && (
+                <button
+                  onClick={() => setLayerSearchQuery('')}
+                  className="text-blue-400 hover:text-blue-300 underline text-sm"
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           ) : (
             filteredEnrichments.map((enrichment) => {
@@ -309,10 +335,32 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
               radiusOptions = [0.5, 1.0, 2.5, 5.0];
             } else {
               // Generate options dynamically based on maxRadius
-              // Special handling for Global Risk layers (maxRadius >= 2500)
+              // Special handling for Global Risk layers - always include 500 and 1000 miles options
               const enrichmentConfig = poiConfigManager.getPOIType(enrichment.id);
-              if (enrichmentConfig?.section === 'global_risk' && maxRadius >= 2500) {
-                radiusOptions = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500];
+              if (enrichmentConfig?.section === 'global_risk') {
+                // Global Risk layers: include options up to maxRadius, always include 500 and 1000 if maxRadius allows
+                const baseOptions = [1, 5, 10, 25, 50, 100, 250];
+                radiusOptions = [...baseOptions];
+                
+                // Add 500 if maxRadius allows
+                if (maxRadius >= 500) {
+                  radiusOptions.push(500);
+                }
+                
+                // Add 1000 if maxRadius allows
+                if (maxRadius >= 1000) {
+                  radiusOptions.push(1000);
+                }
+                
+                // Ensure we don't exceed maxRadius
+                radiusOptions = radiusOptions.filter(opt => opt <= maxRadius);
+                
+                // Add maxRadius if it's not already in the list and is a round number
+                if (maxRadius > 0 && !radiusOptions.includes(maxRadius) && maxRadius % 100 === 0) {
+                  radiusOptions.push(maxRadius);
+                }
+                
+                radiusOptions.sort((a, b) => a - b);
               } else {
                 const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];
                 if (maxRadius > 25) {

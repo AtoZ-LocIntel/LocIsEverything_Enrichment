@@ -370,6 +370,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+
   // Add USGS Earthquakes data
   if (enrichments.usgs_earthquakes_all && Array.isArray(enrichments.usgs_earthquakes_all)) {
     enrichments.usgs_earthquakes_all.forEach((earthquake: any) => {
