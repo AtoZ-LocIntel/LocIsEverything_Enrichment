@@ -9039,6 +9039,62 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/services/Ecosystems/"
         },
         {
+          name: "USFS Available Water Storage",
+          description: "USDA Forest Service Soil/Geology - Available water storage (AWS) - The volume of water that the soil can store that is available to plants, expressed as centimeters of water. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Available_Water_Storage/ImageServer"
+        },
+        {
+          name: "USFS Cation Exchange Capacity (pH7)",
+          description: "USDA Forest Service Soil/Geology - The amount of readily exchangeable cations that can be electrically adsorbed to negative charges in the soil, soil constituent, or other material, at pH 7.0, as estimated by the ammonium acetate method. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Cation_Exchange_Capacity_pH7/ImageServer"
+        },
+        {
+          name: "USFS Composite Soil Texture",
+          description: "USDA Forest Service Soil/Geology - Composite soil texture classification. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Composite_Soil_Texture/ImageServer"
+        },
+        {
+          name: "USFS Depth to Any Restriction",
+          description: "USDA Forest Service Soil/Geology - Depth to a restrictive layer (bedrock, cemented layers, dense layers, frozen layers) that significantly impedes the movement of water and air through the soil or restricts roots. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Depth_To_Any_Restriction/ImageServer"
+        },
+        {
+          name: "USFS Depth to Water Table (MinMax)",
+          description: "USDA Forest Service Soil/Geology - Average annual minimum and maximum depth from the surface (top of soil) to a wet soil layer (water table) in cm. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Depth_To_Water_Table_MinMax/ImageServer"
+        },
+        {
+          name: "USFS Drainage Class",
+          description: "USDA Forest Service Soil/Geology - Soil drainage class classification. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Drainage_Class/ImageServer"
+        },
+        {
+          name: "USFS Drainage Index",
+          description: "USDA Forest Service Soil/Geology - Soil drainage index classification. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Drainage_Index/ImageServer"
+        },
+        {
           name: "USFS Heat Stress Index",
           description: "USDA Forest Service EDW Heat Stress Index - Percent change, absolute change, 2080s RCP 8.5, and historical heat stress index layers",
           coverage: "United States",

@@ -253,6 +253,88 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
   },
+  // USFS Available Water Storage - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
+  // Available water storage (AWS) - The volume of water that the soil can store that is available to plants
+  usfs_available_water_storage: {
+    type: 'tile',
+    name: 'USFS Available Water Storage',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Available_Water_Storage/ImageServer/exportImage',
+    exportImageRasterFunction: 'AWS', // Raster function name from service
+  },
+  // USFS Cation Exchange Capacity pH7 - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
+  // The amount of readily exchangeable cations that can be electrically adsorbed to negative charges in the soil at pH 7.0
+  usfs_cation_exchange_capacity_ph7: {
+    type: 'tile',
+    name: 'USFS Cation Exchange Capacity (pH7)',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Cation_Exchange_Capacity_pH7/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Composite Soil Texture WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Composite soil texture classification
+  usfs_composite_soil_texture: {
+    type: 'wms',
+    name: 'USFS Composite Soil Texture',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Composite_Soil_Texture/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Composite_Soil_Texture', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Depth to Any Restriction WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Depth to a restrictive layer (bedrock, cemented layers, dense layers, frozen layers) that impedes water/air movement or restricts roots
+  usfs_depth_to_any_restriction: {
+    type: 'wms',
+    name: 'USFS Depth to Any Restriction',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Depth_To_Any_Restriction/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Depth_To_Any_Restriction', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Depth to Water Table MinMax - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
+  // Average annual minimum and maximum depth from the surface to a wet soil layer (water table) in cm
+  usfs_depth_to_water_table_minmax: {
+    type: 'tile',
+    name: 'USFS Depth to Water Table (MinMax)',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Depth_To_Water_Table_MinMax/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Drainage Class WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil drainage class classification
+  usfs_drainage_class: {
+    type: 'wms',
+    name: 'USFS Drainage Class',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Drainage_Class/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Drainage_Class', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Drainage Index WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil drainage index classification
+  usfs_drainage_index: {
+    type: 'wms',
+    name: 'USFS Drainage Index',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Drainage_Index/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Drainage_Index', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
   // USFS National Snag Hazard - Using ExportImage endpoint with raster function
   // Note: ImageServer service with Single Fused Map Cache: false
   // National Snag Hazard Map provides landscape-level view of current snag hazard for firefighter safety
@@ -3211,7 +3293,7 @@ async function fetchAndTransformVectorTileStyle(styleUrl: string): Promise<any> 
   }
 }
 
-const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: string, options: any): L.TileLayer => {
+const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: string | undefined, options: any): L.TileLayer => {
   // Create a standard tile layer with a placeholder URL
   const layer = L.tileLayer('', options);
   
@@ -3240,9 +3322,15 @@ const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: stri
     const bboxMaxY = Math.log(Math.tan((90 + latMax) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
     
     const bbox = `${bboxMinX},${bboxMinY},${bboxMaxX},${bboxMaxY}`;
-    const rasterFunctionJson = JSON.stringify({ rasterFunction: layerInstance._rasterFunction });
     
-    return `${layerInstance._exportImageUrl}?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&f=image&rasterFunction=${encodeURIComponent(rasterFunctionJson)}`;
+    // Build URL - include rasterFunction only if provided
+    let url = `${layerInstance._exportImageUrl}?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&f=image`;
+    if (layerInstance._rasterFunction) {
+      const rasterFunctionJson = JSON.stringify({ rasterFunction: layerInstance._rasterFunction });
+      url += `&rasterFunction=${encodeURIComponent(rasterFunctionJson)}`;
+    }
+    
+    return url;
   };
   
   return layer;
@@ -5724,11 +5812,11 @@ const MapView: React.FC<MapViewProps> = ({
             // Mark basemap with key for comparison
             (basemapLayer as any)._basemapKey = selectedBaseBasemap;
             basemapLayer.addTo(map);
-          } else if (baseBasemapConfig.exportImageRasterFunction && baseBasemapConfig.tileUrl) {
-            // ImageServer ExportImage endpoint
+          } else if (baseBasemapConfig.tileUrl && baseBasemapConfig.tileUrl.includes('/ImageServer/exportImage')) {
+            // ImageServer ExportImage endpoint (with or without raster function)
             basemapLayer = createExportImageTileLayer(
               baseBasemapConfig.tileUrl,
-              baseBasemapConfig.exportImageRasterFunction,
+              baseBasemapConfig.exportImageRasterFunction, // May be undefined
               {
                 attribution: baseBasemapConfig.attribution,
                 maxZoom: 15,
@@ -5885,11 +5973,11 @@ const MapView: React.FC<MapViewProps> = ({
                     tileSize: 256,
                   }
                 ).addTo(map);
-              } else if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
-                // ImageServer ExportImage endpoint
+              } else if (thematicConfig.tileUrl && thematicConfig.tileUrl.includes('/ImageServer/exportImage')) {
+                // ImageServer ExportImage endpoint (with or without raster function)
                 overlayLayer = createExportImageTileLayer(
                   thematicConfig.tileUrl,
-                  thematicConfig.exportImageRasterFunction,
+                  thematicConfig.exportImageRasterFunction, // May be undefined
                   {
                     attribution: thematicConfig.attribution,
                     maxZoom: 15,
@@ -6910,11 +6998,11 @@ const MapView: React.FC<MapViewProps> = ({
           // Mark basemap with key for comparison
           (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
           newBasemapLayer.addTo(map);
-        } else if (finalBaseConfig.exportImageRasterFunction && finalBaseConfig.tileUrl) {
-          // ImageServer ExportImage endpoint
+        } else if (finalBaseConfig.tileUrl && finalBaseConfig.tileUrl.includes('/ImageServer/exportImage')) {
+          // ImageServer ExportImage endpoint (with or without raster function)
           newBasemapLayer = createExportImageTileLayer(
             finalBaseConfig.tileUrl,
-            finalBaseConfig.exportImageRasterFunction,
+            finalBaseConfig.exportImageRasterFunction, // May be undefined
             {
               attribution: finalBaseConfig.attribution,
               maxZoom: 15,
@@ -7104,11 +7192,11 @@ const MapView: React.FC<MapViewProps> = ({
                   tileSize: 256,
                 }
               ).addTo(map);
-            } else if (thematicConfig.exportImageRasterFunction && thematicConfig.tileUrl) {
-              // ImageServer ExportImage endpoint
+            } else if (thematicConfig.tileUrl && thematicConfig.tileUrl.includes('/ImageServer/exportImage')) {
+              // ImageServer ExportImage endpoint (with or without raster function)
               newOverlayLayer = createExportImageTileLayer(
                 thematicConfig.tileUrl,
-                thematicConfig.exportImageRasterFunction,
+                thematicConfig.exportImageRasterFunction, // May be undefined
                 {
                   attribution: thematicConfig.attribution,
                   maxZoom: 15,
