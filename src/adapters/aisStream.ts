@@ -294,7 +294,9 @@ function handleStaticData(data: any) {
     // Update static vessel information
     if (data.VesselName) vessel.vesselName = data.VesselName;
     if (data.CallSign) vessel.callSign = data.CallSign;
-    if (data.ShipType) vessel.shipType = data.ShipType;
+    if (data.ShipType) {
+      (vessel as AISVesselInfo).shipType = data.ShipType;
+    }
     
     currentVessels.set(mmsi, vessel);
     

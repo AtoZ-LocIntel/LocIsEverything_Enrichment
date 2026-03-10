@@ -7090,9 +7090,6 @@ const MapView: React.FC<MapViewProps> = ({
       return {};
     };
     const baseEnrichments = getEffectiveEnrichments();
-    
-    // Use baseEnrichments for all code before results.forEach loop
-    const enrichments = baseEnrichments;
 
     // Debug initial map state
     const initialContainer = map.getContainer();

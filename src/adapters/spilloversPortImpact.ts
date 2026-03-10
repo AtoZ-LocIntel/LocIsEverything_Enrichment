@@ -303,8 +303,8 @@ export async function getAllSpilloversPortImpactData(): Promise<SpilloversPortIm
         capacity_d90_rel: attrs.capacity_d90_rel ?? null,
         attributes: attrs,
         geometry: geom,
-        latitude: featureLat,
-        longitude: featureLon
+        latitude: featureLat ?? undefined,
+        longitude: featureLon ?? undefined
       };
     });
     

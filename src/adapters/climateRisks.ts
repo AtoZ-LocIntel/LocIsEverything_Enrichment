@@ -376,8 +376,8 @@ export async function getAllClimateRisksData(): Promise<ClimateRiskInfo[]> {
         pr_eq_dam: attrs.pr_eq_dam ?? null,
         attributes: attrs,
         geometry: geom,
-        latitude: featureLat,
-        longitude: featureLon
+        latitude: featureLat ?? undefined,
+        longitude: featureLon ?? undefined
       };
     });
     

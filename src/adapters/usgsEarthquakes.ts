@@ -45,7 +45,6 @@ export interface USGSEarthquakeInfo {
 }
 
 const BASE_API_URL = 'https://earthquake.usgs.gov/fdsnws/event/1/query';
-const FEED_API_URL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary';
 
 /**
  * Calculate distance between two points using Haversine formula
@@ -161,7 +160,7 @@ export async function getUSGSEarthquakesData(
         };
       })
       .filter((eq: USGSEarthquakeInfo | null): eq is USGSEarthquakeInfo => eq !== null)
-      .filter((eq: USGSEarthquakeInfo) => eq.distance <= maxRadius)
+      .filter((eq: USGSEarthquakeInfo) => (eq.distance ?? Infinity) <= maxRadius)
       .sort((a: USGSEarthquakeInfo, b: USGSEarthquakeInfo) => {
         // Sort by time (most recent first), then by magnitude (largest first)
         if (a.time && b.time) {

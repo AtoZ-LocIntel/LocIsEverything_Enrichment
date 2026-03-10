@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Settings, Check, Map } from 'lucide-react';
+import { ArrowLeft, Settings, Check } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentItem {
@@ -28,7 +28,6 @@ interface EnrichmentCategoryViewProps {
   onPoiRadiiChange: (radii: Record<string, number>) => void;
   onPoiYearsChange?: (years: Record<string, number>) => void;
   onBackToConfig: () => void;
-  onViewMap?: () => void;
 }
 
 const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
@@ -39,8 +38,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
   onSelectionChange,
   onPoiRadiiChange,
   onPoiYearsChange,
-  onBackToConfig,
-  onViewMap
+  onBackToConfig
 }) => {
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
   

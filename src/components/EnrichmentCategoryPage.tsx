@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Settings, Check, Search, X, Map } from 'lucide-react';
+import { ArrowLeft, Settings, Check, Search, X } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
 
 interface EnrichmentItem {
@@ -28,7 +28,6 @@ interface EnrichmentCategoryPageProps {
   onPoiRadiiChange: (radii: Record<string, number>) => void;
   onPoiYearsChange?: (years: Record<string, number>) => void;
   onBackToConfig: () => void;
-  onViewMap?: () => void;
 }
 
 const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
@@ -39,8 +38,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   onSelectionChange,
   onPoiRadiiChange,
   onPoiYearsChange,
-  onBackToConfig,
-  onViewMap
+  onBackToConfig
 }) => {
   const [layerSearchQuery, setLayerSearchQuery] = useState<string>('');
   const headerRef = useRef<HTMLElement>(null);
@@ -312,7 +310,8 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
             } else {
               // Generate options dynamically based on maxRadius
               // Special handling for Global Risk layers (maxRadius >= 2500)
-              if (enrichment.section === 'global_risk' && maxRadius >= 2500) {
+              const enrichmentConfig = poiConfigManager.getPOIConfig(enrichment.id);
+              if (enrichmentConfig?.section === 'global_risk' && maxRadius >= 2500) {
                 radiusOptions = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500];
               } else {
                 const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];

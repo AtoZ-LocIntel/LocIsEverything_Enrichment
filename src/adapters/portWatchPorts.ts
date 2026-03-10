@@ -123,7 +123,7 @@ export async function getPortWatchPortsData(
         };
       })
       .filter((port: PortWatchPortInfo | null): port is PortWatchPortInfo => port !== null)
-      .filter((port: PortWatchPortInfo) => port.distance <= maxRadius)
+      .filter((port: PortWatchPortInfo) => (port.distance ?? Infinity) <= maxRadius)
       .sort((a: PortWatchPortInfo, b: PortWatchPortInfo) => (a.distance || 0) - (b.distance || 0));
     
     return ports;
