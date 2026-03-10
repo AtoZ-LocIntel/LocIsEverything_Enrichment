@@ -149,7 +149,7 @@ export async function getAllACLEDData(): Promise<ACLEDEvent[]> {
   try {
     console.log('📊 Querying ALL ACLED events globally');
     
-    const accessToken = await getAccessToken();
+    // Note: Access token is handled by the proxy endpoint server-side
     let allEvents: ACLEDEvent[] = [];
     let limit = 5000; // ACLED default max per request
     let offset = 0;
@@ -259,7 +259,7 @@ export async function getACLEDData(
   radiusMiles?: number
 ): Promise<ACLEDEvent[]> {
   try {
-    const accessToken = await getAccessToken();
+    // Note: Access token is handled by the proxy endpoint server-side
     const currentYear = new Date().getFullYear();
     const twoYearsAgo = currentYear - 2;
     

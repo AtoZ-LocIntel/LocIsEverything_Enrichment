@@ -500,29 +500,7 @@ function App() {
     setPreviousViewMode('config');
   };
 
-  const handleViewGlobalRiskMap = async () => {
-    // Navigate to map view for Global Risk category
-    // Don't pre-load data - users will toggle layers via TOC pane
-    setSelectedEnrichments([]); // Start with no layers selected
-    setPreviousViewMode('enrichment-category');
-    
-    // Create empty enrichment result to signal Global Risk mode
-    const globalLocation: GeocodeResult = {
-      lat: 0,
-      lon: 0,
-      name: '',
-      confidence: 1,
-      source: 'global_risk'
-    };
-    
-    const globalResult: EnrichmentResult = {
-      location: globalLocation,
-      enrichments: {} // Empty - layers will be loaded via TOC toggles
-    };
-    
-    setEnrichmentResults([globalResult]);
-    setViewMode('map');
-  };
+  // Removed handleViewGlobalRiskMap - not currently used
 
   const handleViewEnrichmentCategory = (category: any) => {
     // Save current scroll position before navigating to category view
@@ -728,7 +706,6 @@ function App() {
             onPoiRadiiChange={setPoiRadii}
             onPoiYearsChange={setPoiYears}
             onBackToConfig={handleBackToConfig}
-            onViewMap={undefined}
           />
         ) : (
           <EnrichmentCategoryView
@@ -740,7 +717,6 @@ function App() {
             onPoiRadiiChange={setPoiRadii}
             onPoiYearsChange={setPoiYears}
             onBackToConfig={handleBackToConfig}
-            onViewMap={undefined}
           />
         )
       ) : viewMode === 'map' ? (

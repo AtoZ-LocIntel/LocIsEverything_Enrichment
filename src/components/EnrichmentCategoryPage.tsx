@@ -310,7 +310,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
             } else {
               // Generate options dynamically based on maxRadius
               // Special handling for Global Risk layers (maxRadius >= 2500)
-              const enrichmentConfig = poiConfigManager.getPOIConfig(enrichment.id);
+              const enrichmentConfig = poiConfigManager.getPOIType(enrichment.id);
               if (enrichmentConfig?.section === 'global_risk' && maxRadius >= 2500) {
                 radiusOptions = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500];
               } else {

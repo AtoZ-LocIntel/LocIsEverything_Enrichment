@@ -292,11 +292,10 @@ function handleStaticData(data: any) {
     };
     
     // Update static vessel information
-    if (data.VesselName) vessel.vesselName = data.VesselName;
-    if (data.CallSign) vessel.callSign = data.CallSign;
-    if (data.ShipType) {
-      (vessel as AISVesselInfo).shipType = data.ShipType;
-    }
+    const vesselInfo = vessel as AISVesselInfo;
+    if (data.VesselName) vesselInfo.vesselName = data.VesselName;
+    if (data.CallSign) vesselInfo.callSign = data.CallSign;
+    if (data.ShipType) vesselInfo.shipType = data.ShipType;
     
     currentVessels.set(mmsi, vessel);
     
