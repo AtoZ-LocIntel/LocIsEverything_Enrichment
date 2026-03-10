@@ -33,13 +33,6 @@ export interface ACLEDEvent {
   timestamp: number;
 }
 
-interface ACLEDTokenResponse {
-  token_type: string;
-  expires_in: number;
-  access_token: string;
-  refresh_token: string;
-}
-
 interface ACLEDApiResponse {
   status: number;
   success: boolean;
@@ -53,93 +46,7 @@ interface ACLEDApiResponse {
 
 const API_BASE_URL = 'https://acleddata.com/api/acled/read';
 
-// Cache for access token
-let cachedToken: string | null = null;
-let tokenExpiry: number = 0;
-
-/**
- * Get OAuth access token for ACLED API
- * Tries cookie-based auth first (for browser), falls back to OAuth token via proxy
- */
-async function getAccessToken(): Promise<string> {
-  // Check if we have a valid cached token
-  if (cachedToken && Date.now() < tokenExpiry) {
-    return cachedToken;
-  }
-
-  // Try cookie-based authentication first (works in browser if ACLED allows CORS)
-  try {
-    console.log('🔐 Attempting cookie-based authentication...');
-    
-    const loginResponse = await fetch('https://acleddata.com/user/login?_format=json', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Important: include cookies
-      body: JSON.stringify({
-        name: 'AtoZgis@gmail.com',
-        pass: '!!77PineCone77!!'
-      }),
-    });
-
-    if (loginResponse.ok) {
-      await loginResponse.json(); // Check response is valid JSON
-      console.log('✅ Cookie-based authentication successful');
-      
-      // For cookie-based auth, we don't need a token, but we'll use a placeholder
-      // The cookie will be used automatically in subsequent requests
-      cachedToken = 'cookie-auth'; // Placeholder to indicate cookie auth is active
-      tokenExpiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
-      
-      return cachedToken;
-    }
-  } catch (error: any) {
-    console.warn('⚠️ Cookie-based auth failed, trying OAuth proxy...', error.message);
-  }
-
-  // Fall back to OAuth token via proxy endpoint (works in both dev and production)
-  try {
-    console.log('🔐 Requesting ACLED API access token via proxy...');
-    
-    // Use proxy endpoint (Vite proxy in dev, Vercel function in production)
-    const formData = new URLSearchParams();
-    formData.append('username', 'AtoZgis@gmail.com');
-    formData.append('password', '!!77PineCone77!!');
-    formData.append('grant_type', 'password');
-    formData.append('client_id', 'acled');
-    
-    const response = await fetch('/api/acled-token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { error: errorText || 'Unknown error' };
-      }
-      throw new Error(`Failed to get access token: ${response.status} ${errorData.error || response.statusText}`);
-    }
-
-    const tokenData: ACLEDTokenResponse = await response.json();
-    
-    cachedToken = tokenData.access_token;
-    tokenExpiry = Date.now() + (tokenData.expires_in * 1000) - (60 * 60 * 1000);
-    
-    console.log('✅ ACLED API access token obtained via proxy');
-    return cachedToken;
-  } catch (error: any) {
-    console.error('❌ Error getting ACLED access token:', error);
-    throw new Error(`ACLED authentication failed: ${error.message}. Make sure the Vite dev server proxy is configured or use "vercel dev" for local development.`);
-  }
-}
+// Note: Authentication is handled server-side by the proxy endpoint (/api/acled-proxy)
 
 /**
  * Query ACLED events globally (no spatial constraints)
