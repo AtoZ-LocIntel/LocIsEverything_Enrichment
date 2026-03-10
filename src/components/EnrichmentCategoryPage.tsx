@@ -244,17 +244,6 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
               </button>
             )}
           </div>
-          {/* Map Icon Button - Only for Global Risk category */}
-          {category.id === 'global_risk' && onViewMap && (
-            <button
-              onClick={onViewMap}
-              className="p-2.5 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white hover:bg-opacity-30 transition-colors flex-shrink-0"
-              style={{ backdropFilter: 'blur(10px)' }}
-              title="View Global Risk layers on map"
-            >
-              <Map className="w-5 h-5" />
-            </button>
-          )}
         </div>
       </header>
 
@@ -318,10 +307,14 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
               } else if (enrichment.id === 'boston_approved_building_permits') {
                 // Options in miles: 100ft (0.019), 200ft (0.038), 500ft (0.095)
                 radiusOptions = [0.019, 0.038, 0.095];
-              } else if (enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts') {
-                radiusOptions = [0.5, 1.0, 2.5, 5.0];
+            } else if (enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts') {
+              radiusOptions = [0.5, 1.0, 2.5, 5.0];
+            } else {
+              // Generate options dynamically based on maxRadius
+              // Special handling for Global Risk layers (maxRadius >= 2500)
+              if (enrichment.section === 'global_risk' && maxRadius >= 2500) {
+                radiusOptions = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500];
               } else {
-                // Generate options dynamically based on maxRadius
                 const baseOptions = [0.5, 1, 2, 3, 5, 10, 15];
                 if (maxRadius > 25) {
                   if (maxRadius >= 50) {
@@ -339,6 +332,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
                 }
                 radiusOptions.sort((a, b) => a - b);
               }
+            }
               
               const formatMiles = (value: number) =>
                 Number.isInteger(value) ? value.toString() : value.toFixed(1);

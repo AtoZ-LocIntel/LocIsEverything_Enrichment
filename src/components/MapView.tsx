@@ -54,6 +54,7 @@ export interface BasemapConfig {
 }
 
 export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
+  // Basemap configurations for map view
   // OpenFreeMap (MapLibre vector tiles)
   liberty: {
     type: 'maplibre',
@@ -3356,6 +3357,10 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'portwatch_disruptions': { icon: '🌊', color: '#dc2626', title: 'Port Watch Disruptions' },
   'portwatch_chokepoints': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Chokepoints' },
   'acled': { icon: '⚔️', color: '#dc2626', title: 'ACLED Conflict Events' },
+  'climate_risks': { icon: '🌍', color: '#10b981', title: 'Climate Risks' },
+  'spillovers_port_impact': { icon: '🌊', color: '#3b82f6', title: 'Spillovers Port Impact' },
+  'portwatch_ports': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Ports' },
+  'usgs_earthquakes': { icon: '🌍', color: '#dc2626', title: 'USGS Earthquakes' },
   'noaa_maritime_overview': { icon: '🌊', color: '#3b82f6', title: 'NOAA Maritime Limits - Overview' },
   'noaa_maritime_12nm': { icon: '🌊', color: '#06b6d4', title: 'NOAA Maritime Limits - 12NM Territorial Sea' },
   'noaa_maritime_24nm': { icon: '🌊', color: '#10b981', title: 'NOAA Maritime Limits - 24NM Contiguous Zone' },
@@ -5170,6 +5175,155 @@ const MapView: React.FC<MapViewProps> = ({
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
+  const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
+  const earthquakeMarkersRef = useRef<L.Marker[]>([]);
+  
+  // Global Risk TOC layer states
+  const [globalRiskLayerStates, setGlobalRiskLayerStates] = useState<Record<string, boolean>>({
+    portwatch_disruptions: false,
+    portwatch_chokepoints: false,
+    portwatch_ports: false,
+    usgs_earthquakes: false,
+    climate_risks: false,
+    spillovers_port_impact: false
+  });
+  const [globalRiskLayerLoading, setGlobalRiskLayerLoading] = useState<Record<string, boolean>>({
+    portwatch_disruptions: false,
+    portwatch_chokepoints: false,
+    portwatch_ports: false,
+    usgs_earthquakes: false,
+    climate_risks: false,
+    spillovers_port_impact: false
+  });
+  const globalRiskEnrichmentsRef = useRef<Record<string, any>>({});
+  
+  // Check if we're in Global Risk mode
+  const isGlobalRiskMode = results.length > 0 && 
+                           results[0]?.location?.source === 'global_risk';
+  
+  // Function to toggle Global Risk layer on/off
+  const toggleGlobalRiskLayer = async (layerId: string) => {
+    const isCurrentlyOn = globalRiskLayerStates[layerId];
+    
+    if (isCurrentlyOn) {
+      // Turn off: remove from state and clear data
+      setGlobalRiskLayerStates(prev => ({ ...prev, [layerId]: false }));
+      
+      // Clear the specific layer data
+      let countKey = '';
+      let summaryKey = '';
+      let allKey = '';
+      
+      switch (layerId) {
+        case 'portwatch_disruptions':
+          countKey = 'portwatch_disruptions_count';
+          summaryKey = 'portwatch_disruptions_summary';
+          allKey = 'portwatch_disruptions_all';
+          break;
+        case 'portwatch_chokepoints':
+          countKey = 'portwatch_chokepoints_count';
+          summaryKey = 'portwatch_chokepoints_summary';
+          allKey = 'portwatch_chokepoints_all';
+          break;
+        case 'climate_risks':
+          countKey = 'climate_risks_count';
+          summaryKey = 'climate_risks_summary';
+          allKey = 'climate_risks_all';
+          break;
+        case 'spillovers_port_impact':
+          countKey = 'spillovers_port_impact_count';
+          summaryKey = 'spillovers_port_impact_summary';
+          allKey = 'spillovers_port_impact_all';
+          break;
+        case 'portwatch_ports':
+          countKey = 'portwatch_ports_count';
+          summaryKey = 'portwatch_ports_summary';
+          allKey = 'portwatch_ports_all';
+          break;
+        case 'usgs_earthquakes':
+          countKey = 'usgs_earthquakes_count';
+          summaryKey = 'usgs_earthquakes_summary';
+          allKey = 'usgs_earthquakes_all';
+          break;
+      }
+      
+      // Remove layer data
+      delete globalRiskEnrichmentsRef.current[countKey];
+      delete globalRiskEnrichmentsRef.current[summaryKey];
+      delete globalRiskEnrichmentsRef.current[allKey];
+      
+      // Re-render will be triggered by useEffect watching globalRiskLayerStates
+    } else {
+      // Turn on: fetch data
+      setGlobalRiskLayerLoading(prev => ({ ...prev, [layerId]: true }));
+      
+      try {
+        let data: any[] = [];
+        let countKey = '';
+        let summaryKey = '';
+        let allKey = '';
+        
+        switch (layerId) {
+          case 'portwatch_disruptions':
+            const { getAllPortWatchDisruptionsData } = await import('../adapters/portWatchDisruptions');
+            data = await getAllPortWatchDisruptionsData();
+            countKey = 'portwatch_disruptions_count';
+            summaryKey = 'portwatch_disruptions_summary';
+            allKey = 'portwatch_disruptions_all';
+            break;
+          case 'portwatch_chokepoints':
+            const { getAllPortWatchChokepointsData } = await import('../adapters/portWatchChokepoints');
+            data = await getAllPortWatchChokepointsData();
+            countKey = 'portwatch_chokepoints_count';
+            summaryKey = 'portwatch_chokepoints_summary';
+            allKey = 'portwatch_chokepoints_all';
+            break;
+          case 'climate_risks':
+            const { getAllClimateRisksData } = await import('../adapters/climateRisks');
+            data = await getAllClimateRisksData();
+            countKey = 'climate_risks_count';
+            summaryKey = 'climate_risks_summary';
+            allKey = 'climate_risks_all';
+            break;
+          case 'spillovers_port_impact':
+            const { getAllSpilloversPortImpactData } = await import('../adapters/spilloversPortImpact');
+            data = await getAllSpilloversPortImpactData();
+            countKey = 'spillovers_port_impact_count';
+            summaryKey = 'spillovers_port_impact_summary';
+            allKey = 'spillovers_port_impact_all';
+            break;
+          case 'portwatch_ports':
+            const { getAllPortWatchPortsData } = await import('../adapters/portWatchPorts');
+            data = await getAllPortWatchPortsData();
+            countKey = 'portwatch_ports_count';
+            summaryKey = 'portwatch_ports_summary';
+            allKey = 'portwatch_ports_all';
+            break;
+          case 'usgs_earthquakes':
+            const { getAllUSGSEarthquakesData } = await import('../adapters/usgsEarthquakes');
+            data = await getAllUSGSEarthquakesData();
+            countKey = 'usgs_earthquakes_count';
+            summaryKey = 'usgs_earthquakes_summary';
+            allKey = 'usgs_earthquakes_all';
+            break;
+        }
+        
+        if (data.length > 0) {
+          globalRiskEnrichmentsRef.current[countKey] = data.length;
+          globalRiskEnrichmentsRef.current[summaryKey] = `Found ${data.length} ${layerId.replace(/_/g, ' ')} globally`;
+          globalRiskEnrichmentsRef.current[allKey] = data;
+        }
+        
+        setGlobalRiskLayerStates(prev => ({ ...prev, [layerId]: true }));
+        
+        // Re-render will be triggered by useEffect watching globalRiskLayerStates
+      } catch (error) {
+        console.error(`Error loading ${layerId}:`, error);
+      } finally {
+        setGlobalRiskLayerLoading(prev => ({ ...prev, [layerId]: false }));
+      }
+    }
+  };
   const [showBasemapInfo, setShowBasemapInfo] = useState<boolean>(false); // Info tooltip state
   const basemapInfoRef = useRef<HTMLDivElement>(null);
   // Collapsible basemap sections state
@@ -6118,6 +6272,170 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, [showFlights, isInitialized]);
 
+  // Handle earthquake toggle (last 48 hours)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showEarthquakes) {
+      // Clear earthquakes when toggled off
+      if (layerGroupsRef.current) {
+        const { primary } = layerGroupsRef.current;
+        earthquakeMarkersRef.current.forEach(marker => {
+          primary.removeLayer(marker);
+        });
+        earthquakeMarkersRef.current = [];
+      }
+      return;
+    }
+    
+    // Function to fetch and display earthquakes (last 48 hours)
+    const fetchAndDisplayEarthquakes = async () => {
+      try {
+        console.log('🌍 Fetching USGS Earthquakes data (last 48 hours)...');
+        const { getAllUSGSEarthquakesData } = await import('../adapters/usgsEarthquakes');
+        const earthquakes = await getAllUSGSEarthquakesData();
+        
+        if (earthquakes && earthquakes.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          const { primary } = layerGroupsRef.current;
+          
+          // Remove old earthquake markers
+          earthquakeMarkersRef.current.forEach(marker => {
+            primary.removeLayer(marker);
+          });
+          earthquakeMarkersRef.current = [];
+          
+          // Add new markers
+          earthquakes.forEach((earthquake: any) => {
+            const lat = earthquake.lat;
+            const lon = earthquake.lon;
+            
+            if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+              // Determine color and size based on magnitude (larger sizes)
+              let earthquakeColor = '#10b981'; // Green for minor (< 4.0)
+              let markerSize = 16; // Base size for minor earthquakes
+              const magnitude = earthquake.mag || 0;
+              
+              if (magnitude >= 7.0) {
+                earthquakeColor = '#dc2626'; // Red for major (≥ 7.0)
+                markerSize = 32; // Largest for major earthquakes
+              } else if (magnitude >= 6.0) {
+                earthquakeColor = '#f59e0b'; // Orange for strong (6.0-6.9)
+                markerSize = 28; // Large for strong earthquakes
+              } else if (magnitude >= 5.0) {
+                earthquakeColor = '#f97316'; // Orange-red for moderate-strong (5.0-5.9)
+                markerSize = 24; // Medium-large for moderate-strong
+              } else if (magnitude >= 4.0) {
+                earthquakeColor = '#3b82f6'; // Blue for light (4.0-4.9)
+                markerSize = 20; // Medium for light earthquakes
+              }
+              
+              // Add tsunami indicator
+              const hasTsunami = earthquake.tsunami === 1;
+              const tsunamiIndicator = hasTsunami ? '🌊' : '';
+              const earthquakesIcon = '🌍';
+              
+              const iconHtml = `<div style="
+                width: ${markerSize}px;
+                height: ${markerSize}px;
+                background-color: ${earthquakeColor};
+                border: 3px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: ${Math.max(12, markerSize - 8)}px;
+              ">${earthquakesIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [markerSize, markerSize],
+                  iconAnchor: [markerSize / 2, markerSize / 2]
+                })
+              });
+
+              // Format time
+              const timeStr = earthquake.time 
+                ? new Date(earthquake.time).toLocaleString()
+                : 'Unknown';
+              
+              // Format depth
+              const depthStr = earthquake.depth !== null && earthquake.depth !== undefined
+                ? `${earthquake.depth.toFixed(1)} km`
+                : 'Unknown';
+              
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${earthquakesIcon} ${earthquake.place || earthquake.title || 'Earthquake'}
+                    ${tsunamiIndicator}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${earthquake.mag !== null && earthquake.mag !== undefined ? `<div><strong>Magnitude:</strong> ${earthquake.mag.toFixed(1)} ${earthquake.magType || ''}</div>` : ''}
+                    <div><strong>Time:</strong> ${timeStr}</div>
+                    <div><strong>Depth:</strong> ${depthStr}</div>
+                    ${earthquake.status ? `<div><strong>Status:</strong> ${earthquake.status}</div>` : ''}
+                    ${earthquake.alert ? `<div><strong>Alert:</strong> ${earthquake.alert}</div>` : ''}
+                    ${hasTsunami ? `<div style="color: #dc2626; font-weight: 600;">🌊 Tsunami Event</div>` : ''}
+                  </div>
+                  ${earthquake.url ? `<div style="margin-top: 8px;"><a href="${earthquake.url}" target="_blank" style="color: #3b82f6; text-decoration: underline;">View Details on USGS</a></div>` : ''}
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'usgs_earthquakes_toggle';
+              (marker as any).__layerTitle = 'USGS Earthquakes (Last 48h)';
+              earthquakeMarkersRef.current.push(marker);
+            }
+          });
+          
+          console.log(`🌍 Loaded USGS Earthquakes: ${earthquakes.length} earthquakes (last 48 hours)`);
+        }
+      } catch (error) {
+        console.error('Error fetching USGS Earthquakes:', error);
+      }
+    };
+    
+    // Fetch earthquakes immediately when enabled
+    fetchAndDisplayEarthquakes();
+    
+    // Cleanup function
+    return () => {
+      // No interval needed - earthquakes are static for 48-hour window
+    };
+  }, [showEarthquakes, isInitialized]);
+
+  // Trigger re-render when Global Risk layers are toggled
+  useEffect(() => {
+    if (isGlobalRiskMode && mapInstanceRef.current && layerGroupsRef.current) {
+      // Force re-render by clearing and re-adding features
+      // This will be handled by the main feature rendering useEffect that watches results
+      // We just need to trigger it by updating a dependency
+      const { primary } = layerGroupsRef.current;
+      
+      // Remove all Global Risk markers/polygons (but not toggle layers like earthquakes or flights)
+      primary.eachLayer((layer: any) => {
+        if (layer.__layerType === 'portwatch_disruptions' || 
+            layer.__layerType === 'portwatch_chokepoints' ||
+            layer.__layerType === 'climate_risks' ||
+            layer.__layerType === 'spillovers_port_impact' ||
+            layer.__layerType === 'usgs_earthquakes') {
+          // Don't remove toggle layers (usgs_earthquakes_toggle, opensky_flights)
+          if (layer.__layerType !== 'usgs_earthquakes_toggle' && layer.__layerType !== 'opensky_flights') {
+            primary.removeLayer(layer);
+          }
+        }
+      });
+      
+      // The main rendering useEffect will re-add features based on globalRiskEnrichmentsRef
+    }
+  }, [globalRiskLayerStates, isGlobalRiskMode, isInitialized]);
+
   // Handle basemap changes and OpenFreeMap toggle
   useEffect(() => {
     // On mobile, don't allow basemap changes - always use OpenFreeMap liberty
@@ -6749,7 +7067,7 @@ const MapView: React.FC<MapViewProps> = ({
     return () => {
       // Cleanup handled in individual feature handlers
     };
-  }, [results]);
+  }, [results, isGlobalRiskMode, globalRiskLayerStates]);
     
     function addFeaturesToMap() {
     if (!mapInstanceRef.current || !layerGroupsRef.current) {
@@ -6759,6 +7077,22 @@ const MapView: React.FC<MapViewProps> = ({
 
     const map = mapInstanceRef.current;
     const { primary, poi } = layerGroupsRef.current;
+    
+    // Determine effective enrichments based on mode
+    // For Global Risk mode, use globalRiskEnrichmentsRef; otherwise use results[0].enrichments
+    const getEffectiveEnrichments = () => {
+      if (isGlobalRiskMode) {
+        return globalRiskEnrichmentsRef.current;
+      }
+      if (results && results.length > 0 && results[0]?.enrichments) {
+        return results[0].enrichments;
+      }
+      return {};
+    };
+    const baseEnrichments = getEffectiveEnrichments();
+    
+    // Use baseEnrichments for all code before results.forEach loop
+    const enrichments = baseEnrichments;
 
     // Debug initial map state
     const initialContainer = map.getContainer();
@@ -6912,10 +7246,13 @@ const MapView: React.FC<MapViewProps> = ({
         }
         
     results.forEach((result) => {
-      const { location, enrichments } = result;
+      const { location } = result;
       if (!location) {
         return;
       }
+
+      // Use Global Risk enrichments if in Global Risk mode, otherwise use regular enrichments
+      const enrichments = isGlobalRiskMode ? globalRiskEnrichmentsRef.current : result.enrichments;
 
       const latLng = L.latLng(location.lat, location.lon);
       bounds.extend(latLng);
@@ -13132,6 +13469,546 @@ const MapView: React.FC<MapViewProps> = ({
             };
           } else {
             legendAccumulator[legendKey].count = acledFeatureCount || enrichments.acled_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+      
+      // Draw Climate Risks scenarios as markers on the map
+      if (enrichments.climate_risks_all && Array.isArray(enrichments.climate_risks_all)) {
+        let climateRisksFeatureCount = 0;
+        const climateRisksIcon = '🌍';
+        
+        enrichments.climate_risks_all.forEach((risk: any) => {
+          const lat = risk.latitude;
+          const lon = risk.longitude;
+          
+          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+            try {
+              // Determine color based on highest risk scenario
+              let riskColor = '#6b7280'; // Default gray
+              let maxDamage = 0;
+              
+              // Check RCP85 (high emissions scenario) first
+              if (risk.rcp85_total_dam && risk.rcp85_total_dam > maxDamage) {
+                maxDamage = risk.rcp85_total_dam;
+                riskColor = '#dc2626'; // Red for high risk
+              }
+              // Check RCP45 (medium emissions scenario)
+              if (risk.rcp45_total_dam && risk.rcp45_total_dam > maxDamage) {
+                maxDamage = risk.rcp45_total_dam;
+                riskColor = '#f59e0b'; // Orange for medium risk
+              }
+              // Check RCP26 (low emissions scenario)
+              if (risk.rcp26_total_dam && risk.rcp26_total_dam > maxDamage) {
+                maxDamage = risk.rcp26_total_dam;
+                riskColor = '#3b82f6'; // Blue for low risk
+              }
+              // Check PR (present-day scenario)
+              if (risk.pr_total_dam && risk.pr_total_dam > maxDamage) {
+                maxDamage = risk.pr_total_dam;
+                riskColor = '#10b981'; // Green for present-day
+              }
+              
+              // Determine icon based on risk type
+              let riskIcon = '🌍';
+              if (risk.rcp85_coast_dam || risk.rcp45_coast_dam || risk.rcp26_coast_dam || risk.pr_coast_dam) {
+                riskIcon = '🌊'; // Coastal risk
+              } else if (risk.rcp85_fluv_dam || risk.rcp45_fluv_dam || risk.rcp26_fluv_dam || risk.pr_fluv_dam) {
+                riskIcon = '🌊'; // Fluvial risk
+              } else if (risk.rcp85_pluv_dam || risk.rcp45_pluv_dam || risk.rcp26_pluv_dam || risk.pr_pluv_dam) {
+                riskIcon = '🌧️'; // Pluvial risk
+              } else if (risk.rcp85_tc_dam || risk.rcp45_tc_dam || risk.rcp26_tc_dam || risk.pr_tc_dam) {
+                riskIcon = '🌀'; // Tropical cyclone risk
+              } else if (risk.rcp85_eq_dam || risk.rcp45_eq_dam || risk.rcp26_eq_dam || risk.pr_eq_dam) {
+                riskIcon = '🌋'; // Earthquake risk
+              }
+              
+              const iconHtml = `<div style="
+                width: 16px;
+                height: 16px;
+                background-color: ${riskColor};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+              ">${riskIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [16, 16],
+                  iconAnchor: [8, 8]
+                })
+              });
+
+              const distance = risk.distance_miles ? `${risk.distance_miles.toFixed(2)} miles` : 'N/A';
+              
+              // Build popup content with risk scenarios
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${climateRisksIcon} Climate Risk Scenario
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Distance:</strong> ${distance}</div>
+                  </div>
+                  <div style="font-size: 12px; color: #1f2937; margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">RCP85 (High Emissions) Scenario:</h4>
+                    ${risk.rcp85_total_dam !== null && risk.rcp85_total_dam !== undefined ? `<div><strong>Total Damage:</strong> ${risk.rcp85_total_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp85_coast_dam !== null && risk.rcp85_coast_dam !== undefined ? `<div><strong>Coastal:</strong> ${risk.rcp85_coast_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp85_fluv_dam !== null && risk.rcp85_fluv_dam !== undefined ? `<div><strong>Fluvial:</strong> ${risk.rcp85_fluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp85_pluv_dam !== null && risk.rcp85_pluv_dam !== undefined ? `<div><strong>Pluvial:</strong> ${risk.rcp85_pluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp85_tc_dam !== null && risk.rcp85_tc_dam !== undefined ? `<div><strong>Tropical Cyclone:</strong> ${risk.rcp85_tc_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp85_eq_dam !== null && risk.rcp85_eq_dam !== undefined ? `<div><strong>Earthquake:</strong> ${risk.rcp85_eq_dam.toFixed(2)}</div>` : ''}
+                    
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">RCP45 (Medium Emissions) Scenario:</h4>
+                    ${risk.rcp45_total_dam !== null && risk.rcp45_total_dam !== undefined ? `<div><strong>Total Damage:</strong> ${risk.rcp45_total_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp45_coast_dam !== null && risk.rcp45_coast_dam !== undefined ? `<div><strong>Coastal:</strong> ${risk.rcp45_coast_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp45_fluv_dam !== null && risk.rcp45_fluv_dam !== undefined ? `<div><strong>Fluvial:</strong> ${risk.rcp45_fluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp45_pluv_dam !== null && risk.rcp45_pluv_dam !== undefined ? `<div><strong>Pluvial:</strong> ${risk.rcp45_pluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp45_tc_dam !== null && risk.rcp45_tc_dam !== undefined ? `<div><strong>Tropical Cyclone:</strong> ${risk.rcp45_tc_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp45_eq_dam !== null && risk.rcp45_eq_dam !== undefined ? `<div><strong>Earthquake:</strong> ${risk.rcp45_eq_dam.toFixed(2)}</div>` : ''}
+                    
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">RCP26 (Low Emissions) Scenario:</h4>
+                    ${risk.rcp26_total_dam !== null && risk.rcp26_total_dam !== undefined ? `<div><strong>Total Damage:</strong> ${risk.rcp26_total_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp26_coast_dam !== null && risk.rcp26_coast_dam !== undefined ? `<div><strong>Coastal:</strong> ${risk.rcp26_coast_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp26_fluv_dam !== null && risk.rcp26_fluv_dam !== undefined ? `<div><strong>Fluvial:</strong> ${risk.rcp26_fluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp26_pluv_dam !== null && risk.rcp26_pluv_dam !== undefined ? `<div><strong>Pluvial:</strong> ${risk.rcp26_pluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp26_tc_dam !== null && risk.rcp26_tc_dam !== undefined ? `<div><strong>Tropical Cyclone:</strong> ${risk.rcp26_tc_dam.toFixed(2)}</div>` : ''}
+                    ${risk.rcp26_eq_dam !== null && risk.rcp26_eq_dam !== undefined ? `<div><strong>Earthquake:</strong> ${risk.rcp26_eq_dam.toFixed(2)}</div>` : ''}
+                    
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">Present-Day Scenario:</h4>
+                    ${risk.pr_total_dam !== null && risk.pr_total_dam !== undefined ? `<div><strong>Total Damage:</strong> ${risk.pr_total_dam.toFixed(2)}</div>` : ''}
+                    ${risk.pr_coast_dam !== null && risk.pr_coast_dam !== undefined ? `<div><strong>Coastal:</strong> ${risk.pr_coast_dam.toFixed(2)}</div>` : ''}
+                    ${risk.pr_fluv_dam !== null && risk.pr_fluv_dam !== undefined ? `<div><strong>Fluvial:</strong> ${risk.pr_fluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.pr_pluv_dam !== null && risk.pr_pluv_dam !== undefined ? `<div><strong>Pluvial:</strong> ${risk.pr_pluv_dam.toFixed(2)}</div>` : ''}
+                    ${risk.pr_tc_dam !== null && risk.pr_tc_dam !== undefined ? `<div><strong>Tropical Cyclone:</strong> ${risk.pr_tc_dam.toFixed(2)}</div>` : ''}
+                    ${risk.pr_eq_dam !== null && risk.pr_eq_dam !== undefined ? `<div><strong>Earthquake:</strong> ${risk.pr_eq_dam.toFixed(2)}</div>` : ''}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'climate_risks';
+              (marker as any).__layerTitle = 'Climate Risks';
+              bounds.extend([lat, lon]);
+              climateRisksFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing Climate Risk marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (climateRisksFeatureCount > 0 || enrichments.climate_risks_count !== undefined) {
+          const legendKey = 'climate_risks';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: climateRisksIcon,
+              color: '#10b981',
+              title: 'Climate Risks',
+              count: climateRisksFeatureCount || enrichments.climate_risks_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = climateRisksFeatureCount || enrichments.climate_risks_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+      
+      // Draw Spillovers Port Impact as markers on the map
+      if (enrichments.spillovers_port_impact_all && Array.isArray(enrichments.spillovers_port_impact_all)) {
+        let spilloversFeatureCount = 0;
+        const spilloversIcon = '🌊';
+        
+        enrichments.spillovers_port_impact_all.forEach((impact: any) => {
+          const lat = impact.latitude || impact.to_lat;
+          const lon = impact.longitude || impact.to_lon;
+          
+          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+            try {
+              // Determine color based on capacity impact
+              let impactColor = '#6b7280'; // Default gray
+              let maxCapacity = 0;
+              
+              // Check capacity at different time horizons
+              if (impact.capacity_d1_act && impact.capacity_d1_act > maxCapacity) {
+                maxCapacity = impact.capacity_d1_act;
+                impactColor = '#dc2626'; // Red for high immediate impact
+              }
+              if (impact.capacity_d7_act && impact.capacity_d7_act > maxCapacity) {
+                maxCapacity = impact.capacity_d7_act;
+                impactColor = '#f59e0b'; // Orange for medium-term impact
+              }
+              if (impact.capacity_d14_act && impact.capacity_d14_act > maxCapacity) {
+                maxCapacity = impact.capacity_d14_act;
+                impactColor = '#3b82f6'; // Blue for longer-term impact
+              }
+              if (impact.capacity_d30_act && impact.capacity_d30_act > maxCapacity) {
+                maxCapacity = impact.capacity_d30_act;
+                impactColor = '#10b981'; // Green for extended impact
+              }
+              if (impact.capacity_d90_act && impact.capacity_d90_act > maxCapacity) {
+                maxCapacity = impact.capacity_d90_act;
+                impactColor = '#8b5cf6'; // Purple for long-term impact
+              }
+              
+              const iconHtml = `<div style="
+                width: 16px;
+                height: 16px;
+                background-color: ${impactColor};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+              ">${spilloversIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [16, 16],
+                  iconAnchor: [8, 8]
+                })
+              });
+
+              const distance = impact.distance_miles ? `${impact.distance_miles.toFixed(2)} miles` : 'N/A';
+              const fromPort = impact.from_portname || 'Unknown';
+              const toPort = impact.to_portname || 'Unknown';
+              const transitDays = impact.transit_days !== null && impact.transit_days !== undefined ? impact.transit_days.toFixed(1) : 'N/A';
+              
+              // Build popup content with impact data
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${spilloversIcon} Port Spillover Impact
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    <div><strong>Distance:</strong> ${distance}</div>
+                    <div><strong>From Port:</strong> ${fromPort}${impact.from_country ? ` (${impact.from_country})` : ''}</div>
+                    <div><strong>To Port:</strong> ${toPort}${impact.to_country ? ` (${impact.to_country})` : ''}</div>
+                    <div><strong>Transit Days:</strong> ${transitDays}</div>
+                  </div>
+                  <div style="font-size: 12px; color: #1f2937; margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">Actual Capacity Impact:</h4>
+                    ${impact.capacity_d1_act !== null && impact.capacity_d1_act !== undefined ? `<div><strong>Day 1:</strong> ${impact.capacity_d1_act.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d7_act !== null && impact.capacity_d7_act !== undefined ? `<div><strong>Day 7:</strong> ${impact.capacity_d7_act.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d14_act !== null && impact.capacity_d14_act !== undefined ? `<div><strong>Day 14:</strong> ${impact.capacity_d14_act.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d30_act !== null && impact.capacity_d30_act !== undefined ? `<div><strong>Day 30:</strong> ${impact.capacity_d30_act.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d90_act !== null && impact.capacity_d90_act !== undefined ? `<div><strong>Day 90:</strong> ${impact.capacity_d90_act.toFixed(2)}</div>` : ''}
+                    
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">Relative Capacity Impact:</h4>
+                    ${impact.capacity_d1_rel !== null && impact.capacity_d1_rel !== undefined ? `<div><strong>Day 1:</strong> ${impact.capacity_d1_rel.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d7_rel !== null && impact.capacity_d7_rel !== undefined ? `<div><strong>Day 7:</strong> ${impact.capacity_d7_rel.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d14_rel !== null && impact.capacity_d14_rel !== undefined ? `<div><strong>Day 14:</strong> ${impact.capacity_d14_rel.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d30_rel !== null && impact.capacity_d30_rel !== undefined ? `<div><strong>Day 30:</strong> ${impact.capacity_d30_rel.toFixed(2)}</div>` : ''}
+                    ${impact.capacity_d90_rel !== null && impact.capacity_d90_rel !== undefined ? `<div><strong>Day 90:</strong> ${impact.capacity_d90_rel.toFixed(2)}</div>` : ''}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'spillovers_port_impact';
+              (marker as any).__layerTitle = 'Spillovers Port Impact';
+              bounds.extend([lat, lon]);
+              spilloversFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing Spillovers Port Impact marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (spilloversFeatureCount > 0 || enrichments.spillovers_port_impact_count !== undefined) {
+          const legendKey = 'spillovers_port_impact';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: spilloversIcon,
+              color: '#3b82f6',
+              title: 'Spillovers Port Impact',
+              count: spilloversFeatureCount || enrichments.spillovers_port_impact_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = spilloversFeatureCount || enrichments.spillovers_port_impact_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+      
+      // Draw Port Watch Ports as markers on the map
+      if (enrichments.portwatch_ports_all && Array.isArray(enrichments.portwatch_ports_all)) {
+        let portsFeatureCount = 0;
+        const portsIcon = '⚓';
+        
+        enrichments.portwatch_ports_all.forEach((port: any) => {
+          const lat = port.lat || port.latitude;
+          const lon = port.long || port.longitude;
+          
+          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+            try {
+              // Determine color based on vessel count
+              let portColor = '#3b82f6'; // Default blue
+              const vesselCount = port.vessel_count_total || 0;
+              
+              if (vesselCount > 1000) {
+                portColor = '#dc2626'; // Red for high traffic
+              } else if (vesselCount > 500) {
+                portColor = '#f59e0b'; // Orange for medium-high traffic
+              } else if (vesselCount > 100) {
+                portColor = '#3b82f6'; // Blue for medium traffic
+              } else {
+                portColor = '#10b981'; // Green for low traffic
+              }
+              
+              const iconHtml = `<div style="
+                width: 24px;
+                height: 24px;
+                background-color: ${portColor};
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+              ">${portsIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                })
+              });
+
+              const distance = port.distance_miles ? `${port.distance_miles.toFixed(2)} miles` : (port.distance ? `${port.distance.toFixed(2)} miles` : 'N/A');
+              
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${portsIcon} ${port.portname || port.fullname || 'Port'}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${distance !== 'N/A' ? `<div><strong>Distance:</strong> ${distance}</div>` : ''}
+                    ${port.fullname ? `<div><strong>Full Name:</strong> ${port.fullname}</div>` : ''}
+                    ${port.countrydisplayname || port.country ? `<div><strong>Country:</strong> ${port.countrydisplayname || port.country}</div>` : ''}
+                    ${port.ISO3 ? `<div><strong>ISO3:</strong> ${port.ISO3}</div>` : ''}
+                    ${port.continent ? `<div><strong>Continent:</strong> ${port.continent}</div>` : ''}
+                    ${port.LOCODE ? `<div><strong>LOCODE:</strong> ${port.LOCODE}</div>` : ''}
+                    ${port.portclass ? `<div><strong>Port Class:</strong> ${port.portclass}</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #1f2937; margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">Vessel Counts:</h4>
+                    ${port.vessel_count_total !== null && port.vessel_count_total !== undefined ? `<div><strong>Total:</strong> ${port.vessel_count_total.toLocaleString()}</div>` : ''}
+                    ${port.vessel_count_container !== null && port.vessel_count_container !== undefined ? `<div><strong>Container:</strong> ${port.vessel_count_container.toLocaleString()}</div>` : ''}
+                    ${port.vessel_count_dry_bulk !== null && port.vessel_count_dry_bulk !== undefined ? `<div><strong>Dry Bulk:</strong> ${port.vessel_count_dry_bulk.toLocaleString()}</div>` : ''}
+                    ${port.vessel_count_general_cargo !== null && port.vessel_count_general_cargo !== undefined ? `<div><strong>General Cargo:</strong> ${port.vessel_count_general_cargo.toLocaleString()}</div>` : ''}
+                    ${port.vessel_count_roro !== null && port.vessel_count_roro !== undefined ? `<div><strong>RoRo:</strong> ${port.vessel_count_roro.toLocaleString()}</div>` : ''}
+                    ${port.vessel_count_tanker !== null && port.vessel_count_tanker !== undefined ? `<div><strong>Tanker:</strong> ${port.vessel_count_tanker.toLocaleString()}</div>` : ''}
+                  </div>
+                  ${(port.industry_top1 || port.industry_top2 || port.industry_top3) ? `
+                  <div style="font-size: 12px; color: #1f2937; margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">Top Industries:</h4>
+                    ${port.industry_top1 ? `<div><strong>1:</strong> ${port.industry_top1}</div>` : ''}
+                    ${port.industry_top2 ? `<div><strong>2:</strong> ${port.industry_top2}</div>` : ''}
+                    ${port.industry_top3 ? `<div><strong>3:</strong> ${port.industry_top3}</div>` : ''}
+                  </div>
+                  ` : ''}
+                  ${(port.share_country_maritime_import !== null || port.share_country_maritime_export !== null) ? `
+                  <div style="font-size: 12px; color: #1f2937; margin-top: 12px;">
+                    <h4 style="margin: 8px 0 4px 0; font-size: 13px; font-weight: 600;">Maritime Trade Share:</h4>
+                    ${port.share_country_maritime_import !== null && port.share_country_maritime_import !== undefined ? `<div><strong>Import Share:</strong> ${(port.share_country_maritime_import * 100).toFixed(2)}%</div>` : ''}
+                    ${port.share_country_maritime_export !== null && port.share_country_maritime_export !== undefined ? `<div><strong>Export Share:</strong> ${(port.share_country_maritime_export * 100).toFixed(2)}%</div>` : ''}
+                  </div>
+                  ` : ''}
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'portwatch_ports';
+              (marker as any).__layerTitle = 'Port Watch Ports';
+              bounds.extend([lat, lon]);
+              portsFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing Port Watch Port marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (portsFeatureCount > 0 || enrichments.portwatch_ports_count !== undefined) {
+          const legendKey = 'portwatch_ports';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: portsIcon,
+              color: '#3b82f6',
+              title: 'Port Watch Ports',
+              count: portsFeatureCount || enrichments.portwatch_ports_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = portsFeatureCount || enrichments.portwatch_ports_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+      
+      // Draw USGS Earthquakes as markers on the map
+      if (enrichments.usgs_earthquakes_all && Array.isArray(enrichments.usgs_earthquakes_all)) {
+        let earthquakesFeatureCount = 0;
+        const earthquakesIcon = '🌍';
+        
+        enrichments.usgs_earthquakes_all.forEach((earthquake: any) => {
+          const lat = earthquake.lat || earthquake.latitude;
+          const lon = earthquake.lon || earthquake.longitude;
+          
+          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+            try {
+              // Determine color and size based on magnitude (larger sizes)
+              let earthquakeColor = '#10b981'; // Green for minor (< 4.0)
+              let markerSize = 16; // Base size for minor earthquakes
+              const magnitude = earthquake.mag || 0;
+              
+              if (magnitude >= 7.0) {
+                earthquakeColor = '#dc2626'; // Red for major (≥ 7.0)
+                markerSize = 32; // Largest for major earthquakes
+              } else if (magnitude >= 6.0) {
+                earthquakeColor = '#f59e0b'; // Orange for strong (6.0-6.9)
+                markerSize = 28; // Large for strong earthquakes
+              } else if (magnitude >= 5.0) {
+                earthquakeColor = '#f97316'; // Orange-red for moderate-strong (5.0-5.9)
+                markerSize = 24; // Medium-large for moderate-strong
+              } else if (magnitude >= 4.0) {
+                earthquakeColor = '#3b82f6'; // Blue for light (4.0-4.9)
+                markerSize = 20; // Medium for light earthquakes
+              }
+              
+              // Add tsunami indicator
+              const hasTsunami = earthquake.tsunami === 1;
+              const tsunamiIndicator = hasTsunami ? '🌊' : '';
+              
+              const iconHtml = `<div style="
+                width: ${markerSize}px;
+                height: ${markerSize}px;
+                background-color: ${earthquakeColor};
+                border: 3px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: ${Math.max(12, markerSize - 8)}px;
+              ">${earthquakesIcon}</div>`;
+              
+              const marker = L.marker([lat, lon], {
+                icon: L.divIcon({
+                  className: 'custom-marker',
+                  html: iconHtml,
+                  iconSize: [markerSize, markerSize],
+                  iconAnchor: [markerSize / 2, markerSize / 2]
+                })
+              });
+
+              // Format time
+              const timeStr = earthquake.time 
+                ? new Date(earthquake.time).toLocaleString()
+                : 'Unknown';
+              
+              // Format depth
+              const depthStr = earthquake.depth !== null && earthquake.depth !== undefined
+                ? `${earthquake.depth.toFixed(1)} km`
+                : 'Unknown';
+              
+              const distance = earthquake.distance_miles 
+                ? `${earthquake.distance_miles.toFixed(2)} miles`
+                : 'N/A';
+              
+              let popupContent = `
+                <div style="min-width: 300px; max-width: 500px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${earthquakesIcon} ${earthquake.place || earthquake.title || 'Earthquake'}
+                    ${tsunamiIndicator}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${earthquake.mag !== null && earthquake.mag !== undefined ? `<div><strong>Magnitude:</strong> ${earthquake.mag.toFixed(1)} ${earthquake.magType || ''}</div>` : ''}
+                    ${distance !== 'N/A' ? `<div><strong>Distance:</strong> ${distance}</div>` : ''}
+                    <div><strong>Time:</strong> ${timeStr}</div>
+                    <div><strong>Depth:</strong> ${depthStr}</div>
+                    ${earthquake.status ? `<div><strong>Status:</strong> ${earthquake.status}</div>` : ''}
+                    ${earthquake.alert ? `<div><strong>Alert:</strong> ${earthquake.alert}</div>` : ''}
+                    ${hasTsunami ? `<div style="color: #dc2626; font-weight: 600;">🌊 Tsunami Event</div>` : ''}
+                  </div>
+                  ${earthquake.url ? `<div style="margin-top: 8px;"><a href="${earthquake.url}" target="_blank" style="color: #3b82f6; text-decoration: underline;">View Details on USGS</a></div>` : ''}
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.addTo(primary);
+              (marker as any).__layerType = 'usgs_earthquakes';
+              (marker as any).__layerTitle = 'USGS Earthquakes';
+              bounds.extend([lat, lon]);
+              earthquakesFeatureCount++;
+            } catch (error) {
+              console.error('Error drawing USGS Earthquake marker:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (earthquakesFeatureCount > 0 || enrichments.usgs_earthquakes_count !== undefined) {
+          const legendKey = 'usgs_earthquakes';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: earthquakesIcon,
+              color: '#dc2626',
+              title: 'USGS Earthquakes',
+              count: earthquakesFeatureCount || enrichments.usgs_earthquakes_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = earthquakesFeatureCount || enrichments.usgs_earthquakes_count || 0;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
@@ -34925,11 +35802,11 @@ const MapView: React.FC<MapViewProps> = ({
       }
 
       // Draw USGS Trails as polylines on the map
-      if (enrichments.usgs_trails_all && Array.isArray(enrichments.usgs_trails_all)) {
+      if (baseEnrichments.usgs_trails_all && Array.isArray(baseEnrichments.usgs_trails_all)) {
         try {
-          console.log(`🥾 Drawing ${enrichments.usgs_trails_all.length} USGS Trails features`);
+          console.log(`🥾 Drawing ${baseEnrichments.usgs_trails_all.length} USGS Trails features`);
           let trailCount = 0;
-          enrichments.usgs_trails_all.forEach((trail: any, index: number) => {
+          baseEnrichments.usgs_trails_all.forEach((trail: any, index: number) => {
             console.log(`🥾 USGS Trail ${index}:`, {
               hasGeometry: !!trail.geometry,
               hasPaths: !!trail.geometry?.paths,
@@ -42925,9 +43802,119 @@ const MapView: React.FC<MapViewProps> = ({
           }}
         />
         
+        {/* Global Risk TOC Pane - Desktop only */}
+        {!isMobile && isGlobalRiskMode && (
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-4 z-10" style={{ minWidth: '280px', maxWidth: '320px', maxHeight: '80vh', overflowY: 'auto' }}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Global Risk Layers</h3>
+            <div className="space-y-3">
+              {/* Port Watch Disruptions */}
+              <label className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.portwatch_disruptions}
+                  onChange={() => toggleGlobalRiskLayer('portwatch_disruptions')}
+                  disabled={globalRiskLayerLoading.portwatch_disruptions}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  🌊 Port Watch Disruptions
+                </span>
+                {globalRiskLayerLoading.portwatch_disruptions && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </label>
+              
+              {/* Port Watch Chokepoints */}
+              <label className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.portwatch_chokepoints}
+                  onChange={() => toggleGlobalRiskLayer('portwatch_chokepoints')}
+                  disabled={globalRiskLayerLoading.portwatch_chokepoints}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  ⚓ Port Watch Chokepoints
+                </span>
+                {globalRiskLayerLoading.portwatch_chokepoints && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </label>
+              
+              {/* Port Watch Ports */}
+              <label className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.portwatch_ports}
+                  onChange={() => toggleGlobalRiskLayer('portwatch_ports')}
+                  disabled={globalRiskLayerLoading.portwatch_ports}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  ⚓ Port Watch Ports
+                </span>
+                {globalRiskLayerLoading.portwatch_ports && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </label>
+              
+              {/* USGS Earthquakes */}
+              <label className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.usgs_earthquakes || false}
+                  onChange={() => toggleGlobalRiskLayer('usgs_earthquakes')}
+                  disabled={globalRiskLayerLoading.usgs_earthquakes}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  🌍 USGS Earthquakes (Last 48h)
+                </span>
+                {globalRiskLayerLoading.usgs_earthquakes && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </label>
+              
+              {/* Climate Risks */}
+              <label className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.climate_risks}
+                  onChange={() => toggleGlobalRiskLayer('climate_risks')}
+                  disabled={globalRiskLayerLoading.climate_risks}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  🌍 Climate Risks
+                </span>
+                {globalRiskLayerLoading.climate_risks && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </label>
+              
+              {/* Spillovers Port Impact */}
+              <label className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.spillovers_port_impact}
+                  onChange={() => toggleGlobalRiskLayer('spillovers_port_impact')}
+                  disabled={globalRiskLayerLoading.spillovers_port_impact}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700 flex-1">
+                  🌊 Spillovers Port Impact
+                </span>
+                {globalRiskLayerLoading.spillovers_port_impact && (
+                  <span className="text-xs text-gray-500">Loading...</span>
+                )}
+              </label>
+            </div>
+          </div>
+        )}
+        
         {/* Basemap Dropdown and Weather Radar Toggle - Desktop only */}
         {!isMobile && (
-          <div className="absolute top-4 left-20 bg-white rounded-lg shadow-lg p-3 z-10 space-y-3" style={{ minWidth: '280px', maxWidth: '320px' }}>
+          <div className={`absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} bg-white rounded-lg shadow-lg p-3 z-10 space-y-3`} style={{ minWidth: '280px', maxWidth: '320px' }}>
             <div>
               <div className="flex items-center justify-between mb-2 relative">
                 <label className="block text-sm font-semibold text-black">
@@ -43337,11 +44324,89 @@ const MapView: React.FC<MapViewProps> = ({
                 Shows real-time global aircraft positions
               </p>
             </div>
+            
+            {/* Earthquake Toggle */}
+            <div className="border-t border-gray-200 pt-3">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showEarthquakes}
+                  onChange={(e) => setShowEarthquakes(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-semibold text-black">
+                  🌍 Earthquakes (Last 48h)
+                </span>
+              </label>
+              <p className="text-xs text-gray-500 mt-1">
+                Shows earthquakes from the last 48 hours globally
+              </p>
+            </div>
+            
+          </div>
+        )}
+        
+        {/* Global Risk TOC Pane - Mobile */}
+        {isMobile && isGlobalRiskMode && (
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10" style={{ maxWidth: '280px', maxHeight: '60vh', overflowY: 'auto' }}>
+            <h3 className="text-base font-semibold text-gray-900 mb-3">Global Risk Layers</h3>
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.portwatch_disruptions}
+                  onChange={() => toggleGlobalRiskLayer('portwatch_disruptions')}
+                  disabled={globalRiskLayerLoading.portwatch_disruptions}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                />
+                <span className="text-xs font-medium text-gray-700">🌊 Disruptions</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.portwatch_chokepoints}
+                  onChange={() => toggleGlobalRiskLayer('portwatch_chokepoints')}
+                  disabled={globalRiskLayerLoading.portwatch_chokepoints}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                />
+                <span className="text-xs font-medium text-gray-700">⚓ Chokepoints</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.portwatch_ports}
+                  onChange={() => toggleGlobalRiskLayer('portwatch_ports')}
+                  disabled={globalRiskLayerLoading.portwatch_ports}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                />
+                <span className="text-xs font-medium text-gray-700">⚓ Ports</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.climate_risks}
+                  onChange={() => toggleGlobalRiskLayer('climate_risks')}
+                  disabled={globalRiskLayerLoading.climate_risks}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                />
+                <span className="text-xs font-medium text-gray-700">🌍 Climate</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={globalRiskLayerStates.spillovers_port_impact}
+                  onChange={() => toggleGlobalRiskLayer('spillovers_port_impact')}
+                  disabled={globalRiskLayerLoading.spillovers_port_impact}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                />
+                <span className="text-xs font-medium text-gray-700">🌊 Spillovers</span>
+              </label>
+            </div>
           </div>
         )}
         
         {/* Weather Radar & Flight Toggle - Mobile */}
-        {isMobile && (
+        {isMobile && !isGlobalRiskMode && (
           <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10 space-y-2">
             <label className="flex items-center space-x-2 cursor-pointer">
               <input
@@ -43363,6 +44428,17 @@ const MapView: React.FC<MapViewProps> = ({
               />
               <span className="text-sm font-semibold text-black">
                 ✈️ Flights
+              </span>
+            </label>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showEarthquakes}
+                onChange={(e) => setShowEarthquakes(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-semibold text-black">
+                🌍 EQs (48h)
               </span>
             </label>
           </div>

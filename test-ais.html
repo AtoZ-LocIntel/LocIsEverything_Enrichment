@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIS Stream Test</title>
+</head>
+<body>
+    <h1>AIS Stream Manual Test</h1>
+    <button onclick="testAIS()">Start Test</button>
+    <button onclick="stopTest()">Stop Test</button>
+    <div id="output" style="margin-top: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+    
+    <script>
+        let ws = null;
+        let messageCount = 0;
+        let positionReportCount = 0;
+        let staticDataCount = 0;
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += message + '\n';
+            console.log(message);
+        }
+        
+        function testAIS() {
+            log('🧪 Starting AIS Stream manual test...');
+            
+            const API_KEY = '0256c200afb36e5acc502edb52da76989f307efe';
+            const WS_ENDPOINT = 'wss://stream.aisstream.io/v0/stream';
+            
+            // Test bounding box (North America)
+            const testBoundingBoxes = [[[-100, 25], [-70, 50]]];
+            
+            log('🧪 Connecting to: ' + WS_ENDPOINT);
+            log('🧪 Bounding boxes: ' + JSON.stringify(testBoundingBoxes));
+            
+            ws = new WebSocket(WS_ENDPOINT);
+            
+            // Add timeout to detect if connection never opens
+            const connectionTimeout = setTimeout(() => {
+                if (ws && ws.readyState === WebSocket.CONNECTING) {
+                    log('⏱️ Connection timeout - WebSocket is still connecting after 10 seconds');
+                    log('💡 This might indicate a network issue or the endpoint is not accessible');
+                }
+            }, 10000);
+            
+            ws.onopen = () => {
+                clearTimeout(connectionTimeout);
+                log('✅ WebSocket connected');
+                log('📊 WebSocket readyState: ' + ws.readyState + ' (1 = OPEN)');
+                
+                // Note: Must send subscription within 3 seconds of connection!
+                // Documentation shows "APIKey" (capital API, capital Key) in subscription example
+                const subscription = {
+                    APIKey: API_KEY,  // Try "APIKey" first (as per subscription example)
+                    BoundingBoxes: testBoundingBoxes
+                };
+                
+                log('📡 Sending subscription: ' + JSON.stringify(subscription));
+                
+                try {
+                    ws.send(JSON.stringify(subscription));
+                    log('✅ Subscription sent successfully');
+                } catch (error) {
+                    log('❌ Error sending subscription: ' + error);
+                }
+            };
+            
+            ws.onmessage = (event) => {
+                messageCount++;
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.MessageType === 'PositionReport') {
+                        positionReportCount++;
+                        const mmsi = data.MMSI;
+                        const lat = data.Latitude;
+                        const lon = data.Longitude;
+                        const speed = data.Sog;
+                        const heading = data.Cog;
+                        
+                        log(`📍 Position Report #${positionReportCount}: MMSI=${mmsi}, Lat=${lat}, Lon=${lon}, Speed=${speed}, Heading=${heading}`);
+                        
+                        // Validate coordinates
+                        if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
+                            log('❌ Invalid coordinates: ' + JSON.stringify({ lat, lon }));
+                        } else if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+                            log('❌ Coordinates out of range: ' + JSON.stringify({ lat, lon }));
+                        } else {
+                            log('✅ Valid coordinates');
+                        }
+                    } else if (data.MessageType === 'StaticData') {
+                        staticDataCount++;
+                        log(`📋 Static Data #${staticDataCount}: MMSI=${data.MMSI}, Name=${data.VesselName}, CallSign=${data.CallSign}, Type=${data.ShipType}`);
+                    } else {
+                        log('📨 Other message type: ' + data.MessageType);
+                    }
+                    
+                    if (messageCount % 10 === 0) {
+                        log(`📊 Stats: ${messageCount} total messages, ${positionReportCount} position reports, ${staticDataCount} static data`);
+                    }
+                } catch (error) {
+                    log('❌ Error parsing message: ' + error + ' | Data: ' + event.data);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                clearTimeout(connectionTimeout);
+                log('❌ WebSocket error occurred');
+                log('❌ Error details: ' + JSON.stringify(error));
+                log('📊 WebSocket readyState: ' + (ws ? ws.readyState : 'null'));
+                log('💡 Check browser console for more details');
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = (event) => {
+                clearTimeout(connectionTimeout);
+                log('⚠️ WebSocket closed');
+                log('📊 Close code: ' + event.code);
+                log('📊 Close reason: ' + (event.reason || 'none'));
+                log('📊 Was clean: ' + event.wasClean);
+                log('📊 WebSocket readyState: ' + event.code);
+                
+                // Common close codes
+                if (event.code === 1006) {
+                    log('💡 Code 1006 = Abnormal closure (connection lost without close frame)');
+                } else if (event.code === 1000) {
+                    log('💡 Code 1000 = Normal closure');
+                } else if (event.code === 1002) {
+                    log('💡 Code 1002 = Protocol error');
+                } else if (event.code === 1003) {
+                    log('💡 Code 1003 = Unsupported data');
+                } else if (event.code === 1008) {
+                    log('💡 Code 1008 = Policy violation');
+                }
+                
+                log(`📊 Final stats: ${messageCount} total messages, ${positionReportCount} position reports, ${staticDataCount} static data`);
+            };
+            
+            // Log connection attempt
+            log('🔄 Attempting WebSocket connection...');
+            log('📊 Initial readyState: ' + ws.readyState + ' (0 = CONNECTING)');
+        }
+        
+        function stopTest() {
+            if (ws) {
+                log('🧹 Closing test connection...');
+                ws.close();
+                ws = null;
+            }
+        }
+    </script>
+</body>
+</html>

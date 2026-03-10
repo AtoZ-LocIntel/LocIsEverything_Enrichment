@@ -501,74 +501,27 @@ function App() {
   };
 
   const handleViewGlobalRiskMap = async () => {
-    // Navigate to map view with all Global Risk layers pre-selected
-    // Query ALL Global Risk layer data globally (no spatial constraints) for instant visualization
-    const globalRiskLayers = ['portwatch_disruptions', 'portwatch_chokepoints', 'acled'];
-    setSelectedEnrichments(globalRiskLayers);
+    // Navigate to map view for Global Risk category
+    // Don't pre-load data - users will toggle layers via TOC pane
+    setSelectedEnrichments([]); // Start with no layers selected
     setPreviousViewMode('enrichment-category');
     
-    // Set loading state
-    setIsLoading(true);
+    // Create empty enrichment result to signal Global Risk mode
+    const globalLocation: GeocodeResult = {
+      lat: 0,
+      lon: 0,
+      name: '',
+      confidence: 1,
+      source: 'global_risk'
+    };
     
-    try {
-      // Import the global query functions
-      const { getAllPortWatchDisruptionsData } = await import('./adapters/portWatchDisruptions');
-      const { getAllPortWatchChokepointsData } = await import('./adapters/portWatchChokepoints');
-      const { getAllACLEDData } = await import('./adapters/acled');
-      
-      // Query all features globally in parallel
-      const [allDisruptions, allChokepoints, allACLEDEvents] = await Promise.all([
-        getAllPortWatchDisruptionsData(),
-        getAllPortWatchChokepointsData(),
-        getAllACLEDData()
-      ]);
-      
-      // Format enrichments to match expected structure
-      const enrichments: Record<string, any> = {};
-      
-      if (allDisruptions.length > 0) {
-        enrichments.portwatch_disruptions_count = allDisruptions.length;
-        enrichments.portwatch_disruptions_summary = `Found ${allDisruptions.length} port disruption events globally`;
-        enrichments.portwatch_disruptions_all = allDisruptions;
-      }
-      
-      if (allChokepoints.length > 0) {
-        enrichments.portwatch_chokepoints_count = allChokepoints.length;
-        enrichments.portwatch_chokepoints_summary = `Found ${allChokepoints.length} chokepoint ports globally`;
-        enrichments.portwatch_chokepoints_all = allChokepoints;
-      }
-      
-      if (allACLEDEvents.length > 0) {
-        enrichments.acled_count = allACLEDEvents.length;
-        enrichments.acled_summary = `Found ${allACLEDEvents.length} ACLED conflict events globally`;
-        enrichments.acled_all = allACLEDEvents;
-      }
-      
-      // Create enrichment result with minimal location (won't be displayed)
-      // Use world center as placeholder location
-      const globalLocation: GeocodeResult = {
-        lat: 0,
-        lon: 0,
-        name: '',
-        confidence: 1,
-        source: 'global'
-      };
-      
-      const globalResult: EnrichmentResult = {
-        location: globalLocation,
-        enrichments: enrichments
-      };
-      
-      setEnrichmentResults([globalResult]);
-      setViewMode('map');
-    } catch (error) {
-      console.error('Error loading Global Risk layers:', error);
-      // Still navigate to map even if query fails
-      setEnrichmentResults([]);
-      setViewMode('map');
-    } finally {
-      setIsLoading(false);
-    }
+    const globalResult: EnrichmentResult = {
+      location: globalLocation,
+      enrichments: {} // Empty - layers will be loaded via TOC toggles
+    };
+    
+    setEnrichmentResults([globalResult]);
+    setViewMode('map');
   };
 
   const handleViewEnrichmentCategory = (category: any) => {
@@ -775,7 +728,7 @@ function App() {
             onPoiRadiiChange={setPoiRadii}
             onPoiYearsChange={setPoiYears}
             onBackToConfig={handleBackToConfig}
-            onViewMap={activeCategory?.id === 'global_risk' ? handleViewGlobalRiskMap : undefined}
+            onViewMap={undefined}
           />
         ) : (
           <EnrichmentCategoryView
@@ -787,7 +740,7 @@ function App() {
             onPoiRadiiChange={setPoiRadii}
             onPoiYearsChange={setPoiYears}
             onBackToConfig={handleBackToConfig}
-            onViewMap={activeCategory?.id === 'global_risk' ? handleViewGlobalRiskMap : undefined}
+            onViewMap={undefined}
           />
         )
       ) : viewMode === 'map' ? (
@@ -815,21 +768,21 @@ function App() {
               previousViewMode={previousViewMode}
               initialCenter={
                 enrichmentResults.length === 0 
-                  ? (selectedEnrichments.includes('portwatch_disruptions') || selectedEnrichments.includes('portwatch_chokepoints')
-                      ? [0, 0] as [number, number] // Global center for Global Risk layers
-                      : [37.0902, -95.7129] as [number, number]) // US center for other cases
-                  : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
-                      ? [0, 0] as [number, number] // Global center for global view
-                      : undefined)
+                  ? [37.0902, -95.7129] as [number, number] // US center (North America)
+                  : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.source === 'global_risk'
+                      ? [39.8283, -98.5795] as [number, number] // Center of North America for Global Risk map
+                      : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
+                          ? [0, 0] as [number, number] // Global center for other global views
+                          : undefined))
               }
               initialZoom={
                 enrichmentResults.length === 0 
-                  ? (selectedEnrichments.includes('portwatch_disruptions') || selectedEnrichments.includes('portwatch_chokepoints')
-                      ? 3 // Continent level zoom for Global Risk layers
-                      : 4) // US zoom for other cases
-                  : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
-                      ? 3 // Continent level zoom for global view
-                      : undefined)
+                  ? 4 // US zoom
+                  : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.source === 'global_risk'
+                      ? 4 // North America zoom level for Global Risk map
+                      : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
+                          ? 3 // Continent level zoom for other global views
+                          : undefined))
               }
               poiRadii={poiRadii}
               hideLocationMarker={

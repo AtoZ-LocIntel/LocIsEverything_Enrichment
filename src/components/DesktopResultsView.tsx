@@ -197,6 +197,21 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         return null; // Skip the _all array (handled separately)
       }
       
+      // Special handling for Climate Risks - show count only for _all array
+      if (key.includes('climate_risks_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Spillovers Port Impact - show count only for _all array
+      if (key.includes('spillovers_port_impact_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Port Watch Ports - show count only for _all array
+      if (key.includes('portwatch_ports_all')) {
+        return null; // Skip the _all array (handled separately)
+      }
+      
       // Special handling for OpenSky Flights - show count only for _all array
       if (key.includes('opensky_flights_all')) {
         return null; // Skip the _all array (handled separately)
@@ -440,6 +455,16 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         // Port Watch Chokepoints fields - only show if Port Watch Chokepoints enrichment is selected
         if (key.includes('portwatch_chokepoints')) {
           return selectedEnrichments.includes('portwatch_chokepoints');
+        }
+        
+        // Climate Risks fields - only show if Climate Risks enrichment is selected
+        if (key.includes('climate_risks')) {
+          return selectedEnrichments.includes('climate_risks');
+        }
+        
+        // Spillovers Port Impact fields - only show if Spillovers Port Impact enrichment is selected
+        if (key.includes('spillovers_port_impact')) {
+          return selectedEnrichments.includes('spillovers_port_impact');
         }
         
         // US National Grid fields - handle usng_ prefix in field keys
@@ -837,7 +862,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NOAA';
       } else if (key.startsWith('nws_')) {
         category = 'Watching the Weather';
-      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled')) {
+      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('portwatch_ports') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes')) {
         category = 'Global Risk';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';

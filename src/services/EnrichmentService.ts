@@ -301,6 +301,10 @@ import { getPortWatchDisruptionsData } from '../adapters/portWatchDisruptions';
 import { getPortWatchChokepointsData } from '../adapters/portWatchChokepoints';
 import { getAllOpenSkyAircraftStates } from '../adapters/openSkyNetwork';
 import { getACLEDData } from '../adapters/acled';
+import { getClimateRisksData } from '../adapters/climateRisks';
+import { getSpilloversPortImpactData } from '../adapters/spilloversPortImpact';
+import { getPortWatchPortsData } from '../adapters/portWatchPorts';
+import { getUSGSEarthquakesData } from '../adapters/usgsEarthquakes';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -1633,6 +1637,434 @@ export class EnrichmentService {
     }
   }
   
+  private async getClimateRisks(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌍 Climate Risks query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const risks = await getClimateRisksData(lat, lon, radiusMiles);
+      
+      if (!risks || risks.length === 0) {
+        return {
+          climate_risks_count: 0,
+          climate_risks_summary: `No climate risk scenarios found within ${radiusMiles} miles`,
+          climate_risks_all: [],
+          climate_risks_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Calculate statistics
+      let maxRCP85Total = 0;
+      let maxRCP45Total = 0;
+      let maxRCP26Total = 0;
+      let maxPRTotal = 0;
+      let hasCoastalRisk = false;
+      let hasFluvialRisk = false;
+      let hasPluvialRisk = false;
+      let hasTCRisk = false;
+      let hasEarthquakeRisk = false;
+      
+      risks.forEach(risk => {
+        if (risk.rcp85_total_dam && risk.rcp85_total_dam > maxRCP85Total) {
+          maxRCP85Total = risk.rcp85_total_dam;
+        }
+        if (risk.rcp45_total_dam && risk.rcp45_total_dam > maxRCP45Total) {
+          maxRCP45Total = risk.rcp45_total_dam;
+        }
+        if (risk.rcp26_total_dam && risk.rcp26_total_dam > maxRCP26Total) {
+          maxRCP26Total = risk.rcp26_total_dam;
+        }
+        if (risk.pr_total_dam && risk.pr_total_dam > maxPRTotal) {
+          maxPRTotal = risk.pr_total_dam;
+        }
+        if (risk.rcp85_coast_dam || risk.rcp45_coast_dam || risk.rcp26_coast_dam || risk.pr_coast_dam) {
+          hasCoastalRisk = true;
+        }
+        if (risk.rcp85_fluv_dam || risk.rcp45_fluv_dam || risk.rcp26_fluv_dam || risk.pr_fluv_dam) {
+          hasFluvialRisk = true;
+        }
+        if (risk.rcp85_pluv_dam || risk.rcp45_pluv_dam || risk.rcp26_pluv_dam || risk.pr_pluv_dam) {
+          hasPluvialRisk = true;
+        }
+        if (risk.rcp85_tc_dam || risk.rcp45_tc_dam || risk.rcp26_tc_dam || risk.pr_tc_dam) {
+          hasTCRisk = true;
+        }
+        if (risk.rcp85_eq_dam || risk.rcp45_eq_dam || risk.rcp26_eq_dam || risk.pr_eq_dam) {
+          hasEarthquakeRisk = true;
+        }
+      });
+      
+      // Build summary
+      let summary = `Found ${risks.length} climate risk scenario${risks.length !== 1 ? 's' : ''} within ${radiusMiles} miles`;
+      
+      const riskTypes: string[] = [];
+      if (hasCoastalRisk) riskTypes.push('Coastal');
+      if (hasFluvialRisk) riskTypes.push('Fluvial');
+      if (hasPluvialRisk) riskTypes.push('Pluvial');
+      if (hasTCRisk) riskTypes.push('Tropical Cyclone');
+      if (hasEarthquakeRisk) riskTypes.push('Earthquake');
+      
+      if (riskTypes.length > 0) {
+        summary += `. Risk types: ${riskTypes.join(', ')}`;
+      }
+      
+      if (maxRCP85Total > 0 || maxRCP45Total > 0 || maxRCP26Total > 0) {
+        summary += `. Max damage scenarios: RCP85: ${maxRCP85Total.toFixed(2)}, RCP45: ${maxRCP45Total.toFixed(2)}, RCP26: ${maxRCP26Total.toFixed(2)}`;
+      }
+      
+      return {
+        climate_risks_count: risks.length,
+        climate_risks_summary: summary,
+        climate_risks_max_rcp85_total: maxRCP85Total,
+        climate_risks_max_rcp45_total: maxRCP45Total,
+        climate_risks_max_rcp26_total: maxRCP26Total,
+        climate_risks_max_pr_total: maxPRTotal,
+        climate_risks_has_coastal: hasCoastalRisk,
+        climate_risks_has_fluvial: hasFluvialRisk,
+        climate_risks_has_pluvial: hasPluvialRisk,
+        climate_risks_has_tc: hasTCRisk,
+        climate_risks_has_earthquake: hasEarthquakeRisk,
+        climate_risks_proximity_distance: radiusMiles,
+        climate_risks_all: risks.map(risk => ({
+          objectId: risk.objectId,
+          latitude: risk.latitude,
+          longitude: risk.longitude,
+          distance_miles: risk.distance_miles,
+          // RCP26
+          rcp26_coast_dwt: risk.rcp26_coast_dwt,
+          rcp26_fluv_dwt: risk.rcp26_fluv_dwt,
+          rcp26_pluv_dwt: risk.rcp26_pluv_dwt,
+          rcp26_total_dwt: risk.rcp26_total_dwt,
+          rcp26_tc_dam: risk.rcp26_tc_dam,
+          rcp26_coast_dam: risk.rcp26_coast_dam,
+          rcp26_fluv_dam: risk.rcp26_fluv_dam,
+          rcp26_pluv_dam: risk.rcp26_pluv_dam,
+          rcp26_total_dam: risk.rcp26_total_dam,
+          rcp26_eq_dam: risk.rcp26_eq_dam,
+          // RCP45
+          rcp45_coast_dwt: risk.rcp45_coast_dwt,
+          rcp45_fluv_dwt: risk.rcp45_fluv_dwt,
+          rcp45_pluv_dwt: risk.rcp45_pluv_dwt,
+          rcp45_total_dwt: risk.rcp45_total_dwt,
+          rcp45_tc_dam: risk.rcp45_tc_dam,
+          rcp45_coast_dam: risk.rcp45_coast_dam,
+          rcp45_fluv_dam: risk.rcp45_fluv_dam,
+          rcp45_pluv_dam: risk.rcp45_pluv_dam,
+          rcp45_total_dam: risk.rcp45_total_dam,
+          rcp45_eq_dam: risk.rcp45_eq_dam,
+          // RCP85
+          rcp85_coast_dwt: risk.rcp85_coast_dwt,
+          rcp85_fluv_dwt: risk.rcp85_fluv_dwt,
+          rcp85_pluv_dwt: risk.rcp85_pluv_dwt,
+          rcp85_total_dwt: risk.rcp85_total_dwt,
+          rcp85_tc_dam: risk.rcp85_tc_dam,
+          rcp85_coast_dam: risk.rcp85_coast_dam,
+          rcp85_fluv_dam: risk.rcp85_fluv_dam,
+          rcp85_pluv_dam: risk.rcp85_pluv_dam,
+          rcp85_total_dam: risk.rcp85_total_dam,
+          rcp85_eq_dam: risk.rcp85_eq_dam,
+          // PR
+          pr_coast_dwt: risk.pr_coast_dwt,
+          pr_fluv_dwt: risk.pr_fluv_dwt,
+          pr_pluv_dwt: risk.pr_pluv_dwt,
+          pr_total_dwt: risk.pr_total_dwt,
+          pr_tc_dam: risk.pr_tc_dam,
+          pr_coast_dam: risk.pr_coast_dam,
+          pr_fluv_dam: risk.pr_fluv_dam,
+          pr_pluv_dam: risk.pr_pluv_dam,
+          pr_total_dam: risk.pr_total_dam,
+          pr_eq_dam: risk.pr_eq_dam,
+          geometry: risk.geometry
+        }))
+      };
+    } catch (error) {
+      console.error('Error in Climate Risks query:', error);
+      return {
+        climate_risks_count: 0,
+        climate_risks_summary: 'Error querying Climate Risks data',
+        climate_risks_all: [],
+        climate_risks_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
+  private async getSpilloversPortImpact(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Spillovers Port Impact query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const impacts = await getSpilloversPortImpactData(lat, lon, radiusMiles);
+      
+      if (!impacts || impacts.length === 0) {
+        return {
+          spillovers_port_impact_count: 0,
+          spillovers_port_impact_summary: `No port spillover impacts found within ${radiusMiles} miles`,
+          spillovers_port_impact_all: [],
+          spillovers_port_impact_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Calculate statistics
+      const fromPortCounts: Record<string, number> = {};
+      const toPortCounts: Record<string, number> = {};
+      const countryCounts: Record<string, number> = {};
+      let totalImpacts = 0;
+      let maxCapacityD1 = 0;
+      let maxCapacityD7 = 0;
+      let maxCapacityD14 = 0;
+      let maxCapacityD30 = 0;
+      let maxCapacityD90 = 0;
+      
+      impacts.forEach(impact => {
+        const fromPort = impact.from_portname || 'Unknown';
+        const toPort = impact.to_portname || 'Unknown';
+        const country = impact.to_country || 'Unknown';
+        
+        fromPortCounts[fromPort] = (fromPortCounts[fromPort] || 0) + 1;
+        toPortCounts[toPort] = (toPortCounts[toPort] || 0) + 1;
+        countryCounts[country] = (countryCounts[country] || 0) + 1;
+        totalImpacts++;
+        
+        if (impact.capacity_d1_act && impact.capacity_d1_act > maxCapacityD1) {
+          maxCapacityD1 = impact.capacity_d1_act;
+        }
+        if (impact.capacity_d7_act && impact.capacity_d7_act > maxCapacityD7) {
+          maxCapacityD7 = impact.capacity_d7_act;
+        }
+        if (impact.capacity_d14_act && impact.capacity_d14_act > maxCapacityD14) {
+          maxCapacityD14 = impact.capacity_d14_act;
+        }
+        if (impact.capacity_d30_act && impact.capacity_d30_act > maxCapacityD30) {
+          maxCapacityD30 = impact.capacity_d30_act;
+        }
+        if (impact.capacity_d90_act && impact.capacity_d90_act > maxCapacityD90) {
+          maxCapacityD90 = impact.capacity_d90_act;
+        }
+      });
+      
+      // Build summary
+      let summary = `Found ${impacts.length} port spillover impact${impacts.length !== 1 ? 's' : ''} within ${radiusMiles} miles`;
+      
+      const uniqueFromPorts = Object.keys(fromPortCounts);
+      const uniqueToPorts = Object.keys(toPortCounts);
+      
+      if (uniqueFromPorts.length > 0) {
+        summary += `. Source ports: ${uniqueFromPorts.slice(0, 3).join(', ')}${uniqueFromPorts.length > 3 ? '...' : ''}`;
+      }
+      
+      if (uniqueToPorts.length > 0) {
+        summary += `. Destination ports: ${uniqueToPorts.slice(0, 3).join(', ')}${uniqueToPorts.length > 3 ? '...' : ''}`;
+      }
+      
+      return {
+        spillovers_port_impact_count: impacts.length,
+        spillovers_port_impact_summary: summary,
+        spillovers_port_impact_from_ports: fromPortCounts,
+        spillovers_port_impact_to_ports: toPortCounts,
+        spillovers_port_impact_countries: countryCounts,
+        spillovers_port_impact_max_capacity_d1: maxCapacityD1,
+        spillovers_port_impact_max_capacity_d7: maxCapacityD7,
+        spillovers_port_impact_max_capacity_d14: maxCapacityD14,
+        spillovers_port_impact_max_capacity_d30: maxCapacityD30,
+        spillovers_port_impact_max_capacity_d90: maxCapacityD90,
+        spillovers_port_impact_proximity_distance: radiusMiles,
+        spillovers_port_impact_all: impacts.map(impact => ({
+          objectId: impact.objectId,
+          from_portid: impact.from_portid,
+          from_portname: impact.from_portname,
+          from_country: impact.from_country,
+          from_iso3: impact.from_iso3,
+          to_portid: impact.to_portid,
+          to_portname: impact.to_portname,
+          to_country: impact.to_country,
+          to_iso3: impact.to_iso3,
+          to_lat: impact.to_lat,
+          to_lon: impact.to_lon,
+          transit_days: impact.transit_days,
+          capacity_d1_act: impact.capacity_d1_act,
+          capacity_d7_act: impact.capacity_d7_act,
+          capacity_d14_act: impact.capacity_d14_act,
+          capacity_d30_act: impact.capacity_d30_act,
+          capacity_d90_act: impact.capacity_d90_act,
+          capacity_d1_rel: impact.capacity_d1_rel,
+          capacity_d7_rel: impact.capacity_d7_rel,
+          capacity_d14_rel: impact.capacity_d14_rel,
+          capacity_d30_rel: impact.capacity_d30_rel,
+          capacity_d90_rel: impact.capacity_d90_rel,
+          distance_miles: impact.distance_miles,
+          latitude: impact.latitude,
+          longitude: impact.longitude,
+          geometry: impact.geometry
+        }))
+      };
+    } catch (error) {
+      console.error('Error in Spillovers Port Impact query:', error);
+      return {
+        spillovers_port_impact_count: 0,
+        spillovers_port_impact_summary: 'Error querying Spillovers Port Impact data',
+        spillovers_port_impact_all: [],
+        spillovers_port_impact_proximity_distance: radiusMiles
+      };
+    }
+  }
+
+  private async getPortWatchPorts(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      const ports = await getPortWatchPortsData(lat, lon, radiusMiles);
+      
+      if (!ports || ports.length === 0) {
+        return {
+          portwatch_ports_count: 0,
+          portwatch_ports_summary: `No ports found within ${radiusMiles} miles`,
+          portwatch_ports_all: [],
+          portwatch_ports_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Calculate summary statistics
+      const totalVessels = ports.reduce((sum, port) => sum + (port.vessel_count_total || 0), 0);
+      const containerPorts = ports.filter(p => (p.vessel_count_container || 0) > 0).length;
+      const dryBulkPorts = ports.filter(p => (p.vessel_count_dry_bulk || 0) > 0).length;
+      const tankerPorts = ports.filter(p => (p.vessel_count_tanker || 0) > 0).length;
+      
+      const countries = [...new Set(ports.map(p => p.countrydisplayname || p.country).filter(Boolean))];
+      const continents = [...new Set(ports.map(p => p.continent).filter(Boolean))];
+      
+      const summary = `Found ${ports.length} port${ports.length !== 1 ? 's' : ''} within ${radiusMiles} miles. ` +
+        `Total vessels: ${totalVessels.toLocaleString()}. ` +
+        `Countries: ${countries.length}. ` +
+        `Continents: ${continents.join(', ')}.`;
+      
+      return {
+        portwatch_ports_count: ports.length,
+        portwatch_ports_summary: summary,
+        portwatch_ports_total_vessels: totalVessels,
+        portwatch_ports_container_ports: containerPorts,
+        portwatch_ports_dry_bulk_ports: dryBulkPorts,
+        portwatch_ports_tanker_ports: tankerPorts,
+        portwatch_ports_countries: countries,
+        portwatch_ports_continents: continents,
+        portwatch_ports_proximity_distance: radiusMiles,
+        portwatch_ports_all: ports.map(port => ({
+          portid: port.portid,
+          portname: port.portname,
+          fullname: port.fullname,
+          country: port.countrydisplayname || port.country,
+          ISO3: port.ISO3,
+          continent: port.continent,
+          lat: port.lat,
+          long: port.long,
+          distance_miles: port.distance,
+          vessel_count_total: port.vessel_count_total,
+          vessel_count_container: port.vessel_count_container,
+          vessel_count_dry_bulk: port.vessel_count_dry_bulk,
+          vessel_count_general_cargo: port.vessel_count_general_cargo,
+          vessel_count_roro: port.vessel_count_roro,
+          vessel_count_tanker: port.vessel_count_tanker,
+          industry_top1: port.industry_top1,
+          industry_top2: port.industry_top2,
+          industry_top3: port.industry_top3,
+          share_country_maritime_import: port.share_country_maritime_import,
+          share_country_maritime_export: port.share_country_maritime_export,
+          LOCODE: port.LOCODE,
+          portclass: port.portclass
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Port Watch Ports data:', error);
+      return {
+        portwatch_ports_count: 0,
+        portwatch_ports_summary: 'Error querying Port Watch Ports data',
+        portwatch_ports_all: [],
+        portwatch_ports_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
+  private async getUSGSEarthquakes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌍 USGS Earthquakes query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const earthquakes = await getUSGSEarthquakesData(lat, lon, radiusMiles);
+      
+      if (!earthquakes || earthquakes.length === 0) {
+        return {
+          usgs_earthquakes_count: 0,
+          usgs_earthquakes_summary: `No earthquakes found within ${radiusMiles} miles`,
+          usgs_earthquakes_all: [],
+          usgs_earthquakes_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Calculate summary statistics
+      const magnitudes = earthquakes.map(eq => eq.mag).filter((mag): mag is number => mag !== null && mag !== undefined);
+      const maxMagnitude = magnitudes.length > 0 ? Math.max(...magnitudes) : null;
+      const minMagnitude = magnitudes.length > 0 ? Math.min(...magnitudes) : null;
+      const avgMagnitude = magnitudes.length > 0 ? magnitudes.reduce((sum, mag) => sum + mag, 0) / magnitudes.length : null;
+      
+      const significantEarthquakes = earthquakes.filter(eq => (eq.mag || 0) >= 5.0).length;
+      const moderateEarthquakes = earthquakes.filter(eq => (eq.mag || 0) >= 4.0 && (eq.mag || 0) < 5.0).length;
+      const minorEarthquakes = earthquakes.filter(eq => (eq.mag || 0) < 4.0).length;
+      
+      const tsunamis = earthquakes.filter(eq => eq.tsunami === 1).length;
+      const alerts = earthquakes.filter(eq => eq.alert && eq.alert !== 'null').length;
+      
+      // Get unique places/regions
+      const places = [...new Set(earthquakes.map(eq => eq.place).filter(Boolean))];
+      
+      const summary = `Found ${earthquakes.length} earthquake${earthquakes.length !== 1 ? 's' : ''} within ${radiusMiles} miles. ` +
+        (maxMagnitude ? `Magnitude range: ${minMagnitude?.toFixed(1)} - ${maxMagnitude.toFixed(1)} (avg: ${avgMagnitude?.toFixed(1)}). ` : '') +
+        (significantEarthquakes > 0 ? `Significant (≥5.0): ${significantEarthquakes}. ` : '') +
+        (moderateEarthquakes > 0 ? `Moderate (4.0-4.9): ${moderateEarthquakes}. ` : '') +
+        (tsunamis > 0 ? `Tsunami events: ${tsunamis}. ` : '') +
+        (alerts > 0 ? `Alerts: ${alerts}.` : '');
+      
+      return {
+        usgs_earthquakes_count: earthquakes.length,
+        usgs_earthquakes_summary: summary.trim(),
+        usgs_earthquakes_max_magnitude: maxMagnitude,
+        usgs_earthquakes_min_magnitude: minMagnitude,
+        usgs_earthquakes_avg_magnitude: avgMagnitude,
+        usgs_earthquakes_significant_count: significantEarthquakes,
+        usgs_earthquakes_moderate_count: moderateEarthquakes,
+        usgs_earthquakes_minor_count: minorEarthquakes,
+        usgs_earthquakes_tsunami_count: tsunamis,
+        usgs_earthquakes_alerts_count: alerts,
+        usgs_earthquakes_places: places,
+        usgs_earthquakes_proximity_distance: radiusMiles,
+        usgs_earthquakes_all: earthquakes.map(eq => ({
+          id: eq.id,
+          mag: eq.mag,
+          place: eq.place,
+          time: eq.time,
+          updated: eq.updated,
+          url: eq.url,
+          detail: eq.detail,
+          felt: eq.felt,
+          cdi: eq.cdi,
+          mmi: eq.mmi,
+          alert: eq.alert,
+          status: eq.status,
+          tsunami: eq.tsunami,
+          sig: eq.sig,
+          magType: eq.magType,
+          type: eq.type,
+          title: eq.title,
+          lat: eq.lat,
+          lon: eq.lon,
+          depth: eq.depth,
+          distance_miles: eq.distance
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching USGS Earthquakes data:', error);
+      return {
+        usgs_earthquakes_count: 0,
+        usgs_earthquakes_summary: 'Error querying USGS Earthquakes data',
+        usgs_earthquakes_all: [],
+        usgs_earthquakes_proximity_distance: radiusMiles
+      };
+    }
+  }
+  
   private async getPortWatchChokepoints(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`🌊 Port Watch Chokepoints query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
@@ -2724,6 +3156,20 @@ export class EnrichmentService {
       // Global Risk - ACLED Conflict Events
       case 'acled':
         return await this.getACLED(lat, lon, radius);
+      
+      // Global Risk - Scenarios Climate Risks
+      case 'climate_risks':
+        return await this.getClimateRisks(lat, lon, radius);
+      
+      // Global Risk - Spillovers Port Level Impact
+      case 'spillovers_port_impact':
+        return await this.getSpilloversPortImpact(lat, lon, radius);
+      case 'portwatch_ports':
+        return await this.getPortWatchPorts(lat, lon, radius);
+      
+      // Global Risk - USGS Earthquakes
+      case 'usgs_earthquakes':
+        return await this.getUSGSEarthquakes(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

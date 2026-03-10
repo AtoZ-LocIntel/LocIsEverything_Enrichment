@@ -288,6 +288,173 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // Add Climate Risks data
+  if (enrichments.climate_risks_all && Array.isArray(enrichments.climate_risks_all)) {
+    enrichments.climate_risks_all.forEach((risk: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Climate Risks',
+        (location.confidence || 'N/A').toString(),
+        'CLIMATE_RISKS',
+        `Risk Point ${risk.objectId || 'N/A'}`,
+        (risk.latitude || location.lat).toString(),
+        (risk.longitude || location.lon).toString(),
+        (risk.distance_miles || enrichments.climate_risks_proximity_distance || 0).toFixed(1),
+        'Climate Risk Assessment',
+        `RCP85: ${risk.rcp85_total_dam?.toFixed(2) || 'N/A'}, RCP45: ${risk.rcp45_total_dam?.toFixed(2) || 'N/A'}, RCP26: ${risk.rcp26_total_dam?.toFixed(2) || 'N/A'}`,
+        enrichments.climate_risks_summary || '',
+        '',
+        'Climate Risks'
+      ]);
+    });
+  } else if (enrichments.climate_risks_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Climate Risks',
+      (location.confidence || 'N/A').toString(),
+      'CLIMATE_RISKS',
+      'Climate Risk Scenarios',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.climate_risks_proximity_distance || 0).toFixed(1),
+      'Climate Risk Assessment',
+      `${enrichments.climate_risks_count || 0} found`,
+      enrichments.climate_risks_summary || '',
+      '',
+      'Climate Risks'
+    ]);
+  }
+
+  // Add Spillovers Port Impact data
+  if (enrichments.spillovers_port_impact_all && Array.isArray(enrichments.spillovers_port_impact_all)) {
+    enrichments.spillovers_port_impact_all.forEach((impact: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Spillovers Port Impact',
+        (location.confidence || 'N/A').toString(),
+        'SPILLOVERS_PORT_IMPACT',
+        `Impact ${impact.objectId || 'N/A'}: ${impact.from_portname || 'Unknown'} → ${impact.to_portname || 'Unknown'}`,
+        (impact.latitude || impact.to_lat || location.lat).toString(),
+        (impact.longitude || impact.to_lon || location.lon).toString(),
+        (impact.distance_miles || enrichments.spillovers_port_impact_proximity_distance || 0).toFixed(1),
+        'Port Spillover Impact Assessment',
+        `D1: ${impact.capacity_d1_act?.toFixed(2) || 'N/A'}, D7: ${impact.capacity_d7_act?.toFixed(2) || 'N/A'}, D14: ${impact.capacity_d14_act?.toFixed(2) || 'N/A'}, D30: ${impact.capacity_d30_act?.toFixed(2) || 'N/A'}, D90: ${impact.capacity_d90_act?.toFixed(2) || 'N/A'}`,
+        enrichments.spillovers_port_impact_summary || '',
+        '',
+        'Spillovers Port Impact'
+      ]);
+    });
+  } else if (enrichments.spillovers_port_impact_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Spillovers Port Impact',
+      (location.confidence || 'N/A').toString(),
+      'SPILLOVERS_PORT_IMPACT',
+      'Port Spillover Impacts',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.spillovers_port_impact_proximity_distance || 0).toFixed(1),
+      'Port Spillover Impact Assessment',
+      `${enrichments.spillovers_port_impact_count || 0} found`,
+      enrichments.spillovers_port_impact_summary || '',
+      '',
+      'Spillovers Port Impact'
+    ]);
+  }
+
+  // Add USGS Earthquakes data
+  if (enrichments.usgs_earthquakes_all && Array.isArray(enrichments.usgs_earthquakes_all)) {
+    enrichments.usgs_earthquakes_all.forEach((earthquake: any) => {
+      const timeStr = earthquake.time 
+        ? new Date(earthquake.time).toLocaleString()
+        : 'Unknown';
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'USGS Earthquakes',
+        (location.confidence || 'N/A').toString(),
+        'USGS_EARTHQUAKES',
+        `${earthquake.place || earthquake.title || 'Earthquake'} (Mag: ${earthquake.mag?.toFixed(1) || 'N/A'})`,
+        (earthquake.lat || location.lat).toString(),
+        (earthquake.lon || location.lon).toString(),
+        (earthquake.distance_miles || enrichments.usgs_earthquakes_proximity_distance || 0).toFixed(1),
+        'USGS Earthquake Hazards Program',
+        `Magnitude: ${earthquake.mag?.toFixed(1) || 'N/A'}, Depth: ${earthquake.depth?.toFixed(1) || 'N/A'} km, Time: ${timeStr}${earthquake.tsunami === 1 ? ', Tsunami Event' : ''}`,
+        enrichments.usgs_earthquakes_summary || '',
+        '',
+        'USGS'
+      ]);
+    });
+  } else if (enrichments.usgs_earthquakes_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'USGS Earthquakes',
+      (location.confidence || 'N/A').toString(),
+      'USGS_EARTHQUAKES',
+      'USGS Earthquakes',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.usgs_earthquakes_proximity_distance || 0).toFixed(1),
+      'USGS Earthquake Hazards Program',
+      `${enrichments.usgs_earthquakes_count || 0} found`,
+      enrichments.usgs_earthquakes_summary || '',
+      '',
+      'USGS'
+    ]);
+  }
+
+  // Add Port Watch Ports data
+  if (enrichments.portwatch_ports_all && Array.isArray(enrichments.portwatch_ports_all)) {
+    enrichments.portwatch_ports_all.forEach((port: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Port Watch Ports',
+        (location.confidence || 'N/A').toString(),
+        'PORTWATCH_PORTS',
+        `${port.portname || port.fullname || 'Port'} (${port.countrydisplayname || port.country || 'Unknown'})`,
+        (port.lat || port.latitude || location.lat).toString(),
+        (port.long || port.longitude || location.lon).toString(),
+        (port.distance_miles || port.distance || enrichments.portwatch_ports_proximity_distance || 0).toFixed(1),
+        'Port Watch Ports Database',
+        `Total Vessels: ${port.vessel_count_total?.toLocaleString() || '0'}, Container: ${port.vessel_count_container?.toLocaleString() || '0'}, Dry Bulk: ${port.vessel_count_dry_bulk?.toLocaleString() || '0'}, Tanker: ${port.vessel_count_tanker?.toLocaleString() || '0'}`,
+        enrichments.portwatch_ports_summary || '',
+        '',
+        'Port Watch'
+      ]);
+    });
+  } else if (enrichments.portwatch_ports_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Port Watch Ports',
+      (location.confidence || 'N/A').toString(),
+      'PORTWATCH_PORTS',
+      'Port Watch Ports',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.portwatch_ports_proximity_distance || 0).toFixed(1),
+      'Port Watch Ports Database',
+      `${enrichments.portwatch_ports_count || 0} found`,
+      enrichments.portwatch_ports_summary || '',
+      '',
+      'Port Watch'
+    ]);
+  }
+
   // Add USGS Wildfire data
   if (enrichments.poi_wildfires_count !== undefined) {
     rows.push([

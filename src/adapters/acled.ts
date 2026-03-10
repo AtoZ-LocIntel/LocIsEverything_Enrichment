@@ -177,27 +177,43 @@ export async function getAllACLEDData(): Promise<ACLEDEvent[]> {
         
         console.log(`📡 Fetching ACLED events (limit: ${limit})...`);
         
-    // Build headers - use Bearer token if we have one, otherwise rely on cookies
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (accessToken && accessToken !== 'cookie-auth') {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    }
-    // If accessToken is 'cookie-auth', cookies will be sent automatically with credentials: 'include'
-    
-    const response = await fetch(queryUrl.toString(), {
-      method: 'GET',
-      headers: headers,
-      credentials: 'include', // Include cookies for cookie-based auth
-    });
+        // Build query parameters for proxy
+        const queryParams = new URLSearchParams();
+        queryParams.set('_format', 'json');
+        queryParams.set('year', `${twoYearsAgo}|${currentYear}`);
+        queryParams.set('year_where', 'BETWEEN');
+        queryParams.set('limit', limit.toString());
+        queryParams.set('fields', 'event_id_cnty|event_date|year|disorder_type|event_type|sub_event_type|actor1|actor2|country|region|latitude|longitude|fatalities|location|admin1|admin2|admin3|source|notes|tags');
+        
+        // Use proxy endpoint to avoid CORS issues
+        const proxyUrl = `/api/acled-proxy?${queryParams.toString()}`;
+        
+        console.log(`🔗 Calling ACLED proxy: ${proxyUrl}`);
+        
+        const response = await fetch(proxyUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
+        // Get response text first to check what we're actually receiving
+        const responseText = await response.text();
+        
         if (!response.ok) {
+          console.error('ACLED proxy error response:', response.status, responseText.substring(0, 500));
           throw new Error(`ACLED API request failed: ${response.status} ${response.statusText}`);
         }
 
-        const apiResponse: ACLEDApiResponse = await response.json();
+        // Check if response looks like JSON
+        let apiResponse: ACLEDApiResponse;
+        try {
+          apiResponse = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Failed to parse ACLED response as JSON. Response:', responseText.substring(0, 500));
+          console.error('Content-Type:', response.headers.get('content-type'));
+          throw new Error(`ACLED proxy returned invalid JSON. Response may be source code or HTML.`);
+        }
         
         if (apiResponse.status !== 200 || !apiResponse.success) {
           throw new Error(`ACLED API error: ${apiResponse.messages?.join(', ') || 'Unknown error'}`);
@@ -255,40 +271,59 @@ export async function getACLEDData(
     const minLon = lon - radiusDegrees;
     const maxLon = lon + radiusDegrees;
     
-    const queryUrl = new URL(API_BASE_URL);
-    queryUrl.searchParams.set('_format', 'json');
-    queryUrl.searchParams.set('year', `${twoYearsAgo}|${currentYear}`);
-    queryUrl.searchParams.set('year_where', 'BETWEEN');
-    queryUrl.searchParams.set('latitude', `${minLat}|${maxLat}`);
-    queryUrl.searchParams.set('latitude_where', 'BETWEEN');
-    queryUrl.searchParams.set('longitude', `${minLon}|${maxLon}`);
-    queryUrl.searchParams.set('longitude_where', 'BETWEEN');
-    queryUrl.searchParams.set('limit', '5000');
-    queryUrl.searchParams.set('fields', 'event_id_cnty|event_date|year|disorder_type|event_type|sub_event_type|actor1|actor2|country|region|latitude|longitude|fatalities|location|admin1|admin2|admin3|source|notes|tags');
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+    queryParams.set('_format', 'json');
+    queryParams.set('year', `${twoYearsAgo}|${currentYear}`);
+    queryParams.set('year_where', 'BETWEEN');
+    queryParams.set('latitude', `${minLat}|${maxLat}`);
+    queryParams.set('latitude_where', 'BETWEEN');
+    queryParams.set('longitude', `${minLon}|${maxLon}`);
+    queryParams.set('longitude_where', 'BETWEEN');
+    queryParams.set('limit', '5000');
+    queryParams.set('fields', 'event_id_cnty|event_date|year|disorder_type|event_type|sub_event_type|actor1|actor2|country|region|latitude|longitude|fatalities|location|admin1|admin2|admin3|source|notes|tags');
     
     console.log(`📡 Fetching ACLED events near [${lat}, ${lon}] within ${radiusMiles || 50} miles...`);
     
-    // Build headers - use Bearer token if we have one, otherwise rely on cookies
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
+    // Use proxy endpoint to avoid CORS issues
+    const queryString = queryParams.toString();
+    const proxyUrl = `/api/acled-proxy?${queryString}`;
     
-    if (accessToken && accessToken !== 'cookie-auth') {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    }
-    // If accessToken is 'cookie-auth', cookies will be sent automatically with credentials: 'include'
+    console.log(`🔗 Calling ACLED proxy: ${proxyUrl}`);
+    console.log(`📋 Query parameters:`, Object.fromEntries(queryParams.entries()));
+    console.log(`📋 Query string: ${queryString}`);
     
-    const response = await fetch(queryUrl.toString(), {
+    const response = await fetch(proxyUrl, {
       method: 'GET',
-      headers: headers,
-      credentials: 'include', // Include cookies for cookie-based auth
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
+    // Get response text first to check what we're actually receiving
+    const responseText = await response.text();
+    
     if (!response.ok) {
+      console.error('ACLED proxy error response:', response.status, response.statusText);
+      console.error('Error response body:', responseText.substring(0, 1000));
+      
+      // 403 usually means authentication failed
+      if (response.status === 403) {
+        throw new Error(`ACLED API returned 403 Forbidden. This usually means authentication failed. Check if the access token is being passed correctly.`);
+      }
+      
       throw new Error(`ACLED API request failed: ${response.status} ${response.statusText}`);
     }
 
-    const apiResponse: ACLEDApiResponse = await response.json();
+    // Check if response looks like JSON
+    let apiResponse: ACLEDApiResponse;
+    try {
+      apiResponse = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse ACLED response as JSON. Response:', responseText.substring(0, 500));
+      console.error('Content-Type:', response.headers.get('content-type'));
+      throw new Error(`ACLED proxy returned invalid JSON. Response may be source code or HTML.`);
+    }
     
     if (apiResponse.status !== 200 || !apiResponse.success) {
       throw new Error(`ACLED API error: ${apiResponse.messages?.join(', ') || 'Unknown error'}`);
@@ -307,6 +342,10 @@ export async function getACLEDData(
     return filteredEvents;
   } catch (error: any) {
     console.error('❌ Error querying ACLED data:', error);
+    // Log more details about the error
+    if (error.message && error.message.includes('JSON')) {
+      console.error('JSON parsing error - response might not be JSON. Check serverless function execution.');
+    }
     return [];
   }
 }

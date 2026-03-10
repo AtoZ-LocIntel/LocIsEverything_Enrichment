@@ -224,23 +224,6 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
                   </button>
                 )}
               </div>
-              {/* Map Icon Button - Only for Global Risk category */}
-              {category.id === 'global_risk' && onViewMap && (
-                <button
-                  onClick={onViewMap}
-                  className="p-2 rounded-lg bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-blue-500 transition-colors flex-shrink-0"
-                  title="View Global Risk layers on map"
-                  style={{
-                    minWidth: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Map className="w-5 h-5" />
-                </button>
-              )}
             </div>
             
             <div className="flex items-center space-x-3 flex-shrink-0">

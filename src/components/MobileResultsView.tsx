@@ -161,6 +161,21 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         return 'N/A'; // Skip the _all array (handled separately)
       }
       
+      // Special handling for Climate Risks - show count only for _all array
+      if (key.includes('climate_risks_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Spillovers Port Impact - show count only for _all array
+      if (key.includes('spillovers_port_impact_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
+      // Special handling for Port Watch Ports - show count only for _all array
+      if (key.includes('portwatch_ports_all')) {
+        return 'N/A'; // Skip the _all array (handled separately)
+      }
+      
       // Special handling for OpenSky Flights - show count only for _all array
       if (key.includes('opensky_flights_all')) {
         return 'N/A'; // Skip the _all array (handled separately)
@@ -273,7 +288,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // Global Risk - check before Natural Hazards
-    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled')) {
+    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes')) {
       return 'Global Risk';
     }
     
@@ -901,6 +916,21 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // ACLED fields - only show if ACLED enrichment is selected
       if (key.includes('acled')) {
         return selectedEnrichments.includes('acled');
+      }
+      
+      // Climate Risks fields - only show if Climate Risks enrichment is selected
+      if (key.includes('climate_risks')) {
+        return selectedEnrichments.includes('climate_risks');
+      }
+      
+      // Spillovers Port Impact fields - only show if Spillovers Port Impact enrichment is selected
+      if (key.includes('spillovers_port_impact')) {
+        return selectedEnrichments.includes('spillovers_port_impact');
+      }
+      
+      // Port Watch Ports fields - only show if Port Watch Ports enrichment is selected
+      if (key.includes('portwatch_ports')) {
+        return selectedEnrichments.includes('portwatch_ports');
       }
       
       // OpenSky Flights fields - only show if OpenSky Flights enrichment is selected

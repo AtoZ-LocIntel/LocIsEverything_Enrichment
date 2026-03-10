@@ -9312,11 +9312,51 @@ export const getDataSources = (): DataSourceCategory[] => {
         },
         {
           name: "Port Watch Chokepoints Database",
-          description: "Port Watch Chokepoints Database - Global maritime chokepoint ports with vessel traffic counts, trade data, and industry information. Supports proximity queries up to 100 miles.",
+          description: "Port Watch Chokepoints Database - Global maritime chokepoint ports with vessel traffic counts, trade data, and industry information. Supports proximity queries up to 1000 miles.",
           coverage: "Global",
           accuracy: "High",
           cost: "Free",
           url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/PortWatch_chokepoints_database/FeatureServer"
+        },
+        {
+          name: "Scenarios Climate Risks",
+          description: "Scenarios Climate Risks - Climate risk assessments including coastal, fluvial, pluvial, tropical cyclone, and earthquake damage scenarios for RCP26 (low emissions), RCP45 (medium emissions), RCP85 (high emissions), and present-day scenarios. Supports proximity queries up to 1000 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/scenarios_climate_risks/FeatureServer/0"
+        },
+        {
+          name: "Spillovers Port Level Impact",
+          description: "Spillovers Port Level Impact - Port-to-port spillover impacts showing capacity impacts from source ports to destination ports at different time horizons (1, 7, 14, 30, 90 days) with actual and relative capacity metrics. Supports proximity queries up to 1000 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/spillovers_port_level_impact_geo_v2/FeatureServer/0"
+        },
+        {
+          name: "Port Watch Ports",
+          description: "Port Watch Ports - Global port database with port information, vessel counts by type (container, dry bulk, general cargo, RoRo, tanker), industry data, and maritime trade statistics. Supports proximity queries up to 1000 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/PortWatch_ports/FeatureServer/1"
+        },
+        {
+          name: "USGS Earthquake API",
+          description: "USGS Earthquake Hazards Program - Global earthquake data from the U.S. Geological Survey. Provides near-real-time earthquake information including magnitude, location, depth, time, tsunami alerts, and event details. The service aggregates seismic data from global networks (ANSS earthquake catalog). Supports proximity queries up to 500 miles. Data includes earthquakes from the last 30 days for proximity queries and last 48 hours for global map view.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://earthquake.usgs.gov/fdsnws/event/1/query"
+        },
+        {
+          name: "AIS Stream (AISStream.io)",
+          description: "AIS Global Vessels - Real-time Automatic Identification System (AIS) vessel tracking data from AISStream.io. Provides live ship positions, speeds, headings, and vessel types via WebSocket stream. Updates in real-time based on map viewport.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://aisstream.io"
         },
         {
           name: "OpenSky Network",
