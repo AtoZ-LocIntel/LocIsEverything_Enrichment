@@ -129,14 +129,24 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   // This prevents the top card from ever going under/over the header on mobile.
   useLayoutEffect(() => {
     const el = headerRef.current;
-    if (!el) return;
+    if (!el) {
+      // Fallback to safe default if header not found
+      setHeaderHeight(120);
+      return;
+    }
 
     const measure = () => {
       const h = el.getBoundingClientRect().height;
-      setHeaderHeight(h);
+      console.log('📏 Header height measured:', h);
+      // Ensure we have a valid height, fallback to 120 if measurement fails
+      setHeaderHeight(h > 0 ? h : 120);
     };
 
+    // Measure immediately
     measure();
+
+    // Also measure after a short delay to catch any dynamic sizing
+    const timeoutId = setTimeout(measure, 100);
 
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
@@ -146,6 +156,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
     window.addEventListener('resize', measure);
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('resize', measure);
       ro?.disconnect();
     };
@@ -279,19 +290,17 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
       {/* Content - Mobile Optimized Scrollable */}
       <main
         ref={listRef}
-        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain"
+        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain bg-black"
         style={{
-          top: headerHeight,
+          top: `${headerHeight}px`,
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
           overscrollBehavior: 'contain',
-          paddingTop: 16,
-          scrollPaddingTop: 16,
-          zIndex: 100,
-          backgroundColor: '#000',
+          paddingTop: '16px',
+          scrollPaddingTop: '16px',
         }}
       >
-        <div className="max-w-xl mx-auto space-y-4" style={{ minHeight: '200px' }}>
+        <div className="max-w-xl mx-auto space-y-4">
           {/* Category Description (hide on mobile to avoid search overlap) */}
           <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
