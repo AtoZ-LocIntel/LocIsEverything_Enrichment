@@ -6,6 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { poiConfigManager } from '../lib/poiConfig';
+import { Info } from 'lucide-react';
 
 interface MapViewProps {
   results: EnrichmentResult[];
@@ -331,6 +332,149 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
     wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Drainage_Index/ImageServer/WMSServer',
     wmsLayers: 'USFS_Drainage_Index', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Histosol Cultivated WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Values of 1 represent uncultivated histosol and values of 2 represent cultivated histosol
+  usfs_histosol_cultivated: {
+    type: 'wms',
+    name: 'USFS Histosol Cultivated',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Histosol_Cultivated/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Histosol_Cultivated', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Histosol Percents WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Values range from 10 to 100 percent
+  usfs_histosol_percents: {
+    type: 'wms',
+    name: 'USFS Histosol Percents',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Histosol_Percents/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Histosol_Percents', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Histosol Top20 Crops WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Top 20 crops grown on histosol soils
+  usfs_histosol_top20_crops: {
+    type: 'wms',
+    name: 'USFS Histosol Top20 Crops',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Histosol_Top20Crops/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Histosol_Top20Crops', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Organic Material WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Organic material content in soil
+  usfs_organic_material: {
+    type: 'wms',
+    name: 'USFS Organic Material',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Organic_Material/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Organic_Material', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS pH WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil pH values
+  usfs_ph: {
+    type: 'wms',
+    name: 'USFS pH',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_pH/ImageServer/WMSServer',
+    wmsLayers: 'USFS_pH', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Productivity Index WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil productivity index
+  usfs_productivity_index: {
+    type: 'wms',
+    name: 'USFS Productivity Index',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Productivity_Index/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Productivity_Index', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Seasonal Depth to Water Table WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Seasonal depth to water table
+  usfs_seasonal_depth_to_water_table: {
+    type: 'wms',
+    name: 'USFS Seasonal Depth to Water Table',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Seasonal_Depth_To_Water_Table/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Seasonal_Depth_To_Water_Table', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Slippage Potential WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil slippage potential
+  usfs_slippage_potential: {
+    type: 'wms',
+    name: 'USFS Slippage Potential',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Slippage_Potential/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Slippage_Potential', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Soil Texture WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil texture classification
+  usfs_soil_texture: {
+    type: 'wms',
+    name: 'USFS Soil Texture',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Soil_Texture/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Soil_Texture', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Soils Bulk Density WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil bulk density values
+  usfs_soils_bulk_density: {
+    type: 'wms',
+    name: 'USFS Soils Bulk Density',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Soils_Bulk_Density/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Soils_Bulk_Density', // Use service name as layer name
+    wmsFormat: 'image/png',
+    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
+    wmsUppercase: true, // Required for WMS 1.3.0
+  },
+  // USFS Taxonomic Order WMS
+  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // Soil taxonomic order classification
+  usfs_taxonomic_order: {
+    type: 'wms',
+    name: 'USFS Taxonomic Order',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Taxonomic_Order/ImageServer/WMSServer',
+    wmsLayers: 'USFS_Taxonomic_Order', // Use service name as layer name
     wmsFormat: 'image/png',
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
@@ -6421,21 +6565,21 @@ const MapView: React.FC<MapViewProps> = ({
             if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
               // Determine color and size based on magnitude (larger sizes)
               let earthquakeColor = '#10b981'; // Green for minor (< 4.0)
-              let markerSize = 16; // Base size for minor earthquakes
+              let markerSize = 24; // Base size for minor earthquakes (increased from 16)
               const magnitude = earthquake.mag || 0;
               
               if (magnitude >= 7.0) {
                 earthquakeColor = '#dc2626'; // Red for major (≥ 7.0)
-                markerSize = 32; // Largest for major earthquakes
+                markerSize = 48; // Largest for major earthquakes (increased from 32)
               } else if (magnitude >= 6.0) {
                 earthquakeColor = '#f59e0b'; // Orange for strong (6.0-6.9)
-                markerSize = 28; // Large for strong earthquakes
+                markerSize = 40; // Large for strong earthquakes (increased from 28)
               } else if (magnitude >= 5.0) {
                 earthquakeColor = '#f97316'; // Orange-red for moderate-strong (5.0-5.9)
-                markerSize = 24; // Medium-large for moderate-strong
+                markerSize = 36; // Medium-large for moderate-strong (increased from 24)
               } else if (magnitude >= 4.0) {
                 earthquakeColor = '#3b82f6'; // Blue for light (4.0-4.9)
-                markerSize = 20; // Medium for light earthquakes
+                markerSize = 30; // Medium for light earthquakes (increased from 20)
               }
               
               // Add tsunami indicator
@@ -6713,21 +6857,21 @@ const MapView: React.FC<MapViewProps> = ({
             const lon = fire.longitude;
             
             if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
-              // Determine color based on confidence and brightness
-              let fireColor = '#dc2626'; // Red for high confidence
-              let markerSize = 12;
+              // Determine color based on confidence and brightness - using blue colors to differentiate from WFIGS wildfires
+              let fireColor = '#3b82f6'; // Blue for high confidence
+              let markerSize = 20; // Base size increased from 12
               const confidence = fire.confidence || 0;
               const brightness = fire.brightness || 0;
               
               if (confidence >= 80) {
-                fireColor = '#dc2626'; // Red for high confidence
-                markerSize = 16;
+                fireColor = '#2563eb'; // Darker blue for high confidence
+                markerSize = 28; // Increased from 16
               } else if (confidence >= 50) {
-                fireColor = '#f59e0b'; // Orange for medium confidence
-                markerSize = 14;
+                fireColor = '#3b82f6'; // Medium blue for medium confidence
+                markerSize = 24; // Increased from 14
               } else {
-                fireColor = '#f97316'; // Orange-red for low confidence
-                markerSize = 12;
+                fireColor = '#60a5fa'; // Lighter blue for low confidence
+                markerSize = 20; // Increased from 12
               }
               
               const fireIcon = '🔥';
@@ -43145,8 +43289,8 @@ const MapView: React.FC<MapViewProps> = ({
           
           // Use closer zoom (16) for Boston layers, otherwise use standard zoom
           const targetZoom = hasBostonLayers 
-            ? (results.length === 1 ? 16 : 14)  // Closer zoom for Boston
-            : (results.length === 1 ? 15 : 12);  // Standard zoom for other layers
+            ? (results.length === 1 ? 15 : 13)  // Closer zoom for Boston (zoomed out slightly)
+            : (results.length === 1 ? 13 : 12);  // Standard zoom for other layers (zoomed out from geocoded point)
           const shouldAnimate = distance > 100 || Math.abs(currentZoom - targetZoom) > 2;
           
           if (shouldAnimate) {
@@ -44733,6 +44877,13 @@ const MapView: React.FC<MapViewProps> = ({
                       <span className="text-sm font-semibold text-black">
                         ✈️ Flight Tracker
                       </span>
+                      <div className="relative group">
+                        <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                        <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                          This service displays real-time aircraft position data. Performance may be affected at large scales or when viewing many aircraft simultaneously.
+                          <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
                     </label>
                     <p className="text-xs text-gray-500 mt-1 ml-6">
                       Shows real-time global aircraft positions
@@ -44924,6 +45075,13 @@ const MapView: React.FC<MapViewProps> = ({
                   <span className="text-sm font-semibold text-black">
                     ✈️ Flight Tracker
                   </span>
+                  <div className="relative group">
+                    <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                    <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                      This service displays real-time aircraft position data. Performance may be affected at large scales or when viewing many aircraft simultaneously.
+                      <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
                   <input

@@ -9095,6 +9095,94 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Drainage_Index/ImageServer"
         },
         {
+          name: "USFS Histosol Cultivated",
+          description: "USDA Forest Service Soil/Geology - Values of 1 represent uncultivated histosol and values of 2 represent cultivated histosol. Uncultivated histosols are those pixels not used for agricultural purposes. Cultivated histosol pixels are those pixels that are determined to be used for agricultural purposes. Histosols (minus folists for this dataset) have a high content of organic matter and no permafrost. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Histosol_Cultivated/ImageServer"
+        },
+        {
+          name: "USFS Histosol Percents",
+          description: "USDA Forest Service Soil/Geology - Values range from 10 to 100 percent. Histosols (minus folists for this dataset) have a high content of organic matter and no permafrost. Most are saturated year round, but a few are freely drained. Histosols are commonly called bogs, moors, peats, or mucks. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Histosol_Percents/ImageServer"
+        },
+        {
+          name: "USFS Histosol Top20 Crops",
+          description: "USDA Forest Service Soil/Geology - Top 20 crops grown on histosol soils. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Histosol_Top20Crops/ImageServer"
+        },
+        {
+          name: "USFS Organic Material",
+          description: "USDA Forest Service Soil/Geology - Organic material content in soil. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Organic_Material/ImageServer"
+        },
+        {
+          name: "USFS pH",
+          description: "USDA Forest Service Soil/Geology - Soil pH values. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_pH/ImageServer"
+        },
+        {
+          name: "USFS Productivity Index",
+          description: "USDA Forest Service Soil/Geology - Soil productivity index. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Productivity_Index/ImageServer"
+        },
+        {
+          name: "USFS Seasonal Depth to Water Table",
+          description: "USDA Forest Service Soil/Geology - Seasonal depth to water table. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Seasonal_Depth_To_Water_Table/ImageServer"
+        },
+        {
+          name: "USFS Slippage Potential",
+          description: "USDA Forest Service Soil/Geology - Soil slippage potential. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Slippage_Potential/ImageServer"
+        },
+        {
+          name: "USFS Soil Texture",
+          description: "USDA Forest Service Soil/Geology - Soil texture classification. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Soil_Texture/ImageServer"
+        },
+        {
+          name: "USFS Soils Bulk Density",
+          description: "USDA Forest Service Soil/Geology - Soil bulk density values. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Soils_Bulk_Density/ImageServer"
+        },
+        {
+          name: "USFS Taxonomic Order",
+          description: "USDA Forest Service Soil/Geology - Soil taxonomic order classification. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Taxonomic_Order/ImageServer"
+        },
+        {
           name: "USFS Heat Stress Index",
           description: "USDA Forest Service EDW Heat Stress Index - Percent change, absolute change, 2080s RCP 8.5, and historical heat stress index layers",
           coverage: "United States",
@@ -9428,7 +9516,7 @@ export const getDataSources = (): DataSourceCategory[] => {
           coverage: "Global",
           accuracy: "High",
           cost: "Free",
-          url: "https://opensky-network.org/api/states/all"
+          url: "https://opensky-network.org/"
         },
         ]
     }

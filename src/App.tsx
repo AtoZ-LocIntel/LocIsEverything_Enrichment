@@ -753,7 +753,7 @@ function App() {
               }
               initialZoom={
                 enrichmentResults.length === 0 
-                  ? 4 // US zoom
+                  ? 6 // USA country level zoom (closer view of USA)
                   : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.source === 'global_risk'
                       ? 4 // North America zoom level for Global Risk map
                       : (enrichmentResults.length > 0 && enrichmentResults[0]?.location?.lat === 0 && enrichmentResults[0]?.location?.lon === 0
