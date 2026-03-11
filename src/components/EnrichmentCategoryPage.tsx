@@ -256,9 +256,9 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
             <h1 className="text-lg font-bold text-white">{category.title}</h1>
             <p className="text-xs text-white text-opacity-90 mt-0.5">
               {selectedCount} of {filteredEnrichments.length} selected
-              {layerSearchQuery && filteredEnrichments.length !== (Array.isArray(category?.enrichments) ? category.enrichments.length : 0) && (
+              {layerSearchQuery && filteredEnrichments.length !== category.enrichments.length && (
                 <span className="block text-xs text-white text-opacity-70 mt-0.5">
-                  (filtered from {Array.isArray(category?.enrichments) ? category.enrichments.length : 0})
+                  (filtered from {category.enrichments.length})
                 </span>
               )}
             </p>
@@ -267,33 +267,31 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
         </div>
 
         {/* Search Bar */}
-        <div className="relative flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search layers..."
-              value={layerSearchQuery}
-              onChange={(e) => setLayerSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent"
-              style={{ backdropFilter: 'blur(10px)' }}
-            />
-            {layerSearchQuery && (
-              <button
-                onClick={() => setLayerSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+        <div className="relative">
+          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search layers..."
+            value={layerSearchQuery}
+            onChange={(e) => setLayerSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-10 py-2.5 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 focus:border-transparent"
+            style={{ backdropFilter: 'blur(10px)' }}
+          />
+          {layerSearchQuery && (
+            <button
+              onClick={() => setLayerSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </header>
 
       {/* Content - Mobile Optimized Scrollable */}
       <main
         ref={listRef}
-        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain"
+        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain bg-black"
         style={{
           top: `${headerHeight}px`,
           WebkitOverflowScrolling: 'touch',
@@ -301,32 +299,16 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
           overscrollBehavior: 'contain',
           paddingTop: '16px',
           scrollPaddingTop: '16px',
-          zIndex: 100,
-          backgroundColor: '#000000',
         }}
       >
-        <div className="max-w-xl mx-auto space-y-4" style={{ backgroundColor: '#000000', minHeight: '100vh' }}>
+        <div className="max-w-xl mx-auto space-y-4">
           {/* Category Description (hide on mobile to avoid search overlap) */}
           <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
             <p className="text-sm text-gray-300 leading-relaxed break-words">{category.description}</p>
           </div>
 
-          {/* Debug info - remove after fixing */}
-          <div className="bg-red-900 p-2 text-white text-xs mb-2">
-            Debug: headerHeight={headerHeight}px, filteredCount={filteredEnrichments?.length}, totalCount={category?.enrichments?.length}
-          </div>
-
           {/* Enrichment Options */}
-          {(() => {
-            console.log('🔍 Rendering enrichments:', { 
-              filteredCount: filteredEnrichments?.length, 
-              totalCount: category?.enrichments?.length,
-              headerHeight,
-              categoryId: category?.id 
-            });
-            return null;
-          })()}
           {!filteredEnrichments || filteredEnrichments.length === 0 ? (
             <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
               <p className="text-gray-400 text-base mb-3">
