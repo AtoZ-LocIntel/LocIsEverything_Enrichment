@@ -68,13 +68,24 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
   const filteredEnrichments = useMemo(() => {
     // Defensive check: ensure category.enrichments is an array
     const enrichments = Array.isArray(category?.enrichments) ? category.enrichments : [];
+    console.log('🔍 EnrichmentCategoryPage: Filtering enrichments', {
+      categoryId: category?.id,
+      categoryTitle: category?.title,
+      enrichmentsCount: enrichments.length,
+      searchQuery: layerSearchQuery
+    });
     if (layerSearchQuery.trim() === '') return enrichments;
     const q = layerSearchQuery.toLowerCase();
-    return enrichments.filter(e =>
+    const filtered = enrichments.filter(e =>
       e?.label?.toLowerCase().includes(q) ||
       e?.description?.toLowerCase().includes(q) ||
       e?.id?.toLowerCase().includes(q)
     );
+    console.log('🔍 EnrichmentCategoryPage: Filtered results', {
+      filteredCount: filtered.length,
+      totalCount: enrichments.length
+    });
+    return filtered;
   }, [category?.enrichments, layerSearchQuery]);
   
   const handleToggleEnrichment = (enrichmentId: string) => {
@@ -276,11 +287,11 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
           overscrollBehavior: 'contain',
           paddingTop: 16,
           scrollPaddingTop: 16,
-          zIndex: 0,
+          zIndex: 100,
           backgroundColor: '#000',
         }}
       >
-        <div className="max-w-xl mx-auto space-y-4">
+        <div className="max-w-xl mx-auto space-y-4" style={{ minHeight: '200px' }}>
           {/* Category Description (hide on mobile to avoid search overlap) */}
           <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
