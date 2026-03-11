@@ -137,9 +137,12 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
 
     const measure = () => {
       const h = el.getBoundingClientRect().height;
-      console.log('📏 Header height measured:', h);
+      console.log('📏 Header height measured:', h, 'for category:', category?.id);
       // Ensure we have a valid height, fallback to 120 if measurement fails
-      setHeaderHeight(h > 0 ? h : 120);
+      // Cap at reasonable maximum (should be around 120-150px max for header with search)
+      const measuredHeight = h > 0 && h < 300 ? h : 120;
+      console.log('📏 Setting headerHeight to:', measuredHeight);
+      setHeaderHeight(measuredHeight);
     };
 
     // Measure immediately
@@ -290,7 +293,7 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
       {/* Content - Mobile Optimized Scrollable */}
       <main
         ref={listRef}
-        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain bg-black"
+        className="fixed left-0 right-0 bottom-0 overflow-y-auto px-4 pb-4 overscroll-contain"
         style={{
           top: `${headerHeight}px`,
           WebkitOverflowScrolling: 'touch',
@@ -298,16 +301,32 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
           overscrollBehavior: 'contain',
           paddingTop: '16px',
           scrollPaddingTop: '16px',
+          zIndex: 100,
+          backgroundColor: '#000000',
         }}
       >
-        <div className="max-w-xl mx-auto space-y-4">
+        <div className="max-w-xl mx-auto space-y-4" style={{ backgroundColor: '#000000', minHeight: '100vh' }}>
           {/* Category Description (hide on mobile to avoid search overlap) */}
           <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-lg p-4">
             <h2 className="text-base font-semibold text-white mb-2 break-words">About {category.title}</h2>
             <p className="text-sm text-gray-300 leading-relaxed break-words">{category.description}</p>
           </div>
 
+          {/* Debug info - remove after fixing */}
+          <div className="bg-red-900 p-2 text-white text-xs mb-2">
+            Debug: headerHeight={headerHeight}px, filteredCount={filteredEnrichments?.length}, totalCount={category?.enrichments?.length}
+          </div>
+
           {/* Enrichment Options */}
+          {(() => {
+            console.log('🔍 Rendering enrichments:', { 
+              filteredCount: filteredEnrichments?.length, 
+              totalCount: category?.enrichments?.length,
+              headerHeight,
+              categoryId: category?.id 
+            });
+            return null;
+          })()}
           {!filteredEnrichments || filteredEnrichments.length === 0 ? (
             <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
               <p className="text-gray-400 text-base mb-3">
