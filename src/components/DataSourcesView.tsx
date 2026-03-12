@@ -9183,6 +9183,78 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Taxonomic_Order/ImageServer"
         },
         {
+          name: "USFS National Snag Hazard",
+          description: "USDA Forest Service Fire/Aviation - National Snag Hazard Map provides landscape-level view of current snag hazard for firefighter safety. Strategic Analytics Branch",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_NationalSnagHazard/ImageServer"
+        },
+        {
+          name: "USFS Wildfire Hazard Potential",
+          description: "USDA Forest Service Fire/Aviation - Wildfire Hazard Potential (WHP) - An index that quantifies the relative potential for wildfire that may be difficult to manage, used as a measure to help prioritize where fuel treatments may be needed. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_WildfireHazardPotential/ImageServer"
+        },
+        {
+          name: "USFS Risk to Potential Structures",
+          description: "USDA Forest Service Fire/Aviation - Risk to Potential Structures (RPS) - A measure that integrates wildfire likelihood and intensity with generalized consequences to a home on every pixel. For every place on the landscape, it poses the hypothetical question, 'What would be the relative risk to a house if one existed here?' Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_RiskToPotentialStructures/ImageServer"
+        },
+        {
+          name: "USFS Fire Fighter Estimated Ground Evacuation",
+          description: "USDA Forest Service Fire/Aviation - Fire Fighter Estimated Ground Evacuation - Estimated ground evacuation time for firefighters. Strategic Analytics Branch",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_FirefighterEstimatedGroundEvacuation/ImageServer"
+        },
+        {
+          name: "USFS Population Density",
+          description: "USDA Forest Service Fire/Aviation - Population Density - Population density data from Wildfire Risk to Communities. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_PopulationDensity/ImageServer"
+        },
+        {
+          name: "USFS Burn Probability (CONUS)",
+          description: "USDA Forest Service Fire/Aviation - Burn Probability represents the annual likelihood of burning in a large (>= 100-ha) wildfire based on current landscape fuels, historical ignition patterns, topography, local climate, and historical large fire frequency and size. Geospatial Technology and Applications Center (GTAC)",
+          coverage: "United States (CONUS)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_QWRA_BurnProbability_CONUS/ImageServer"
+        },
+        {
+          name: "USFS Wildfire Suppression Difficulty Index (80th Percentile)",
+          description: "USDA Forest Service Fire/Aviation - Wildfire Suppression Difficulty Index (SDI) is a quantitative rating of relative difficulty in performing fire control work. Factors in topography, fuels, expected fire behavior under severe fire weather conditions, firefighter line production rates in various fuel types, and accessibility. Strategic Analytics Branch",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex80thPerc/ImageServer"
+        },
+        {
+          name: "USFS Wildfire Suppression Difficulty Index (90th Percentile)",
+          description: "USDA Forest Service Fire/Aviation - Wildfire Suppression Difficulty Index (SDI) is a quantitative rating of relative difficulty in performing fire control work. Factors in topography, fuels, expected fire behavior under severe fire weather conditions, firefighter line production rates in various fuel types, and accessibility. Strategic Analytics Branch",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex90thPerc/ImageServer"
+        },
+        {
+          name: "USFS Wildfire Suppression Difficulty Index (97th Percentile)",
+          description: "USDA Forest Service Fire/Aviation - Wildfire Suppression Difficulty Index (SDI) is a quantitative rating of relative difficulty in performing fire control work. Factors in topography, fuels, expected fire behavior under severe fire weather conditions, firefighter line production rates in various fuel types, and accessibility. Strategic Analytics Branch",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex97thPerc/ImageServer"
+        },
+        {
           name: "USFS Heat Stress Index",
           description: "USDA Forest Service EDW Heat Stress Index - Percent change, absolute change, 2080s RCP 8.5, and historical heat stress index layers",
           coverage: "United States",

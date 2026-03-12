@@ -375,31 +375,25 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
   },
-  // USFS Organic Material WMS
-  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // USFS Organic Material - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
   // Organic material content in soil
   usfs_organic_material: {
-    type: 'wms',
+    type: 'tile',
     name: 'USFS Organic Material',
     attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
-    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Organic_Material/ImageServer/WMSServer',
-    wmsLayers: 'USFS_Organic_Material', // Use service name as layer name
-    wmsFormat: 'image/png',
-    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
-    wmsUppercase: true, // Required for WMS 1.3.0
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Organic_Material/ImageServer/exportImage',
+    // No raster function - use default rendering
   },
-  // USFS pH WMS
-  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // USFS pH - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
   // Soil pH values
   usfs_ph: {
-    type: 'wms',
+    type: 'tile',
     name: 'USFS pH',
     attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
-    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_pH/ImageServer/WMSServer',
-    wmsLayers: 'USFS_pH', // Use service name as layer name
-    wmsFormat: 'image/png',
-    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
-    wmsUppercase: true, // Required for WMS 1.3.0
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_pH/ImageServer/exportImage',
+    // No raster function - use default rendering
   },
   // USFS Productivity Index WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
@@ -414,18 +408,15 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
   },
-  // USFS Seasonal Depth to Water Table WMS
-  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // USFS Seasonal Depth to Water Table - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
   // Seasonal depth to water table
   usfs_seasonal_depth_to_water_table: {
-    type: 'wms',
+    type: 'tile',
     name: 'USFS Seasonal Depth to Water Table',
     attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
-    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Seasonal_Depth_To_Water_Table/ImageServer/WMSServer',
-    wmsLayers: 'USFS_Seasonal_Depth_To_Water_Table', // Use service name as layer name
-    wmsFormat: 'image/png',
-    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
-    wmsUppercase: true, // Required for WMS 1.3.0
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Seasonal_Depth_To_Water_Table/ImageServer/exportImage',
+    // No raster function - use default rendering
   },
   // USFS Slippage Potential WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
@@ -440,31 +431,25 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
   },
-  // USFS Soil Texture WMS
-  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // USFS Soil Texture - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
   // Soil texture classification
   usfs_soil_texture: {
-    type: 'wms',
+    type: 'tile',
     name: 'USFS Soil Texture',
     attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
-    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Soil_Texture/ImageServer/WMSServer',
-    wmsLayers: 'USFS_Soil_Texture', // Use service name as layer name
-    wmsFormat: 'image/png',
-    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
-    wmsUppercase: true, // Required for WMS 1.3.0
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Soil_Texture/ImageServer/exportImage',
+    // No raster function - use default rendering
   },
-  // USFS Soils Bulk Density WMS
-  // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
+  // USFS Soils Bulk Density - Using ExportImage endpoint
+  // Note: ImageServer service - using exportImage endpoint for better reliability
   // Soil bulk density values
   usfs_soils_bulk_density: {
-    type: 'wms',
+    type: 'tile',
     name: 'USFS Soils Bulk Density',
     attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
-    wmsUrl: 'https://imagery.geoplatform.gov/iipp/services/Soil_Geology/USFS_Soils_Bulk_Density/ImageServer/WMSServer',
-    wmsLayers: 'USFS_Soils_Bulk_Density', // Use service name as layer name
-    wmsFormat: 'image/png',
-    wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
-    wmsUppercase: true, // Required for WMS 1.3.0
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Soil_Geology/USFS_Soils_Bulk_Density/ImageServer/exportImage',
+    // No raster function - use default rendering
   },
   // USFS Taxonomic Order WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
@@ -489,6 +474,91 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_NationalSnagHazard/ImageServer/exportImage',
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'SnagHaz', // Snag hazard raster function
+  },
+  // USFS Wildfire Hazard Potential - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Wildfire Hazard Potential (WHP) - An index that quantifies the relative potential for wildfire that may be difficult to manage
+  usfs_wildfire_hazard_potential: {
+    type: 'tile',
+    name: 'USFS Wildfire Hazard Potential',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_WildfireHazardPotential/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'WHP', // Wildfire Hazard Potential raster function
+  },
+  // USFS Risk to Potential Structures - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Risk to Potential Structures (RPS) - A measure that integrates wildfire likelihood and intensity with generalized consequences to a home
+  usfs_risk_to_potential_structures: {
+    type: 'tile',
+    name: 'USFS Risk to Potential Structures',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_RiskToPotentialStructures/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Fire Fighter Estimated Ground Evacuation - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Fire Fighter Estimated Ground Evacuation - Estimated ground evacuation time for firefighters
+  usfs_firefighter_estimated_ground_evacuation: {
+    type: 'tile',
+    name: 'USFS Fire Fighter Estimated Ground Evacuation',
+    attribution: 'USDA Forest Service, Fire and Aviation Management, Strategic Analytics Branch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_FirefighterEstimatedGroundEvacuation/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Population Density - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Population Density - Population density data from Wildfire Risk to Communities
+  usfs_population_density: {
+    type: 'tile',
+    name: 'USFS Population Density',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_PopulationDensity/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Burn Probability (CONUS) - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Burn Probability represents the annual likelihood of burning in a large (>= 100-ha) wildfire
+  usfs_burn_probability_conus: {
+    type: 'tile',
+    name: 'USFS Burn Probability (CONUS)',
+    attribution: 'USDA Forest Service, Geospatial Technology and Applications Center (GTAC)',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_QWRA_BurnProbability_CONUS/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'NaturalBurnProb', // Natural Burn Probability raster function
+  },
+  // USFS Wildfire Suppression Difficulty Index (80th Percentile) - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // SDI is a quantitative rating of relative difficulty in performing fire control work
+  usfs_wildfire_suppression_difficulty_index_80th: {
+    type: 'tile',
+    name: 'USFS Wildfire Suppression Difficulty Index (80th Percentile)',
+    attribution: 'USDA Forest Service, Fire and Aviation Management, Strategic Analytics Branch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex80thPerc/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'SDI', // Suppression Difficulty Index raster function
+  },
+  // USFS Wildfire Suppression Difficulty Index (90th Percentile) - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // SDI is a quantitative rating of relative difficulty in performing fire control work
+  usfs_wildfire_suppression_difficulty_index_90th: {
+    type: 'tile',
+    name: 'USFS Wildfire Suppression Difficulty Index (90th Percentile)',
+    attribution: 'USDA Forest Service, Fire and Aviation Management, Strategic Analytics Branch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex90thPerc/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'SDI', // Suppression Difficulty Index raster function
+  },
+  // USFS Wildfire Suppression Difficulty Index (97th Percentile) - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // SDI is a quantitative rating of relative difficulty in performing fire control work
+  usfs_wildfire_suppression_difficulty_index_97th: {
+    type: 'tile',
+    name: 'USFS Wildfire Suppression Difficulty Index (97th Percentile)',
+    attribution: 'USDA Forest Service, Fire and Aviation Management, Strategic Analytics Branch',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex97thPerc/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'SDI', // Suppression Difficulty Index raster function
   },
   // USFS Heat Stress Index - Percent Change
   // MapServer image layer - visualization only, not queryable
@@ -6749,6 +6819,28 @@ const MapView: React.FC<MapViewProps> = ({
               const fireSizeStr = fireSize > 0 ? `${fireSize.toLocaleString()} acres` : 'Size unknown';
               const containedStr = contained > 0 ? `${contained}% contained` : 'Not contained';
               
+              // Format timestamps
+              const formatTimestamp = (timestamp: string | undefined): string => {
+                if (!timestamp) return '';
+                try {
+                  const date = new Date(timestamp);
+                  if (isNaN(date.getTime())) return '';
+                  return date.toLocaleString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    timeZoneName: 'short'
+                  });
+                } catch {
+                  return '';
+                }
+              };
+              
+              const modifiedTime = formatTimestamp(fire.modified_on_date_time);
+              const discoveryDate = fire.discovery_date ? formatTimestamp(fire.discovery_date) : '';
+              
               let popupContent = `
                 <div style="min-width: 300px; max-width: 500px;">
                   <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
@@ -6761,7 +6853,8 @@ const MapView: React.FC<MapViewProps> = ({
                     ${fire.poo_state ? `<div><strong>State:</strong> ${fire.poo_state}</div>` : ''}
                     ${fire.poo_county ? `<div><strong>County:</strong> ${fire.poo_county}</div>` : ''}
                     ${fire.fire_cause ? `<div><strong>Cause:</strong> ${fire.fire_cause}</div>` : ''}
-                    ${fire.discovery_date ? `<div><strong>Discovery Date:</strong> ${new Date(fire.discovery_date).toLocaleDateString()}</div>` : ''}
+                    ${discoveryDate ? `<div><strong>Discovery Date:</strong> ${discoveryDate}</div>` : ''}
+                    ${modifiedTime ? `<div><strong>Last Updated:</strong> ${modifiedTime}</div>` : ''}
                   </div>
                   <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
                     Data from WFIGS (Wildland Fire Interagency Geospatial Services)

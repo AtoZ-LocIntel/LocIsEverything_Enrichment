@@ -1557,6 +1557,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           category: 'usfs'
         }));
       
+      console.log('🔍 USFS Basemaps found:', {
+        total: usfsBasemapEnrichments.length,
+        ids: usfsBasemapEnrichments.map(e => e.id),
+        names: usfsBasemapEnrichments.map(e => e.label)
+      });
+      
       categories.forEach(category => {
         if (category.id === 'noaa') {
           // Add NOAA basemaps from BASEMAP_CONFIGS to NOAA category
