@@ -9255,6 +9255,294 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_SAB_WildfireSuppressionDifficultyIndex97thPerc/ImageServer"
         },
         {
+          name: "USFS Population Count",
+          description: "USDA Forest Service Fire/Aviation - Population Count (PopCount) is a 30-m raster with pixel values representing residential population count (persons) in each pixel. Based on 2021 estimates from the U.S. Census Bureau combined with building footprint data. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_PopulationCount/ImageServer"
+        },
+        {
+          name: "USFS Housing Unit Risk",
+          description: "USDA Forest Service Fire/Aviation - Housing Unit Risk (HURisk) is a 30-m raster that integrates all four primary elements of wildfire risk - likelihood, intensity, susceptibility, and exposure - on pixels where housing unit density is greater than zero. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitRisk/ImageServer"
+        },
+        {
+          name: "USFS Housing Unit Impact",
+          description: "USDA Forest Service Fire/Aviation - Housing Unit Impact (HUImpact) is a 30-m raster that represents the relative potential impact of fire to housing units at any pixel, if a fire were to occur. It is an index that incorporates the general consequences of fire on a home as a function of fire intensity and uses flame length probabilities from wildfire modeling. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitImpact/ImageServer"
+        },
+        {
+          name: "USFS Housing Unit Exposure",
+          description: "USDA Forest Service Fire/Aviation - Housing Unit Exposure (HUExposure) is a 30-m raster that represents the expected number of housing units within a pixel potentially exposed to wildfire in a year. This is a long-term annual average and not intended to represent the actual number of housing units exposed in any specific year. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitExposure/ImageServer"
+        },
+        {
+          name: "USFS Housing Unit Density",
+          description: "USDA Forest Service Fire/Aviation - Housing Unit Density (HUDen) is a 30-m raster of housing-unit density (housing units/km²). Based on 2021 estimates from the U.S. Census Bureau combined with building footprint data. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitDensity/ImageServer"
+        },
+        {
+          name: "USFS Housing Unit Count",
+          description: "USDA Forest Service Fire/Aviation - Housing Unit Count (HUCount) is a 30-m raster representing the number of housing units in each pixel. Based on 2021 estimates from the U.S. Census Bureau combined with building footprint data. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitCount/ImageServer"
+        },
+        {
+          name: "USFS Flame Length Exceedance Probability - 8 ft",
+          description: "USDA Forest Service Fire/Aviation - Flame Length Exceedance Probability - 8 ft (FLEP8) - The conditional probability that flame length at a pixel will exceed 8 feet if a fire occurs; indicates the potential for high wildfire intensity. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_FlameLengthExceedProb8ft/ImageServer"
+        },
+        {
+          name: "USFS Flame Length Exceedance Probability - 4 ft",
+          description: "USDA Forest Service Fire/Aviation - Flame Length Exceedance Probability - 4 ft (FLEP4) - The conditional probability that flame length at a pixel will exceed 4 feet if a fire occurs; indicates the potential for moderate to high wildfire intensity. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_FlameLengthExceedProb4ft/ImageServer"
+        },
+        {
+          name: "USFS Exposure Type",
+          description: "USDA Forest Service Fire/Aviation - Exposure Type - Exposure is the spatial coincidence of wildfire likelihood and intensity with communities. This layer delineates where homes are directly exposed to wildfire from adjacent wildland vegetation, indirectly exposed to wildfire from indirect sources such as embers and home-to-home ignition, or not exposed to wildfire due to distance from direct and indirect ignition sources. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_ExposureType/ImageServer"
+        },
+        {
+          name: "USFS Conditional Risk to Potential Structures",
+          description: "USDA Forest Service Fire/Aviation - Conditional Risk to Potential Structures (cRPS) - The potential consequences of fire to a home at a given location, if a fire occurs there and if a home were located there. Referred to as Wildfire Consequence in the Wildfire Risk to Communities web application. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_ConditionalRiskToPotentialStructures/ImageServer"
+        },
+        {
+          name: "USFS Conditional Flame Length",
+          description: "USDA Forest Service Fire/Aviation - Conditional Flame Length (CFL) - The mean flame length for a fire burning in the direction of maximum spread (headfire) at a given location if a fire were to occur; an average measure of wildfire intensity. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_ConditionalFlameLength/ImageServer"
+        },
+        {
+          name: "USFS Community Wildfire Risk Reduction Zones - 4 miles",
+          description: "USDA Forest Service Fire/Aviation - Community Wildfire Risk Reduction Zones - 4 mile buffer zones around communities for wildfire risk reduction planning. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_CommunityWildfireRiskReductionZones4/ImageServer"
+        },
+        {
+          name: "USFS Community Wildfire Risk Reduction Zones - 10 miles",
+          description: "USDA Forest Service Fire/Aviation - Community Wildfire Risk Reduction Zones - 10 mile buffer zones around communities for wildfire risk reduction planning. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_CommunityWildfireRiskReductionZones10/ImageServer"
+        },
+        {
+          name: "USFS Burn Probability",
+          description: "USDA Forest Service Fire/Aviation - Burn Probability (BP) - The annual probability of wildfire burning in a specific location. Referred to as Wildfire Likelihood in the Wildfire Risk to Communities web application. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BurnProbability/ImageServer"
+        },
+        {
+          name: "USFS Building Exposure",
+          description: "USDA Forest Service Fire/Aviation - Building Exposure - Represents the expected number of buildings within a pixel potentially exposed to wildfire in a year. This is a long-term annual average and not intended to represent the actual number of buildings exposed in any specific year. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingExposure/ImageServer"
+        },
+        {
+          name: "USFS Building Density",
+          description: "USDA Forest Service Fire/Aviation - Building Density is a 30-m raster representing the density of buildings in the building footprint dataset (buildings per square kilometer [km²]). Based on building footprint data from Onegeo and USA Structures reflecting 2022 conditions. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingDensity/ImageServer"
+        },
+        {
+          name: "USFS Building Cover",
+          description: "USDA Forest Service Fire/Aviation - Building Cover is a 30-m raster depicting the percentage of habitable land area covered by building footprints. Based on building footprint data from Onegeo and USA Structures reflecting 2022 conditions. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingCover/ImageServer"
+        },
+        {
+          name: "USFS Building Count",
+          description: "USDA Forest Service Fire/Aviation - Building Count is a 30-m raster representing the count of buildings in the building footprint dataset located within each 30-m pixel. Based on building footprint data from Onegeo and USA Structures reflecting 2022 conditions. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingCount/ImageServer"
+        },
+        {
+          name: "USFS Wildfire Hazard Potential Continuous",
+          description: "USDA Forest Service Fire/Aviation - Wildfire Hazard Potential (WHP) Continuous - 2023 version with continuous integer values quantifying the relative potential for high-intensity wildfire that may be difficult to manage. Used as a measure to help prioritize where fuel treatments may be needed. Rocky Mountain Research Station",
+          coverage: "United States (CONUS)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WildfireHazardPotentialContinuous/ImageServer"
+        },
+        {
+          name: "USFS Wildfire Hazard Potential Classified",
+          description: "USDA Forest Service Fire/Aviation - Wildfire Hazard Potential (WHP) Classified - 2023 version with five WHP classes: very low, low, moderate, high, and very high. Quantifies the relative potential for high-intensity wildfire that may be difficult to manage. Rocky Mountain Research Station",
+          coverage: "United States (CONUS)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WildfireHazardPotentialClassified/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk Burn Probability",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Burn Probability - Annual probability of wildfire burning in a specific location. Part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRiskBurnProbability/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk FLP1",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Flame Length Probability 1 (FLP1) - Flame length probability category 1 as part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP1/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk FLP2",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Flame Length Probability 2 (FLP2) - Flame length probability category 2 as part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP2/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk FLP3",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Flame Length Probability 3 (FLP3) - Flame length probability category 3 as part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP3/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk FLP4",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Flame Length Probability 4 (FLP4) - Flame length probability category 4 as part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP4/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk FLP5",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Flame Length Probability 5 (FLP5) - Flame length probability category 5 as part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP5/ImageServer"
+        },
+        {
+          name: "USFS Probabilistic Wildfire Risk FLP6",
+          description: "USDA Forest Service Fire/Aviation - Probabilistic Wildfire Risk Flame Length Probability 6 (FLP6) - Flame length probability category 6 as part of the probabilistic wildfire risk assessment framework. Rocky Mountain Research Station",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP6/ImageServer"
+        },
+        {
+          name: "USFS Next Generation Fire Severity Mapping",
+          description: "USDA Forest Service Fire/Aviation - Next Generation Fire Severity Mapping - Depicts the probability of high-severity fire, if a fire were to occur, for several ecoregions in the contiguous western US. Based on statistical models describing the probability of high severity fire as a function of fuel, topography, climate, and fire weather. Rocky Mountain Research Station",
+          coverage: "Western United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_NextGenerationFireSeverityMapping/ImageServer"
+        },
+        {
+          name: "USFS Fireshed Mature and Old Growth Area (Federal Lands Only)",
+          description: "USDA Forest Service Fire/Aviation - Fireshed Mature and Old Growth Area Federal Lands Only - Summarizes plot-based area estimates for Mature and Old Growth produced by the Forest Inventory Analysis for the Mature and Old Growth Forest inventory to Firesheds. The Fireshed Registry is a geospatial dashboard and decision tool built to organize information about wildfire transmission to communities.",
+          coverage: "United States (CONUS)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_CRV_Fireshed_MatureAndOldGrowthAreaFederalLandsOnly/ImageServer"
+        },
+        {
+          name: "USFS Soil Burn Severity Classification",
+          description: "USDA Forest Service Fire/Aviation - Soil Burn Severity Classification - BAER (Burned Area Emergency Response) soil burn severity assessment for post-fire emergency response and recovery planning.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_BAER_SoilBurnSeverityClassification/ImageServer"
+        },
+        {
+          name: "USFS MTBS CONUS",
+          description: "USDA Forest Service Fire/Aviation - Monitoring Trends in Burn Severity (MTBS) CONUS - Burn severity data for the conterminous United States. MTBS is a multi-year project designed to map the burn severity and perimeters of fires across the United States from 1984 to present.",
+          coverage: "United States (CONUS)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_MTBS_CONUS/ImageServer"
+        },
+        {
+          name: "USFS MTBS Hawaii",
+          description: "USDA Forest Service Fire/Aviation - Monitoring Trends in Burn Severity (MTBS) Hawaii - Burn severity data for Hawaii. MTBS is a multi-year project designed to map the burn severity and perimeters of fires across the United States from 1984 to present.",
+          coverage: "Hawaii",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_MTBS_HI/ImageServer"
+        },
+        {
+          name: "USFS MTBS Puerto Rico",
+          description: "USDA Forest Service Fire/Aviation - Monitoring Trends in Burn Severity (MTBS) Puerto Rico - Burn severity data for Puerto Rico. MTBS is a multi-year project designed to map the burn severity and perimeters of fires across the United States from 1984 to present.",
+          coverage: "Puerto Rico",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_MTBS_PR/ImageServer"
+        },
+        {
+          name: "USFS RAVG Basal Area Percent Change",
+          description: "USDA Forest Service Fire/Aviation - Rapid Assessment of Vegetation Condition after Wildfire (RAVG) Basal Area Percent Change - Measures the change in basal area following wildfire to assess post-fire vegetation condition and recovery.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RAVG_BasalAreaPercentChange/ImageServer"
+        },
+        {
+          name: "USFS RAVG Canopy Cover Percent Change",
+          description: "USDA Forest Service Fire/Aviation - Rapid Assessment of Vegetation Condition after Wildfire (RAVG) Canopy Cover Percent Change - Measures the change in canopy cover following wildfire to assess post-fire vegetation condition and recovery.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RAVG_CanopyCoverPercentChange/ImageServer"
+        },
+        {
+          name: "USFS RAVG Composite Burn Index",
+          description: "USDA Forest Service Fire/Aviation - Rapid Assessment of Vegetation Condition after Wildfire (RAVG) Composite Burn Index - A composite index combining multiple vegetation metrics to assess overall post-fire vegetation condition and burn severity.",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RAVG_CompositeBurnIndex/ImageServer"
+        },
+        {
           name: "USFS Heat Stress Index",
           description: "USDA Forest Service EDW Heat Stress Index - Percent change, absolute change, 2080s RCP 8.5, and historical heat stress index layers",
           coverage: "United States",

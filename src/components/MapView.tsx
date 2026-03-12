@@ -560,6 +560,371 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     // Custom parameters for ExportImage
     exportImageRasterFunction: 'SDI', // Suppression Difficulty Index raster function
   },
+  // USFS Population Count - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Population Count (PopCount) - 30-m raster with pixel values representing residential population count (persons) in each pixel
+  usfs_population_count: {
+    type: 'tile',
+    name: 'USFS Population Count',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_PopulationCount/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'PopulationCount', // Population Count raster function
+  },
+  // USFS Housing Unit Risk - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Housing Unit Risk (HURisk) - Integrates all four primary elements of wildfire risk - likelihood, intensity, susceptibility, and exposure
+  usfs_housing_unit_risk: {
+    type: 'tile',
+    name: 'USFS Housing Unit Risk',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitRisk/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Housing Unit Impact - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Housing Unit Impact (HUImpact) - Represents the relative potential impact of fire to housing units at any pixel, if a fire were to occur
+  usfs_housing_unit_impact: {
+    type: 'tile',
+    name: 'USFS Housing Unit Impact',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitImpact/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Housing Unit Exposure - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Housing Unit Exposure (HUExposure) - Represents the expected number of housing units within a pixel potentially exposed to wildfire in a year
+  usfs_housing_unit_exposure: {
+    type: 'tile',
+    name: 'USFS Housing Unit Exposure',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitExposure/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Housing Unit Density - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Housing Unit Density (HUDen) - 30-m raster of housing-unit density (housing units/km²)
+  usfs_housing_unit_density: {
+    type: 'tile',
+    name: 'USFS Housing Unit Density',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitDensity/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Housing Unit Count - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Housing Unit Count (HUCount) - 30-m raster representing the number of housing units in each pixel
+  usfs_housing_unit_count: {
+    type: 'tile',
+    name: 'USFS Housing Unit Count',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_HousingUnitCount/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Flame Length Exceedance Probability - 8 ft - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Flame Length Exceedance Probability - 8 ft (FLEP8) - The conditional probability that flame length at a pixel will exceed 8 feet if a fire occurs
+  usfs_flame_length_exceedance_probability_8ft: {
+    type: 'tile',
+    name: 'USFS Flame Length Exceedance Probability - 8 ft',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_FlameLengthExceedProb8ft/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'FLEP8', // Flame Length Exceedance Probability 8ft raster function
+  },
+  // USFS Flame Length Exceedance Probability - 4 ft - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Flame Length Exceedance Probability - 4 ft (FLEP4) - The conditional probability that flame length at a pixel will exceed 4 feet if a fire occurs
+  usfs_flame_length_exceedance_probability_4ft: {
+    type: 'tile',
+    name: 'USFS Flame Length Exceedance Probability - 4 ft',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_FlameLengthExceedProb4ft/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'FLEP4', // Flame Length Exceedance Probability 4ft raster function
+  },
+  // USFS Exposure Type - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Exposure Type - Delineates where homes are directly exposed, indirectly exposed, or not exposed to wildfire
+  usfs_exposure_type: {
+    type: 'tile',
+    name: 'USFS Exposure Type',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_ExposureType/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'Exposure', // Exposure Type raster function
+  },
+  // USFS Conditional Risk to Potential Structures - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Conditional Risk to Potential Structures (cRPS) - The potential consequences of fire to a home at a given location, if a fire occurs there
+  usfs_conditional_risk_to_potential_structures: {
+    type: 'tile',
+    name: 'USFS Conditional Risk to Potential Structures',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_ConditionalRiskToPotentialStructures/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Conditional Flame Length - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Conditional Flame Length (CFL) - The mean flame length for a fire burning in the direction of maximum spread (headfire) at a given location if a fire were to occur
+  usfs_conditional_flame_length: {
+    type: 'tile',
+    name: 'USFS Conditional Flame Length',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_ConditionalFlameLength/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Community Wildfire Risk Reduction Zones - 4 miles - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Community Wildfire Risk Reduction Zones - 4 mile buffer zones around communities
+  usfs_community_wildfire_risk_reduction_zones_4: {
+    type: 'tile',
+    name: 'USFS Community Wildfire Risk Reduction Zones - 4 miles',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_CommunityWildfireRiskReductionZones4/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Community Wildfire Risk Reduction Zones - 10 miles - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Community Wildfire Risk Reduction Zones - 10 mile buffer zones around communities
+  usfs_community_wildfire_risk_reduction_zones_10: {
+    type: 'tile',
+    name: 'USFS Community Wildfire Risk Reduction Zones - 10 miles',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_CommunityWildfireRiskReductionZones10/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Burn Probability - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Burn Probability (BP) - The annual probability of wildfire burning in a specific location
+  usfs_burn_probability: {
+    type: 'tile',
+    name: 'USFS Burn Probability',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BurnProbability/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Building Exposure - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Building Exposure - Represents the expected number of buildings within a pixel potentially exposed to wildfire in a year
+  usfs_building_exposure: {
+    type: 'tile',
+    name: 'USFS Building Exposure',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingExposure/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Building Density - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Building Density - 30-m raster representing the density of buildings (buildings per square kilometer)
+  usfs_building_density: {
+    type: 'tile',
+    name: 'USFS Building Density',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingDensity/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Building Cover - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Building Cover - 30-m raster depicting the percentage of habitable land area covered by building footprints
+  usfs_building_cover: {
+    type: 'tile',
+    name: 'USFS Building Cover',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingCover/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Building Count - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Building Count - 30-m raster representing the count of buildings in the building footprint dataset located within each 30-m pixel
+  usfs_building_count: {
+    type: 'tile',
+    name: 'USFS Building Count',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WRC_BuildingCount/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Wildfire Hazard Potential Continuous - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Wildfire Hazard Potential (WHP) Continuous - 2023 version with continuous integer values quantifying relative potential for high-intensity wildfire
+  usfs_wildfire_hazard_potential_continuous: {
+    type: 'tile',
+    name: 'USFS Wildfire Hazard Potential Continuous',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WildfireHazardPotentialContinuous/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Wildfire Hazard Potential Classified - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Wildfire Hazard Potential (WHP) Classified - 2023 version with five WHP classes: very low, low, moderate, high, and very high
+  usfs_wildfire_hazard_potential_classified: {
+    type: 'tile',
+    name: 'USFS Wildfire Hazard Potential Classified',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_WildfireHazardPotentialClassified/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk Burn Probability - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Burn Probability - Annual probability of wildfire burning in a specific location
+  usfs_probabilistic_wildfire_risk_burn_probability: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk Burn Probability',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRiskBurnProbability/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk FLP1 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Flame Length Probability 1 - Flame length probability category 1
+  usfs_probabilistic_wildfire_risk_flp1: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk FLP1',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP1/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk FLP2 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Flame Length Probability 2 - Flame length probability category 2
+  usfs_probabilistic_wildfire_risk_flp2: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk FLP2',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP2/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk FLP3 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Flame Length Probability 3 - Flame length probability category 3
+  usfs_probabilistic_wildfire_risk_flp3: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk FLP3',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP3/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk FLP4 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Flame Length Probability 4 - Flame length probability category 4
+  usfs_probabilistic_wildfire_risk_flp4: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk FLP4',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP4/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk FLP5 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Flame Length Probability 5 - Flame length probability category 5
+  usfs_probabilistic_wildfire_risk_flp5: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk FLP5',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP5/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Probabilistic Wildfire Risk FLP6 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Probabilistic Wildfire Risk Flame Length Probability 6 - Flame length probability category 6
+  usfs_probabilistic_wildfire_risk_flp6: {
+    type: 'tile',
+    name: 'USFS Probabilistic Wildfire Risk FLP6',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_ProbabilisticWildfireRisk_FLP6/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Next Generation Fire Severity Mapping - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Next Generation Fire Severity Mapping - Probability of high-severity fire if a fire were to occur
+  usfs_next_generation_fire_severity_mapping: {
+    type: 'tile',
+    name: 'USFS Next Generation Fire Severity Mapping',
+    attribution: 'USDA Forest Service, Rocky Mountain Research Station',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RMRS_NextGenerationFireSeverityMapping/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Fireshed Mature and Old Growth Area (Federal Lands Only) - Using ExportImage endpoint with raster function
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Mature and Old Growth Area estimates from Forest Inventory Analysis summarized to Firesheds
+  usfs_fireshed_mature_and_old_growth_area_federal_lands: {
+    type: 'tile',
+    name: 'USFS Fireshed Mature and Old Growth Area (Federal Lands Only)',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_CRV_Fireshed_MatureAndOldGrowthAreaFederalLandsOnly/ImageServer/exportImage',
+    // Custom parameters for ExportImage
+    exportImageRasterFunction: 'RFT_CRV_Fireshed_MatureAndOldGrowthArea', // Mature and Old Growth Area raster function
+  },
+  // USFS Soil Burn Severity Classification - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Soil Burn Severity Classification - BAER (Burned Area Emergency Response) soil burn severity assessment
+  usfs_soil_burn_severity_classification: {
+    type: 'tile',
+    name: 'USFS Soil Burn Severity Classification',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_BAER_SoilBurnSeverityClassification/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS MTBS CONUS - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Monitoring Trends in Burn Severity (MTBS) - Conterminous United States burn severity data
+  usfs_mtbs_conus: {
+    type: 'tile',
+    name: 'USFS MTBS CONUS',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_MTBS_CONUS/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS MTBS Hawaii - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Monitoring Trends in Burn Severity (MTBS) - Hawaii burn severity data
+  usfs_mtbs_hi: {
+    type: 'tile',
+    name: 'USFS MTBS Hawaii',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_MTBS_HI/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS MTBS Puerto Rico - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Monitoring Trends in Burn Severity (MTBS) - Puerto Rico burn severity data
+  usfs_mtbs_pr: {
+    type: 'tile',
+    name: 'USFS MTBS Puerto Rico',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_MTBS_PR/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS RAVG Basal Area Percent Change - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Rapid Assessment of Vegetation Condition after Wildfire (RAVG) - Basal area percent change
+  usfs_ravg_basal_area_percent_change: {
+    type: 'tile',
+    name: 'USFS RAVG Basal Area Percent Change',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RAVG_BasalAreaPercentChange/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS RAVG Canopy Cover Percent Change - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Rapid Assessment of Vegetation Condition after Wildfire (RAVG) - Canopy cover percent change
+  usfs_ravg_canopy_cover_percent_change: {
+    type: 'tile',
+    name: 'USFS RAVG Canopy Cover Percent Change',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RAVG_CanopyCoverPercentChange/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS RAVG Composite Burn Index - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Rapid Assessment of Vegetation Condition after Wildfire (RAVG) - Composite Burn Index
+  usfs_ravg_composite_burn_index: {
+    type: 'tile',
+    name: 'USFS RAVG Composite Burn Index',
+    attribution: 'USDA Forest Service',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Fire_Aviation/USFS_EDW_RAVG_CompositeBurnIndex/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
   // USFS Heat Stress Index - Percent Change
   // MapServer image layer - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
