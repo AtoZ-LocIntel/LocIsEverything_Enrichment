@@ -9023,6 +9023,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://basemap.nationalmap.gov/"
         },
         {
+          name: "USDA NAIP Plus",
+          description: "USDA National Agriculture Imagery Program (NAIP) Plus - Digital orthophotos covering all or selected portions of US states (AL, AZ, AR, CA, CO, CT, DE, DC, FL, GA, HI, ID, IL, IN, IA, KS, KY, LA, ME, MD, MA, MI, MN, MS, MO, MT, NE, NV, NH, NJ, NM, NY, NC, ND, OH, OK, OR, PA, PR, RI, SC, SD, TN, TX, UT, VT, VA, WA, WV, WI, WY), acquired in multiple years (2022, 2021, WA 2019/2017), ranging from 0.3 to 0.6 meter resolution. Contains four bands: red, green, blue, and near infrared wavelengths, suitable for true-color or false-color analysis. Provided by USDA's Farm Production and Conservation office (FPAC), served by USFS GTAC and DOI GeoPlatform",
+          coverage: "United States (selected states)",
+          accuracy: "Very High (0.3-0.6 meter resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/NAIP/NAIP_plus/ImageServer"
+        },
+        {
           name: "USGS MRLC Land Cover",
           description: "USGS Multi-Resolution Land Characteristics (MRLC) Consortium - NLCD land cover, canopy cover, imperviousness, and shrublands",
           coverage: "United States",

@@ -3451,6 +3451,18 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
       // USFS FIA Forest Atlas - American Elm Historical Range Boundary
   // Raster/tiled basemap service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
+  // USDA NAIP Plus - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // NAIP Plus - Digital orthophotos covering all or selected portions of US states, acquired in multiple years (2022, 2021, WA 2019/2017),
+  // ranging from 0.3 to 0.6 meter resolution, as provided by USDA's Farm Production and Conservation office (FPAC).
+  // Contains four bands: red, green, blue, and near infrared wavelengths.
+  usda_naip_plus: {
+    type: 'tile',
+    name: 'USDA NAIP Plus',
+    attribution: 'USDA Farm Production and Conservation office (FPAC), served by USFS GTAC and DOI GeoPlatform',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/NAIP/NAIP_plus/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
   // Alaska AHRI 2020 RGB Cache
   // Tiled map service - visualization only, not queryable
   // Uses direct tile endpoint - works with /tile/{z}/{y}/{x} format
@@ -6034,6 +6046,7 @@ const MapView: React.FC<MapViewProps> = ({
     'Basemaps': true, // Default to expanded
     'USGS National Map': false,
     'USFS': false,
+    'USDA': false,
     'Alaska': false,
   });
   const [showThematicThemes, setShowThematicThemes] = useState<boolean>(false); // Toggle to show/hide thematic themes list
@@ -6041,6 +6054,7 @@ const MapView: React.FC<MapViewProps> = ({
   // Search queries for basemap sections
   const [noaaSearchQuery, setNoaaSearchQuery] = useState<string>('');
   const [usfsSearchQuery, setUsfsSearchQuery] = useState<string>('');
+  const [usdaSearchQuery, setUsdaSearchQuery] = useState<string>('');
   const [nationalmapSearchQuery, setNationalmapSearchQuery] = useState<string>('');
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
@@ -45511,6 +45525,77 @@ const MapView: React.FC<MapViewProps> = ({
                                 if (!matchesFilter) return false;
                                 if (!usfsSearchQuery) return true;
                                 const searchLower = usfsSearchQuery.toLowerCase();
+                                return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
+                                       key.toLowerCase().includes(searchLower);
+                              })
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* USDA basemaps */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USDA': !prev['USDA'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#92400e' }}
+                        >
+                          <span>USDA</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['USDA'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['USDA'] && (
+                          <div className="pb-1 bg-white">
+                            {/* Search bar for USDA */}
+                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Search USDA basemaps..."
+                                  value={usdaSearchQuery}
+                                  onChange={(e) => setUsdaSearchQuery(e.target.value)}
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  style={{ color: '#000000' }}
+                                />
+                                <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                                {usdaSearchQuery && (
+                                  <button
+                                    onClick={() => setUsdaSearchQuery('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                              {usdaSearchQuery && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
+                                    key.startsWith('usda_') && 
+                                    (BASEMAP_CONFIGS[key].name.toLowerCase().includes(usdaSearchQuery.toLowerCase()) ||
+                                     key.toLowerCase().includes(usdaSearchQuery.toLowerCase()))
+                                  ).length} of {Object.entries(BASEMAP_CONFIGS).filter(([key]) => key.startsWith('usda_')).length} basemaps
+                                </div>
+                              )}
+                            </div>
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => {
+                                if (!key.startsWith('usda_')) return false;
+                                if (!usdaSearchQuery) return true;
+                                const searchLower = usdaSearchQuery.toLowerCase();
                                 return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
                                        key.toLowerCase().includes(searchLower);
                               })
