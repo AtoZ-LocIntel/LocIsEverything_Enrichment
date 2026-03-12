@@ -5032,6 +5032,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_geographic_names_all' || // Skip Geographic Names array (handled separately for map drawing)
     key === 'padus_public_access_all' || // Skip PAD-US public access array (handled separately for map drawing)
     key === 'padus_protection_status_all' || // Skip PAD-US protection status array (handled separately for map drawing)
+    key === 'shipping_lanes_all' || // Skip shipping lanes array (handled separately for map drawing)
     key === 'usgs_trails_all' || // Skip USGS Trails array (handled separately for map drawing)
     (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately for map drawing)
     (key.startsWith('usgs_geonames_') && key.endsWith('_all')) || // Skip USGS GeoNames arrays (handled separately for map drawing)
@@ -5840,11 +5841,13 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedBaseBasemap, setSelectedBaseBasemap] = useState<string>(isMobile ? 'liberty' : 'liberty'); // Base basemap from "Basemaps" section
   const [selectedThematicBasemap, setSelectedThematicBasemap] = useState<string | null>(null); // Thematic basemap from other sections (WMS, tile, etc.) - optional overlay
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
+  const [showZoomWarningPopup, setShowZoomWarningPopup] = useState<boolean>(false); // Show warning when thematic basemap is selected at low zoom
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
   const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
   const [showWFIGSWildfires, setShowWFIGSWildfires] = useState<boolean>(false);
   const [showNASAFIRMS, setShowNASAFIRMS] = useState<boolean>(false);
+  const [showShippingLanes, setShowShippingLanes] = useState<boolean>(false);
   const [firmsRegions, setFirmsRegions] = useState<Record<string, boolean>>({
     USA: false,
     Canada: false,
@@ -5862,6 +5865,7 @@ const MapView: React.FC<MapViewProps> = ({
   const earthquakeMarkersRef = useRef<L.Marker[]>([]);
   const wfigsWildfireMarkersRef = useRef<L.Marker[]>([]);
   const nasaFIRMSMarkersRef = useRef<L.Marker[]>([]);
+  const shippingLanesLayerRef = useRef<L.GeoJSON | null>(null);
   
   // Global Risk TOC layer states
   const [globalRiskLayerStates, setGlobalRiskLayerStates] = useState<Record<string, boolean>>({
@@ -5870,7 +5874,8 @@ const MapView: React.FC<MapViewProps> = ({
     portwatch_ports: false,
     usgs_earthquakes: false,
     climate_risks: false,
-    spillovers_port_impact: false
+    spillovers_port_impact: false,
+    shipping_lanes: false
   });
   const [globalRiskLayerLoading, setGlobalRiskLayerLoading] = useState<Record<string, boolean>>({
     portwatch_disruptions: false,
@@ -5929,6 +5934,11 @@ const MapView: React.FC<MapViewProps> = ({
           countKey = 'usgs_earthquakes_count';
           summaryKey = 'usgs_earthquakes_summary';
           allKey = 'usgs_earthquakes_all';
+          break;
+        case 'shipping_lanes':
+          countKey = 'shipping_lanes_count';
+          summaryKey = 'shipping_lanes_summary';
+          allKey = 'shipping_lanes_all';
           break;
       }
       
@@ -5990,6 +6000,14 @@ const MapView: React.FC<MapViewProps> = ({
             countKey = 'usgs_earthquakes_count';
             summaryKey = 'usgs_earthquakes_summary';
             allKey = 'usgs_earthquakes_all';
+            break;
+          case 'shipping_lanes':
+            // Shipping lanes are loaded from GeoJSON, not a global fetch
+            // They're handled via proximity queries only
+            data = [];
+            countKey = 'shipping_lanes_count';
+            summaryKey = 'shipping_lanes_summary';
+            allKey = 'shipping_lanes_all';
             break;
         }
         
@@ -7258,6 +7276,107 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, [showWFIGSWildfires, isInitialized]);
 
+  // Handle Shipping Lanes toggle
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showShippingLanes) {
+      // Clear shipping lanes when toggled off
+      if (shippingLanesLayerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(shippingLanesLayerRef.current);
+        shippingLanesLayerRef.current = null;
+      }
+      return;
+    }
+    
+    // Function to fetch and display shipping lanes
+    const fetchAndDisplayShippingLanes = async () => {
+      try {
+        console.log('🚢 Fetching global shipping lanes...');
+        const response = await fetch('https://raw.githubusercontent.com/newzealandpaul/Shipping-Lanes/main/data/Shipping_Lanes_v1.geojson');
+        
+        if (!response.ok) {
+          throw new Error(`Shipping lanes API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const geojsonData = await response.json();
+        
+        if (geojsonData && geojsonData.features && geojsonData.features.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          const { primary } = layerGroupsRef.current;
+          
+          // Remove old shipping lanes layer if it exists
+          if (shippingLanesLayerRef.current) {
+            mapInstanceRef.current.removeLayer(shippingLanesLayerRef.current);
+            shippingLanesLayerRef.current = null;
+          }
+          
+          // Create GeoJSON layer with custom styling based on Type
+          const shippingLanesLayer = L.geoJSON(geojsonData, {
+            style: (feature) => {
+              const type = feature?.properties?.Type || 'Minor';
+              let color = '#3b82f6'; // Default blue for Minor
+              let weight = 1.5;
+              let opacity = 0.6;
+              
+              if (type === 'Major') {
+                color = '#2563eb'; // Darker blue for Major routes
+                weight = 3;
+                opacity = 0.8;
+              } else if (type === 'Middle' || type === 'Medium') {
+                color = '#3b82f6'; // Medium blue for Middle routes
+                weight = 2;
+                opacity = 0.7;
+              } else {
+                // Minor routes
+                color = '#60a5fa'; // Lighter blue for Minor routes
+                weight = 1.5;
+                opacity = 0.6;
+              }
+              
+              return {
+                color: color,
+                weight: weight,
+                opacity: opacity,
+                dashArray: type === 'Major' ? undefined : '5, 5' // Dashed lines for non-major routes
+              };
+            },
+            onEachFeature: (feature, layer) => {
+              const type = feature?.properties?.Type || 'Unknown';
+              const popupContent = `
+                <div style="min-width: 200px; max-width: 300px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🚢 Shipping Lane
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280;">
+                    <div><strong>Type:</strong> ${type}</div>
+                  </div>
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                    Data from Global Shipping Lanes Dataset (CC-BY)
+                  </div>
+                </div>
+              `;
+              layer.bindPopup(popupContent, { maxWidth: 300 });
+            }
+          });
+          
+          shippingLanesLayer.addTo(primary);
+          (shippingLanesLayer as any).__layerType = 'shipping_lanes_toggle';
+          (shippingLanesLayer as any).__layerTitle = 'Global Shipping Lanes';
+          shippingLanesLayerRef.current = shippingLanesLayer;
+          
+          console.log(`🚢 Loaded Shipping Lanes: ${geojsonData.features.length} routes`);
+        }
+      } catch (error) {
+        console.error('Error fetching shipping lanes:', error);
+      }
+    };
+    
+    // Fetch shipping lanes immediately when enabled
+    fetchAndDisplayShippingLanes();
+  }, [showShippingLanes, isInitialized]);
+
   // Handle NASA FIRMS Wildfire toggle
   useEffect(() => {
     if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
@@ -7428,11 +7547,12 @@ const MapView: React.FC<MapViewProps> = ({
             layer.__layerType === 'climate_risks' ||
             layer.__layerType === 'spillovers_port_impact' ||
             layer.__layerType === 'usgs_earthquakes') {
-          // Don't remove toggle layers (usgs_earthquakes_toggle, opensky_flights, wildfire toggles)
+          // Don't remove toggle layers (usgs_earthquakes_toggle, opensky_flights, wildfire toggles, shipping lanes)
           if (layer.__layerType !== 'usgs_earthquakes_toggle' && 
               layer.__layerType !== 'opensky_flights' &&
               layer.__layerType !== 'wfigs_wildfires_toggle' &&
-              layer.__layerType !== 'nasa_firms_toggle') {
+              layer.__layerType !== 'nasa_firms_toggle' &&
+              layer.__layerType !== 'shipping_lanes_toggle') {
             primary.removeLayer(layer);
           }
         }
@@ -7924,6 +8044,55 @@ const MapView: React.FC<MapViewProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showBasemapInfo]);
+
+  // Show zoom warning popup when thematic basemap is selected at low zoom levels
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized) {
+      return;
+    }
+
+    // Check if a thematic basemap is selected and zoom level is too low (country/regional level)
+    if (selectedThematicBasemap) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      // Show warning if zoom level is 7 or below (regional/state level)
+      // Thematic basemaps perform better when zoomed in more
+      if (currentZoom <= 7) {
+        setShowZoomWarningPopup(true);
+      } else {
+        // If user zooms in, hide the warning
+        setShowZoomWarningPopup(false);
+      }
+    } else {
+      // No thematic basemap selected, hide warning
+      setShowZoomWarningPopup(false);
+    }
+  }, [selectedThematicBasemap, isInitialized]);
+
+  // Listen to zoom changes to hide warning when user zooms in
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized || !selectedThematicBasemap) {
+      return;
+    }
+
+    const handleZoomEnd = () => {
+      if (mapInstanceRef.current) {
+        const currentZoom = mapInstanceRef.current.getZoom();
+        if (currentZoom > 7) {
+          setShowZoomWarningPopup(false);
+        } else if (currentZoom <= 7 && selectedThematicBasemap) {
+          setShowZoomWarningPopup(true);
+        }
+      }
+    };
+
+    mapInstanceRef.current.on('zoomend', handleZoomEnd);
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.off('zoomend', handleZoomEnd);
+      }
+    };
+  }, [selectedThematicBasemap, isInitialized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -14347,6 +14516,166 @@ const MapView: React.FC<MapViewProps> = ({
             };
           } else {
             legendAccumulator[legendKey].count = chokepointFeatureCount || enrichments.portwatch_chokepoints_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Draw Shipping Lanes as polylines on the map
+      if (enrichments.shipping_lanes_all && Array.isArray(enrichments.shipping_lanes_all)) {
+        let shippingLaneFeatureCount = 0;
+        const shippingLaneIcon = '🚢';
+        
+        enrichments.shipping_lanes_all.forEach((lane: any) => {
+          const geometry = lane.geometry;
+          if (geometry && geometry.coordinates) {
+            try {
+              const type = lane.type || 'Unknown';
+              let color = '#3b82f6'; // Default blue for Minor
+              let weight = 1.5;
+              let opacity = 0.6;
+              let dashArray: string | undefined = '5, 5';
+              
+              if (type === 'Major') {
+                color = '#2563eb'; // Darker blue for Major routes
+                weight = 3;
+                opacity = 0.8;
+                dashArray = undefined; // Solid line for Major
+              } else if (type === 'Middle' || type === 'Medium') {
+                color = '#3b82f6'; // Medium blue for Middle routes
+                weight = 2;
+                opacity = 0.7;
+                dashArray = '5, 5';
+              } else {
+                // Minor routes
+                color = '#60a5fa'; // Lighter blue for Minor routes
+                weight = 1.5;
+                opacity = 0.6;
+                dashArray = '5, 5';
+              }
+              
+              const distance = lane.distance_miles ? lane.distance_miles.toFixed(2) : 'N/A';
+              
+              // Handle LineString or MultiLineString - render ALL segments
+              if (geometry.type === 'LineString') {
+                // Single LineString - render as one polyline
+                const latlngs = geometry.coordinates.map((coord: number[]) => {
+                  // GeoJSON coordinates are [lon, lat]
+                  return [coord[1], coord[0]] as [number, number];
+                });
+                
+                if (latlngs.length > 0) {
+                  const polylineOptions: L.PolylineOptions = {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity
+                  };
+                  
+                  if (dashArray) {
+                    polylineOptions.dashArray = dashArray;
+                  }
+                  
+                  const polyline = L.polyline(latlngs, polylineOptions);
+                  
+                  let popupContent = `
+                    <div style="min-width: 200px; max-width: 300px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${shippingLaneIcon} Shipping Lane
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280;">
+                        <div><strong>Type:</strong> ${type}</div>
+                        <div><strong>Distance:</strong> ${distance} miles</div>
+                      </div>
+                      <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                        Data from Global Shipping Lanes Dataset (CC-BY)
+                      </div>
+                    </div>
+                  `;
+                  
+                  polyline.bindPopup(popupContent, { maxWidth: 300 });
+                  polyline.addTo(primary);
+                  (polyline as any).__layerType = 'shipping_lanes';
+                  (polyline as any).__layerTitle = 'Global Shipping Lanes';
+                  bounds.extend(polyline.getBounds());
+                  shippingLaneFeatureCount++;
+                }
+              } else if (geometry.type === 'MultiLineString') {
+                // MultiLineString - render EACH line segment as a separate polyline
+                const lineStrings = geometry.coordinates as number[][][];
+                
+                for (let lineIdx = 0; lineIdx < lineStrings.length; lineIdx++) {
+                  const lineString = lineStrings[lineIdx];
+                  if (!lineString || lineString.length === 0) continue;
+                  
+                  const latlngs = lineString.map((coord: number[]) => {
+                    // GeoJSON coordinates are [lon, lat]
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+                  
+                  if (latlngs.length > 0) {
+                    const polylineOptions: L.PolylineOptions = {
+                      color: color,
+                      weight: weight,
+                      opacity: opacity
+                    };
+                    
+                    if (dashArray) {
+                      polylineOptions.dashArray = dashArray;
+                    }
+                    
+                    const polyline = L.polyline(latlngs, polylineOptions);
+                    
+                    let popupContent = `
+                      <div style="min-width: 200px; max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                          ${shippingLaneIcon} Shipping Lane
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280;">
+                          <div><strong>Type:</strong> ${type}</div>
+                          <div><strong>Distance:</strong> ${distance} miles</div>
+                          ${lineStrings.length > 1 ? `<div><strong>Segment:</strong> ${lineIdx + 1} of ${lineStrings.length}</div>` : ''}
+                        </div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                          Data from Global Shipping Lanes Dataset (CC-BY)
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 300 });
+                    polyline.addTo(primary);
+                    (polyline as any).__layerType = 'shipping_lanes';
+                    (polyline as any).__layerTitle = 'Global Shipping Lanes';
+                    bounds.extend(polyline.getBounds());
+                    shippingLaneFeatureCount++;
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Error drawing Shipping Lane polyline:', error);
+            }
+          }
+        });
+        
+        // Add to legend
+        if (shippingLaneFeatureCount > 0 || enrichments.shipping_lanes_count !== undefined) {
+          const legendKey = 'shipping_lanes';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: shippingLaneIcon,
+              color: '#3b82f6',
+              title: 'Global Shipping Lanes',
+              count: shippingLaneFeatureCount || enrichments.shipping_lanes_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count = shippingLaneFeatureCount || enrichments.shipping_lanes_count || 0;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
@@ -45385,7 +45714,7 @@ const MapView: React.FC<MapViewProps> = ({
                   </div>
                   
                   {/* NASA FIRMS Wildfire Toggle */}
-                  <div className="px-3 border-t border-gray-200 pt-3 pb-2">
+                  <div className="px-3 border-t border-gray-200 pt-3">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -45431,6 +45760,24 @@ const MapView: React.FC<MapViewProps> = ({
                         ))}
                       </div>
                     )}
+                  </div>
+                  
+                  {/* Shipping Lanes Toggle */}
+                  <div className="px-3 border-t border-gray-200 pt-3 pb-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showShippingLanes}
+                        onChange={(e) => setShowShippingLanes(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        🚢 Global Shipping Lanes
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Shows major, medium, and minor global shipping routes
+                    </p>
                   </div>
                 </div>
               )}
@@ -45563,7 +45910,7 @@ const MapView: React.FC<MapViewProps> = ({
                     🔥 Current Wildfires
                   </span>
                 </label>
-                <div className="px-3 border-t border-gray-200 pt-2 pb-2">
+                <div className="px-3 border-t border-gray-200 pt-2">
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -45604,6 +45951,19 @@ const MapView: React.FC<MapViewProps> = ({
                       ))}
                     </div>
                   )}
+                </div>
+                <div className="px-3 border-t border-gray-200 pt-2 pb-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showShippingLanes}
+                      onChange={(e) => setShowShippingLanes(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-semibold text-black">
+                      🚢 Shipping Lanes
+                    </span>
+                  </label>
                 </div>
               </div>
             )}
@@ -45682,6 +46042,34 @@ const MapView: React.FC<MapViewProps> = ({
             <div className="flex items-center space-x-2">
               <span>✅</span>
               <span className="text-sm font-medium">Batch processing completed successfully!</span>
+            </div>
+          </div>
+        )}
+
+        {/* Zoom Warning Popup for Thematic Basemaps */}
+        {showZoomWarningPopup && selectedThematicBasemap && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-50 border-2 border-yellow-400 rounded-lg shadow-xl z-[1000] max-w-md mx-4">
+            <div className="flex items-start justify-between p-4">
+              <div className="flex items-start space-x-3 flex-1">
+                <div className="flex-shrink-0 mt-0.5">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-yellow-900 mb-1">
+                    Zoom In For Better Basemap Performance!
+                  </h3>
+                  <p className="text-xs text-yellow-800">
+                    Thematic basemaps perform better when zoomed in. Please zoom in for optimal visualization.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowZoomWarningPopup(false)}
+                className="flex-shrink-0 ml-3 text-yellow-700 hover:text-yellow-900 transition-colors"
+                aria-label="Close warning"
+              >
+                <span className="text-xl font-bold">×</span>
+              </button>
             </div>
           </div>
         )}

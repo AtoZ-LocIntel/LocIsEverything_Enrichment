@@ -305,6 +305,7 @@ import { getClimateRisksData } from '../adapters/climateRisks';
 import { getSpilloversPortImpactData } from '../adapters/spilloversPortImpact';
 import { getPortWatchPortsData } from '../adapters/portWatchPorts';
 import { getUSGSEarthquakesData } from '../adapters/usgsEarthquakes';
+import { getShippingLanesData } from '../adapters/shippingLanes';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -1906,6 +1907,87 @@ export class EnrichmentService {
     }
   }
 
+  private async getShippingLanes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚢 Shipping Lanes query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
+      
+      const lanes = await getShippingLanesData(lat, lon, radiusMiles);
+      
+      if (!lanes || lanes.length === 0) {
+        return {
+          shipping_lanes_count: 0,
+          shipping_lanes_summary: `No shipping lanes found within ${radiusMiles} miles`,
+          shipping_lanes_all: [],
+          shipping_lanes_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Calculate statistics
+      const typeCounts: Record<string, number> = {};
+      let majorCount = 0;
+      let middleCount = 0;
+      let minorCount = 0;
+      let minDistance = Infinity;
+      let maxDistance = 0;
+      
+      lanes.forEach(lane => {
+        const type = lane.type || 'Unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+        
+        if (type === 'Major') majorCount++;
+        else if (type === 'Middle' || type === 'Medium') middleCount++;
+        else minorCount++;
+        
+        if (lane.distance_miles !== undefined) {
+          minDistance = Math.min(minDistance, lane.distance_miles);
+          maxDistance = Math.max(maxDistance, lane.distance_miles);
+        }
+      });
+      
+      // Build summary
+      let summary = `Found ${lanes.length} shipping lane${lanes.length !== 1 ? 's' : ''} within ${radiusMiles} miles`;
+      
+      const typeSummary: string[] = [];
+      if (majorCount > 0) typeSummary.push(`${majorCount} Major`);
+      if (middleCount > 0) typeSummary.push(`${middleCount} Middle`);
+      if (minorCount > 0) typeSummary.push(`${minorCount} Minor`);
+      
+      if (typeSummary.length > 0) {
+        summary += `. Types: ${typeSummary.join(', ')}`;
+      }
+      
+      if (minDistance !== Infinity && maxDistance > 0) {
+        summary += `. Distance range: ${minDistance.toFixed(1)} - ${maxDistance.toFixed(1)} miles`;
+      }
+      
+      return {
+        shipping_lanes_count: lanes.length,
+        shipping_lanes_summary: summary,
+        shipping_lanes_major_count: majorCount,
+        shipping_lanes_middle_count: middleCount,
+        shipping_lanes_minor_count: minorCount,
+        shipping_lanes_type_counts: typeCounts,
+        shipping_lanes_min_distance: minDistance !== Infinity ? minDistance : null,
+        shipping_lanes_max_distance: maxDistance > 0 ? maxDistance : null,
+        shipping_lanes_proximity_distance: radiusMiles,
+        shipping_lanes_all: lanes.map(lane => ({
+          type: lane.type,
+          distance_miles: lane.distance_miles,
+          geometry: lane.geometry,
+          properties: lane.properties || {}
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Shipping Lanes data:', error);
+      return {
+        shipping_lanes_count: 0,
+        shipping_lanes_summary: `Error fetching shipping lanes data`,
+        shipping_lanes_all: [],
+        shipping_lanes_proximity_distance: radiusMiles
+      };
+    }
+  }
+
   private async getPortWatchPorts(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       const ports = await getPortWatchPortsData(lat, lon, radiusMiles);
@@ -3170,6 +3252,10 @@ export class EnrichmentService {
       // Global Risk - USGS Earthquakes
       case 'usgs_earthquakes':
         return await this.getUSGSEarthquakes(lat, lon, radius);
+      
+      // Global Risk - Shipping Lanes
+      case 'shipping_lanes':
+        return await this.getShippingLanes(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

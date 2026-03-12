@@ -9831,6 +9831,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/scenarios_climate_risks/FeatureServer/0"
         },
         {
+          name: "Global Shipping Lanes",
+          description: "Global Shipping Lanes - Major, medium, and minor global shipping routes derived from CIA world oceans map. Shows maritime shipping corridors worldwide. Supports proximity queries up to 1000 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://github.com/newzealandpaul/Shipping-Lanes/blob/main/data/Shipping_Lanes_v1.geojson"
+        },
+        {
           name: "Spillovers Port Level Impact",
           description: "Spillovers Port Level Impact - Port-to-port spillover impacts showing capacity impacts from source ports to destination ports at different time horizons (1, 7, 14, 30, 90 days) with actual and relative capacity metrics. Supports proximity queries up to 1000 miles.",
           coverage: "Global",

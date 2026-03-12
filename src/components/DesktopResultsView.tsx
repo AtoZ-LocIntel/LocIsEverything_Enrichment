@@ -183,7 +183,8 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       }
       
       // Special handling for Port Watch Disruptions - show count only for _all array
-      if (key.includes('portwatch_disruptions_all')) {
+      if (key.includes('portwatch_disruptions_all') || 
+          key.includes('shipping_lanes_all')) {
         return null; // Skip the _all array (handled separately)
       }
       

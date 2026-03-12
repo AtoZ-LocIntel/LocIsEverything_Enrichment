@@ -147,7 +147,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       }
       
       // Special handling for Port Watch Disruptions - show count only for _all array
-      if (key.includes('portwatch_disruptions_all')) {
+      if (key.includes('portwatch_disruptions_all') || 
+          key.includes('shipping_lanes_all')) {
         return 'N/A'; // Skip the _all array (handled separately)
       }
       
