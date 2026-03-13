@@ -9095,6 +9095,38 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualLanduse_CONUS/ImageServer"
         },
         {
+          name: "USFS Forest Ownership CONUS",
+          description: "USDA Forest Service Forest Ownership CONUS. Raster data depicting the spatial distribution of forest ownership types in the conterminous United States circa 2020. Includes three types of public ownership (federal, state, local) and three types of private ownership (family/includes individuals and families, corporate, and other private/includes conservation and natural resource organizations, unincorporated partnerships and associations, and Native American tribal lands). 30-meter resolution modeled representation of forest land by ownership type",
+          coverage: "Conterminous United States",
+          accuracy: "Very High (30m resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Lands_Realty/USFS_EDW_ForestOwnership_CONUS/ImageServer"
+        },
+        {
+          name: "USFS Public Private Forest Ownership CONUS",
+          description: "USDA Forest Service Public Private Forest Ownership CONUS. Simplified forest ownership classification showing public vs private forest ownership in the conterminous United States circa 2020. 30-meter resolution raster data",
+          coverage: "Conterminous United States",
+          accuracy: "Very High (30m resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Lands_Realty/USFS_EDW_PublicPrivateForestOwnership_CONUS/ImageServer"
+        },
+        {
+          name: "USFS CEC Land Cover of North America 2010",
+          description: "USDA Forest Service Commission for Environmental Cooperation (CEC) Land Cover of North America 2010. 250-meter resolution land cover data for North America circa 2010, covering Canada, United States, and Mexico",
+          coverage: "North America (Canada, United States, Mexico)",
+          accuracy: "Very High (250m resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_CEC_LandCoverOfNorthAmerica_2010_250m/ImageServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas Hemlock Extent of Pollen Abundance",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) Forest Atlas - Hemlock Extent of Pollen Abundance. Historical hemlock extent based on pollen abundance data from approximately 5000 years before present (5kybp). Part of the FIA Forest Atlas data suite",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_Hemlock_5kybp_508/ImageServer"
+        },
+        {
           name: "USFS Available Water Storage",
           description: "USDA Forest Service Soil/Geology - Available water storage (AWS) - The volume of water that the soil can store that is available to plants, expressed as centimeters of water. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
           coverage: "United States",

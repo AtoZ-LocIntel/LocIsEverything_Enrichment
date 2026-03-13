@@ -303,6 +303,47 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualLanduse_CONUS/ImageServer/exportImage',
     // No raster function - use default rendering
   },
+  // USFS Forest Ownership CONUS - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Raster data depicting spatial distribution of forest ownership types in CONUS circa 2020
+  // Includes: federal, state, local (public); family, corporate, other private (private)
+  usfs_forest_ownership_conus: {
+    type: 'tile',
+    name: 'USFS Forest Ownership CONUS',
+    attribution: 'USDA Forest Service - Northern Research Station, Forest Inventory & Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Lands_Realty/USFS_EDW_ForestOwnership_CONUS/ImageServer/exportImage',
+    exportImageRasterFunction: 'CONUS', // Raster function template for CONUS
+  },
+  // USFS Public Private Forest Ownership CONUS - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Simplified forest ownership classification showing public vs private forest ownership
+  usfs_public_private_forest_ownership_conus: {
+    type: 'tile',
+    name: 'USFS Public Private Forest Ownership CONUS',
+    attribution: 'USDA Forest Service - Northern Research Station, Forest Inventory & Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Lands_Realty/USFS_EDW_PublicPrivateForestOwnership_CONUS/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS CEC Land Cover of North America 2010 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // 250-meter resolution land cover data for North America circa 2010
+  usfs_cec_landcover_north_america_2010: {
+    type: 'tile',
+    name: 'USFS CEC Land Cover of North America 2010',
+    attribution: 'USDA Forest Service - Commission for Environmental Cooperation',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_CEC_LandCoverOfNorthAmerica_2010_250m/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Forest Atlas Hemlock Extent of Pollen Abundance - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Historical hemlock extent based on pollen abundance data (5kybp - 5000 years before present)
+  usfs_fia_forest_atlas_hemlock_pollen_abundance: {
+    type: 'tile',
+    name: 'USFS FIA Forest Atlas Hemlock Extent of Pollen Abundance',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_Hemlock_5kybp_508/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
   // USFS Riparian Areas WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
   usfs_riparian_areas: {
