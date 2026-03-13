@@ -242,6 +242,67 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsCrs: 'EPSG4326', // Use EPSG4326 instead of EPSG3857
     wmsUppercase: true, // Required for WMS 1.3.0
   },
+  // USFS FIA Forest Atlas Bird Density - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Bird Species Density - 250m resolution raster showing bird species density
+  usfs_fia_forest_atlas_bird_density: {
+    type: 'tile',
+    name: 'USFS FIA Forest Atlas Bird Density',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_BirdDensity_202/ImageServer/exportImage',
+    exportImageRasterFunction: 'FIA_BirdDensity', // Raster function for remap table and symbology
+  },
+  // USFS FIA Forest Atlas Soil Carbon - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Soil Carbon - 250m resolution raster showing soil carbon content
+  usfs_fia_forest_atlas_soil_carbon: {
+    type: 'tile',
+    name: 'USFS FIA Forest Atlas Soil Carbon',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_SoilCarbon_407/ImageServer/exportImage',
+    exportImageRasterFunction: 'USFS_FIA_ForestAtlas_SoilCarbon_407_withColor_RFT', // Raster function with color mapping
+  },
+  // USFS FIA Forest Atlas Deadwood Litter - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Deadwood Litter - 250m resolution raster showing deadwood and litter biomass
+  usfs_fia_forest_atlas_deadwood_litter: {
+    type: 'tile',
+    name: 'USFS FIA Forest Atlas Deadwood Litter',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_DeadwoodLitter_407/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS LCMS Annual Land Cover CONUS - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Landscape Change Monitoring System (LCMS) - Annual Land Cover classes for each year (1984-present)
+  // Shows LCMS modeled Land Cover classes using ensemble of models (LandTrendr, CCDC, terrain predictors)
+  usfs_lcms_annual_landcover_conus: {
+    type: 'tile',
+    name: 'USFS LCMS Annual Land Cover CONUS',
+    attribution: 'USDA Forest Service - Landscape Change Monitoring System',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualLandcover_CONUS/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS LCMS Annual Change CONUS - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Landscape Change Monitoring System (LCMS) - Annual Change maps showing Disturbance, Vegetation Successional Growth, and Stable landscape
+  usfs_lcms_annual_change_conus: {
+    type: 'tile',
+    name: 'USFS LCMS Annual Change CONUS',
+    attribution: 'USDA Forest Service - Landscape Change Monitoring System',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualChange_CONUS/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS LCMS Annual Land Use CONUS - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Landscape Change Monitoring System (LCMS) - Annual Land Use maps predicted for each year of the time series
+  usfs_lcms_annual_landuse_conus: {
+    type: 'tile',
+    name: 'USFS LCMS Annual Land Use CONUS',
+    attribution: 'USDA Forest Service - Landscape Change Monitoring System',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualLanduse_CONUS/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
   // USFS Riparian Areas WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
   usfs_riparian_areas: {
@@ -45504,7 +45565,7 @@ const MapView: React.FC<MapViewProps> = ({
                               {usfsSearchQuery && (
                                 <div className="mt-1 text-xs text-gray-500">
                                   Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => {
-                                    const matchesFilter = (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || 
+                                    const matchesFilter = key.startsWith('usfs_') || 
                                                          (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'));
                                     if (!matchesFilter) return false;
                                     if (!usfsSearchQuery) return true;
@@ -45512,7 +45573,7 @@ const MapView: React.FC<MapViewProps> = ({
                                     return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
                                            key.toLowerCase().includes(searchLower);
                                   }).length} of {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
-                                    (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || 
+                                    key.startsWith('usfs_') || 
                                     (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'))
                                   ).length} basemaps
                                 </div>
@@ -45520,7 +45581,7 @@ const MapView: React.FC<MapViewProps> = ({
                             </div>
                             {Object.entries(BASEMAP_CONFIGS)
                               .filter(([key]) => {
-                                const matchesFilter = (key.startsWith('usfs_') && !key.startsWith('usfs_fia_')) || 
+                                const matchesFilter = key.startsWith('usfs_') || 
                                                      (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'));
                                 if (!matchesFilter) return false;
                                 if (!usfsSearchQuery) return true;

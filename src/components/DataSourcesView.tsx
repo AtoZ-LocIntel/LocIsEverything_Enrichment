@@ -9047,6 +9047,54 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/services/Ecosystems/"
         },
         {
+          name: "USFS FIA Forest Atlas Bird Density",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) Forest Atlas - Bird Species Density. 250-meter resolution raster showing bird species density across the United States",
+          coverage: "United States",
+          accuracy: "Very High (250m resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_BirdDensity_202/ImageServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas Soil Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) Forest Atlas - Soil Carbon. 250-meter resolution raster showing soil carbon content across the United States",
+          coverage: "United States",
+          accuracy: "Very High (250m resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_SoilCarbon_407/ImageServer"
+        },
+        {
+          name: "USFS FIA Forest Atlas Deadwood Litter",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) Forest Atlas - Deadwood Litter. 250-meter resolution raster showing deadwood and litter biomass across the United States",
+          coverage: "United States",
+          accuracy: "Very High (250m resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_DeadwoodLitter_407/ImageServer"
+        },
+        {
+          name: "USFS LCMS Annual Land Cover CONUS",
+          description: "USDA Forest Service Landscape Change Monitoring System (LCMS) - Annual Land Cover CONUS. Shows LCMS modeled Land Cover classes for each year (1984-present) using an ensemble of models (LandTrendr, CCDC change detection algorithms, and terrain predictors). LCMS is a remote sensing-based system for mapping and monitoring landscape change across the United States, producing annual composites from Landsat Tier 1 and Sentinel 2a/2b Level-1C data",
+          coverage: "Conterminous United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualLandcover_CONUS/ImageServer"
+        },
+        {
+          name: "USFS LCMS Annual Change CONUS",
+          description: "USDA Forest Service Landscape Change Monitoring System (LCMS) - Annual Change CONUS. Maps areas of Disturbance, Vegetation Successional Growth, and Stable landscape for each year (1984-present). Part of the LCMS data suite that provides a holistic depiction of landscape change across the United States over the past four decades",
+          coverage: "Conterminous United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualChange_CONUS/ImageServer"
+        },
+        {
+          name: "USFS LCMS Annual Land Use CONUS",
+          description: "USDA Forest Service Landscape Change Monitoring System (LCMS) - Annual Land Use CONUS. Annual Land Use maps predicted for each year of the time series (1984-present). Part of the LCMS data suite that uses Random Forest models with LandTrendr, CCDC, and terrain predictor variables to produce consistent landscape change monitoring",
+          coverage: "Conterminous United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW_LCMS_AnnualLanduse_CONUS/ImageServer"
+        },
+        {
           name: "USFS Available Water Storage",
           description: "USDA Forest Service Soil/Geology - Available water storage (AWS) - The volume of water that the soil can store that is available to plants, expressed as centimeters of water. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
           coverage: "United States",
