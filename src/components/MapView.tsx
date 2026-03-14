@@ -344,6 +344,186 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_Hemlock_5kybp_508/ImageServer/exportImage',
     // No raster function - use default rendering
   },
+  // USFS High Resolution Tree Cover Kansas 2015 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // 2015 high-resolution land cover data for all 105 counties in Kansas, derived from 1-meter NAIP imagery
+  usfs_high_resolution_tree_cover_kansas_2015: {
+    type: 'tile',
+    name: 'USFS High Resolution Tree Cover Kansas 2015',
+    attribution: 'USDA Forest Service - GEO, GTAC',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW__HighResolutionTreeCoverOfKansas_2015/ImageServer/exportImage',
+    exportImageRasterFunction: 'HighResolutionTreeCoverOfKansas_2015', // Raster function template
+  },
+  // USFS Tree Habitat Suitability - Forest Ecosystem Atlas - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Modeled habitat suitability for 125 tree species in eastern US under current and future climate conditions
+  usfs_tree_habitat_suitability_forest_ecosystem_atlas: {
+    type: 'tile',
+    name: 'USFS Tree Habitat Suitability - Forest Ecosystem Atlas',
+    attribution: 'USDA Forest Service - Forest Ecosystem Atlas',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/TreeHabitatSuitability_USFS_ForestEcosystemAtlas/ImageServer/exportImage',
+    exportImageRasterFunction: 'Current', // Default to current conditions raster function
+  },
+  // USFS At-Risk Terrestrial Ecosystems - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Biodiversity - At-Risk Terrestrial Ecosystems
+  usfs_at_risk_terrestrial_ecosystems: {
+    type: 'tile',
+    name: 'USFS At-Risk Terrestrial Ecosystems',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_AtRiskTerrestrialEcosystems/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Biodiversity - Forest Connectivity - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Biodiversity - Forest Connectivity
+  usfs_biodiversity_forest_connectivity: {
+    type: 'tile',
+    name: 'USFS Biodiversity - Forest Connectivity',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_ForestConnectivity/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Biodiversity Importance - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Biodiversity - NatureServe Map of Biodiversity Importance
+  usfs_biodiversity_importance: {
+    type: 'tile',
+    name: 'USFS Biodiversity Importance',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_NatureServeMapOfBiodiversityImpor/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Physiographic Diversity - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Biodiversity - Physiographic Diversity
+  usfs_physiographic_diversity: {
+    type: 'tile',
+    name: 'USFS Physiographic Diversity',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_PhysiographicDiversity/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Sagebrush Ecological Integrity - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Biodiversity - Sagebrush Ecological Integrity
+  usfs_sagebrush_ecological_integrity: {
+    type: 'tile',
+    name: 'USFS Sagebrush Ecological Integrity',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_SagebrushEcologicalIntegrity/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Total Forest Carbon 2018 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Carbon - Total Forest Carbon 2018
+  usfs_total_forest_carbon_2018: {
+    type: 'tile',
+    name: 'USFS Total Forest Carbon 2018',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Carbon_TotalForestCarbon2018/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Above Ground Forest Biomass - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Above Ground Forest Biomass
+  usfs_fia_above_ground_forest_biomass: {
+    type: 'tile',
+    name: 'USFS FIA Above Ground Forest Biomass',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_AboveGroundForestBiomass/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Above Ground Forest Carbon - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Above Ground Forest Carbon
+  usfs_fia_above_ground_forest_carbon: {
+    type: 'tile',
+    name: 'USFS FIA Above Ground Forest Carbon',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_AboveGroundForestCarbon/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Bole Forest Biomass - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Bole Forest Biomass
+  usfs_fia_bole_forest_biomass: {
+    type: 'tile',
+    name: 'USFS FIA Bole Forest Biomass',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_BoleForestBiomass/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Dead Down Forest Carbon - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Dead Down Forest Carbon
+  usfs_fia_dead_down_forest_carbon: {
+    type: 'tile',
+    name: 'USFS FIA Dead Down Forest Carbon',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_DeadDownForestCarbon/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Forest Litter Carbon - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Forest Litter Carbon
+  usfs_fia_forest_litter_carbon: {
+    type: 'tile',
+    name: 'USFS FIA Forest Litter Carbon',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_ForestLitterCarbon/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Forest Soil Carbon - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Forest Soil Carbon
+  usfs_fia_forest_soil_carbon: {
+    type: 'tile',
+    name: 'USFS FIA Forest Soil Carbon',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_ForestSoilCarbon/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Sapling Forest Biomass - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Sapling Forest Biomass
+  usfs_fia_sapling_forest_biomass: {
+    type: 'tile',
+    name: 'USFS FIA Sapling Forest Biomass',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_SaplingForestBiomass/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Standing Dead Forest Carbon - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Standing Dead Forest Carbon
+  usfs_fia_standing_dead_forest_carbon: {
+    type: 'tile',
+    name: 'USFS FIA Standing Dead Forest Carbon',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_StandingDeadForestCarbon/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Stump Forest Biomass - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Stump Forest Biomass
+  usfs_fia_stump_forest_biomass: {
+    type: 'tile',
+    name: 'USFS FIA Stump Forest Biomass',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_StumpForestBiomass/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS FIA Top Forest Biomass - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Forest Inventory and Analysis - Top Forest Biomass
+  usfs_fia_top_forest_biomass: {
+    type: 'tile',
+    name: 'USFS FIA Top Forest Biomass',
+    attribution: 'USDA Forest Service - Forest Inventory and Analysis',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_TopForestBiomass/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
   // USFS Riparian Areas WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
   usfs_riparian_areas: {

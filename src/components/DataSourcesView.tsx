@@ -9127,6 +9127,150 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_FIA_ForestAtlas_Hemlock_5kybp_508/ImageServer"
         },
         {
+          name: "USFS High Resolution Tree Cover Kansas 2015",
+          description: "USDA Forest Service High Resolution Tree Cover Kansas 2015. 2015 high-resolution land cover data for all 105 counties within Kansas, derived from 1-meter aerial imagery from the National Agriculture Imagery Program (NAIP). Land cover classes (tree cover, other land cover, water, or city/town) were mapped using object-based image analysis and supervised classification. Intended for use in rural areas, excludes cities and towns",
+          coverage: "Kansas (all 105 counties)",
+          accuracy: "Very High (1-meter resolution)",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Vegetation/USFS_EDW__HighResolutionTreeCoverOfKansas_2015/ImageServer"
+        },
+        {
+          name: "USFS Tree Habitat Suitability - Forest Ecosystem Atlas",
+          description: "USDA Forest Service Tree Habitat Suitability - Forest Ecosystem Atlas. Modeled habitat suitability for 125 tree species in the eastern United States under current (1981-2010) climate conditions and projected future conditions (2070-2099). Created using statistical modeling that correlates mean importance values to 45 environmental data layers. Includes 148 tree species represented by hybrid lattice of 10 and 20 km grids with information on relative abundance (importance values) derived from tree basal area and number of stems according to USDA Forest Service Forest Inventory and Analysis data (2001-2016)",
+          coverage: "Eastern United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/TreeHabitatSuitability_USFS_ForestEcosystemAtlas/ImageServer"
+        },
+        {
+          name: "USFS At-Risk Terrestrial Ecosystems",
+          description: "USDA Forest Service Conservation and Restoration Ventures - At-Risk Terrestrial Ecosystems. Biodiversity data showing at-risk terrestrial ecosystems",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_AtRiskTerrestrialEcosystems/ImageServer"
+        },
+        {
+          name: "USFS Biodiversity - Forest Connectivity",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Biodiversity Forest Connectivity. Forest connectivity data for biodiversity assessment",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_ForestConnectivity/ImageServer"
+        },
+        {
+          name: "USFS Biodiversity Importance",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Biodiversity Importance. NatureServe Map of Biodiversity Importance showing areas of high biodiversity significance",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_NatureServeMapOfBiodiversityImpor/ImageServer"
+        },
+        {
+          name: "USFS Physiographic Diversity",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Physiographic Diversity. Biodiversity data showing physiographic diversity patterns",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_PhysiographicDiversity/ImageServer"
+        },
+        {
+          name: "USFS Sagebrush Ecological Integrity",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Sagebrush Ecological Integrity. Biodiversity data showing sagebrush ecological integrity across sagebrush ecosystems",
+          coverage: "United States (Sagebrush ecosystems)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Biodiversity_SagebrushEcologicalIntegrity/ImageServer"
+        },
+        {
+          name: "USFS Total Forest Carbon 2018",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Total Forest Carbon 2018. Total forest carbon data for 2018",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_CRV_Carbon_TotalForestCarbon2018/ImageServer"
+        },
+        {
+          name: "USFS FIA Above Ground Forest Biomass",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Above Ground Forest Biomass. Above ground forest biomass estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_AboveGroundForestBiomass/ImageServer"
+        },
+        {
+          name: "USFS FIA Above Ground Forest Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Above Ground Forest Carbon. Above ground forest carbon estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_AboveGroundForestCarbon/ImageServer"
+        },
+        {
+          name: "USFS FIA Bole Forest Biomass",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Bole Forest Biomass. Bole (trunk) forest biomass estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_BoleForestBiomass/ImageServer"
+        },
+        {
+          name: "USFS FIA Dead Down Forest Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Dead Down Forest Carbon. Dead down (fallen) forest carbon estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_DeadDownForestCarbon/ImageServer"
+        },
+        {
+          name: "USFS FIA Forest Litter Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Forest Litter Carbon. Forest litter carbon estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_ForestLitterCarbon/ImageServer"
+        },
+        {
+          name: "USFS FIA Forest Soil Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Forest Soil Carbon. Forest soil carbon estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_ForestSoilCarbon/ImageServer"
+        },
+        {
+          name: "USFS FIA Sapling Forest Biomass",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Sapling Forest Biomass. Sapling forest biomass estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_SaplingForestBiomass/ImageServer"
+        },
+        {
+          name: "USFS FIA Standing Dead Forest Carbon",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Standing Dead Forest Carbon. Standing dead forest carbon estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_StandingDeadForestCarbon/ImageServer"
+        },
+        {
+          name: "USFS FIA Stump Forest Biomass",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Stump Forest Biomass. Stump forest biomass estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_StumpForestBiomass/ImageServer"
+        },
+        {
+          name: "USFS FIA Top Forest Biomass",
+          description: "USDA Forest Service Forest Inventory and Analysis (FIA) - Top Forest Biomass. Top (crown) forest biomass estimates derived from FIA data",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_TopForestBiomass/ImageServer"
+        },
+        {
           name: "USFS Available Water Storage",
           description: "USDA Forest Service Soil/Geology - Available water storage (AWS) - The volume of water that the soil can store that is available to plants, expressed as centimeters of water. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
           coverage: "United States",
