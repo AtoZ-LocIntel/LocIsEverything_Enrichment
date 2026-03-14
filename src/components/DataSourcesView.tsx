@@ -9271,6 +9271,78 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_TopForestBiomass/ImageServer"
         },
         {
+          name: "USFS Climate Change Heat Zones RCP45 2010-2039",
+          description: "USDA Forest Service Climate Change Heat Zones RCP45 2010-2039. Heat Zones map the distribution of potential heat stress for plants and animals, including humans. Heat zones are defined as the number of days per year with maximum daily temperature >= 30°C (86°F). Daily maximum temperature values >= 30°C during the period 2010-2039 were tallied annually and are reported as the average annual number of days during a 30-year period. RCP 4.5 scenario",
+          coverage: "Conterminous United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_ClimateChange_HeatZones_RCP45_2010_2039/ImageServer"
+        },
+        {
+          name: "USFS Climate Change Heat Zones RCP45 2040-2069",
+          description: "USDA Forest Service Climate Change Heat Zones RCP45 2040-2069. Heat Zones map the distribution of potential heat stress for plants and animals, including humans. Heat zones are defined as the number of days per year with maximum daily temperature >= 30°C (86°F). Daily maximum temperature values >= 30°C during the period 2040-2069 were tallied annually and are reported as the average annual number of days during a 30-year period. RCP 4.5 scenario",
+          coverage: "Conterminous United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_ClimateChange_HeatZones_RCP45_2040_2069/ImageServer"
+        },
+        {
+          name: "USFS Climate Change Heat Zones RCP45 2070-2099",
+          description: "USDA Forest Service Climate Change Heat Zones RCP45 2070-2099. Heat Zones map the distribution of potential heat stress for plants and animals, including humans. Heat zones are defined as the number of days per year with maximum daily temperature >= 30°C (86°F). Daily maximum temperature values >= 30°C during the period 2070-2099 were tallied annually and are reported as the average annual number of days during a 30-year period. RCP 4.5 scenario",
+          coverage: "Conterminous United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_ClimateChange_HeatZones_RCP45_2070_2099/ImageServer"
+        },
+        {
+          name: "USFS Climate Large Wildfires Alaska Hawaii Puerto Rico",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Climate Large Wildfires Alaska Hawaii Puerto Rico. Climate data showing large wildfires in Alaska, Hawaii, and Puerto Rico",
+          coverage: "Alaska, Hawaii, Puerto Rico",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Climate_LargeWildfires_AlaskaHawaiiPuertoRico/ImageServer"
+        },
+        {
+          name: "USFS Climate Human Modification",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Climate Human Modification. Climate data showing human modification patterns across the landscape",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Climate_HumanModification/ImageServer"
+        },
+        {
+          name: "USFS Climate Terrestrial Condition Scores",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Climate Terrestrial Condition Scores. Climate data showing terrestrial condition scores for ecosystem assessment",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Climate_TerrestrialConditionScores/ImageServer"
+        },
+        {
+          name: "USFS Water Climate Stress Summary by Subwatershed",
+          description: "USDA Forest Service Conservation and Restoration Ventures - Water Climate Stress Summary by Subwatershed. Water climate stress summary data aggregated by subwatershed units",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Water_ClimateStressSummaryBySubwatershed/ImageServer"
+        },
+        {
+          name: "USFS Daymet Seasonal Daylight",
+          description: "USDA Forest Service Daymet Seasonal Daylight. Daymet seasonal daylight data providing daylight duration information across seasons",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_Daymet_Seasonal_Daylight/ImageServer"
+        },
+        {
+          name: "USFS Daymet Seasonal Solar Radiation",
+          description: "USDA Forest Service Daymet Seasonal Solar Radiation. Daymet seasonal solar radiation data providing solar radiation information across seasons",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_Daymet_Seasonal_SolarRadiation/ImageServer"
+        },
+        {
           name: "USFS Available Water Storage",
           description: "USDA Forest Service Soil/Geology - Available water storage (AWS) - The volume of water that the soil can store that is available to plants, expressed as centimeters of water. Generated using 2022 gNATSGO soil database with NRCS Soil Data Development Toolkit",
           coverage: "United States",

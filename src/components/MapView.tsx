@@ -524,6 +524,96 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Ecosystems/USFS_EDW_FIA_TopForestBiomass/ImageServer/exportImage',
     // No raster function - use default rendering
   },
+  // USFS Climate Change Heat Zones RCP45 2010-2039 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Heat Zones map distribution of potential heat stress (days/year with max temp >= 30°C/86°F) for RCP 4.5 scenario, 2010-2039 period
+  usfs_climate_change_heat_zones_rcp45_2010_2039: {
+    type: 'tile',
+    name: 'USFS Climate Change Heat Zones RCP45 2010-2039',
+    attribution: 'USDA Forest Service - GEO, GTAC',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_ClimateChange_HeatZones_RCP45_2010_2039/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Climate Change Heat Zones RCP45 2040-2069 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Heat Zones map distribution of potential heat stress (days/year with max temp >= 30°C/86°F) for RCP 4.5 scenario, 2040-2069 period
+  usfs_climate_change_heat_zones_rcp45_2040_2069: {
+    type: 'tile',
+    name: 'USFS Climate Change Heat Zones RCP45 2040-2069',
+    attribution: 'USDA Forest Service - GEO, GTAC',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_ClimateChange_HeatZones_RCP45_2040_2069/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Climate Change Heat Zones RCP45 2070-2099 - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Heat Zones map distribution of potential heat stress (days/year with max temp >= 30°C/86°F) for RCP 4.5 scenario, 2070-2099 period
+  usfs_climate_change_heat_zones_rcp45_2070_2099: {
+    type: 'tile',
+    name: 'USFS Climate Change Heat Zones RCP45 2070-2099',
+    attribution: 'USDA Forest Service - GEO, GTAC',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_EDW_ClimateChange_HeatZones_RCP45_2070_2099/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Climate Large Wildfires Alaska Hawaii Puerto Rico - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Climate data showing large wildfires in Alaska, Hawaii, and Puerto Rico
+  usfs_climate_large_wildfires_alaska_hawaii_puerto_rico: {
+    type: 'tile',
+    name: 'USFS Climate Large Wildfires Alaska Hawaii Puerto Rico',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Climate_LargeWildfires_AlaskaHawaiiPuertoRico/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Climate Human Modification - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Climate data showing human modification patterns
+  usfs_climate_human_modification: {
+    type: 'tile',
+    name: 'USFS Climate Human Modification',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Climate_HumanModification/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Climate Terrestrial Condition Scores - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Climate data showing terrestrial condition scores
+  usfs_climate_terrestrial_condition_scores: {
+    type: 'tile',
+    name: 'USFS Climate Terrestrial Condition Scores',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Climate_TerrestrialConditionScores/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Water Climate Stress Summary by Subwatershed - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Water climate stress summary data by subwatershed
+  usfs_water_climate_stress_summary_by_subwatershed: {
+    type: 'tile',
+    name: 'USFS Water Climate Stress Summary by Subwatershed',
+    attribution: 'USDA Forest Service - Conservation and Restoration Ventures',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_CRV_Water_ClimateStressSummaryBySubwatershed/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Daymet Seasonal Daylight - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Daymet seasonal daylight data
+  usfs_daymet_seasonal_daylight: {
+    type: 'tile',
+    name: 'USFS Daymet Seasonal Daylight',
+    attribution: 'USDA Forest Service - Daymet',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_Daymet_Seasonal_Daylight/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
+  // USFS Daymet Seasonal Solar Radiation - Using ExportImage endpoint
+  // Note: ImageServer service with Single Fused Map Cache: false
+  // Daymet seasonal solar radiation data
+  usfs_daymet_seasonal_solar_radiation: {
+    type: 'tile',
+    name: 'USFS Daymet Seasonal Solar Radiation',
+    attribution: 'USDA Forest Service - Daymet',
+    tileUrl: 'https://imagery.geoplatform.gov/iipp/rest/services/Weather_Climate/USFS_Daymet_Seasonal_SolarRadiation/ImageServer/exportImage',
+    // No raster function - use default rendering
+  },
   // USFS Riparian Areas WMS
   // Note: Use service name as layer, EPSG4326 CRS, and uppercase=true for WMS 1.3.0
   usfs_riparian_areas: {
