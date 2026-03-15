@@ -306,6 +306,24 @@ import { getSpilloversPortImpactData } from '../adapters/spilloversPortImpact';
 import { getPortWatchPortsData } from '../adapters/portWatchPorts';
 import { getUSGSEarthquakesData } from '../adapters/usgsEarthquakes';
 import { getShippingLanesData } from '../adapters/shippingLanes';
+import {
+  getGlobalOilAndGasProcessingPlantsData,
+  getGlobalOilAndGasLNGData,
+  getGlobalOilAndGasPowerPlantsData,
+  getGlobalOilAndGasStorageData,
+  getGlobalOilAndGasStationsData,
+  getGlobalOilAndGasRefineriesData,
+  getGlobalOilAndGasBasinsData,
+  getGlobalOilAndGasFieldsData,
+  getGlobalOilAndGasMinesData,
+  getGlobalOilAndGasWellsData,
+  getGlobalOilAndGasWellsVectorGridData,
+  getGlobalOilAndGasPlatformsAndWellPadsData,
+  getGlobalOilAndGasUndergroundStorageData,
+  getGlobalOilAndGasPipelinesData,
+  getGlobalOilAndGasRailwaysData,
+  getGlobalOilAndGasPortsData
+} from '../adapters/globalOilAndGas';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -2061,6 +2079,123 @@ export class EnrichmentService {
     }
   }
   
+  private async getGlobalOilAndGasLayer(
+    layerId: string,
+    getDataFn: (lat: number, lon: number, radiusMiles: number) => Promise<any[]>,
+    lat: number,
+    lon: number,
+    radiusMiles: number
+  ): Promise<Record<string, any>> {
+    try {
+      const features = await getDataFn(lat, lon, radiusMiles);
+      
+      if (!features || features.length === 0) {
+        return {
+          [`${layerId}_count`]: 0,
+          [`${layerId}_summary`]: `No features found within ${radiusMiles} miles`,
+          [`${layerId}_all`]: [],
+          [`${layerId}_proximity_distance`]: radiusMiles
+        };
+      }
+      
+      // Calculate summary statistics
+      const containingFeatures = features.filter(f => f.isContaining).length;
+      const nearbyFeatures = features.filter(f => !f.isContaining).length;
+      
+      const summary = `Found ${features.length} feature${features.length !== 1 ? 's' : ''} within ${radiusMiles} miles. ` +
+        `${containingFeatures > 0 ? `${containingFeatures} containing the point. ` : ''}` +
+        `${nearbyFeatures > 0 ? `${nearbyFeatures} nearby.` : ''}`;
+      
+      return {
+        [`${layerId}_count`]: features.length,
+        [`${layerId}_summary`]: summary,
+        [`${layerId}_containing_count`]: containingFeatures,
+        [`${layerId}_nearby_count`]: nearbyFeatures,
+        [`${layerId}_proximity_distance`]: radiusMiles,
+        [`${layerId}_all`]: features.map(feature => ({
+          objectId: feature.objectId,
+          layerName: feature.layerName,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          attributes: feature.attributes,
+          geometry: feature.geometry
+        }))
+      };
+    } catch (error) {
+      console.error(`Error fetching Global Oil and Gas ${layerId} data:`, error);
+      return {
+        [`${layerId}_count`]: 0,
+        [`${layerId}_summary`]: `Error querying Global Oil and Gas ${layerId} data`,
+        [`${layerId}_all`]: [],
+        [`${layerId}_proximity_distance`]: radiusMiles
+      };
+    }
+  }
+
+  private async getGlobalOilAndGasProcessingPlants(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_processing_plants', getGlobalOilAndGasProcessingPlantsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasLNG(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_lng', getGlobalOilAndGasLNGData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasPowerPlants(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_power_plants', getGlobalOilAndGasPowerPlantsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasStorage(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_storage', getGlobalOilAndGasStorageData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasStations(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_stations', getGlobalOilAndGasStationsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasRefineries(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_refineries', getGlobalOilAndGasRefineriesData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasBasins(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_basins', getGlobalOilAndGasBasinsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasFields(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_fields', getGlobalOilAndGasFieldsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasMines(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_mines', getGlobalOilAndGasMinesData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasWells(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_wells', getGlobalOilAndGasWellsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasWellsVectorGrid(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_wells_vector_grid', getGlobalOilAndGasWellsVectorGridData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasPlatformsAndWellPads(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_platforms_well_pads', getGlobalOilAndGasPlatformsAndWellPadsData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasUndergroundStorage(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_underground_storage', getGlobalOilAndGasUndergroundStorageData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasPipelines(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_pipelines', getGlobalOilAndGasPipelinesData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasRailways(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_railways', getGlobalOilAndGasRailwaysData, lat, lon, radiusMiles);
+  }
+
+  private async getGlobalOilAndGasPorts(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    return this.getGlobalOilAndGasLayer('global_oil_gas_ports', getGlobalOilAndGasPortsData, lat, lon, radiusMiles);
+  }
+
   private async getUSGSEarthquakes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`🌍 USGS Earthquakes query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
@@ -3256,6 +3391,40 @@ export class EnrichmentService {
       // Global Risk - Shipping Lanes
       case 'shipping_lanes':
         return await this.getShippingLanes(lat, lon, radius);
+      
+      // Global Risk - Global Oil and Gas Features
+      case 'global_oil_gas_processing_plants':
+        return await this.getGlobalOilAndGasProcessingPlants(lat, lon, radius);
+      case 'global_oil_gas_lng':
+        return await this.getGlobalOilAndGasLNG(lat, lon, radius);
+      case 'global_oil_gas_power_plants':
+        return await this.getGlobalOilAndGasPowerPlants(lat, lon, radius);
+      case 'global_oil_gas_storage':
+        return await this.getGlobalOilAndGasStorage(lat, lon, radius);
+      case 'global_oil_gas_stations':
+        return await this.getGlobalOilAndGasStations(lat, lon, radius);
+      case 'global_oil_gas_refineries':
+        return await this.getGlobalOilAndGasRefineries(lat, lon, radius);
+      case 'global_oil_gas_basins':
+        return await this.getGlobalOilAndGasBasins(lat, lon, radius);
+      case 'global_oil_gas_fields':
+        return await this.getGlobalOilAndGasFields(lat, lon, radius);
+      case 'global_oil_gas_mines':
+        return await this.getGlobalOilAndGasMines(lat, lon, radius);
+      case 'global_oil_gas_wells':
+        return await this.getGlobalOilAndGasWells(lat, lon, radius);
+      case 'global_oil_gas_wells_vector_grid':
+        return await this.getGlobalOilAndGasWellsVectorGrid(lat, lon, radius);
+      case 'global_oil_gas_platforms_well_pads':
+        return await this.getGlobalOilAndGasPlatformsAndWellPads(lat, lon, radius);
+      case 'global_oil_gas_underground_storage':
+        return await this.getGlobalOilAndGasUndergroundStorage(lat, lon, radius);
+      case 'global_oil_gas_pipelines':
+        return await this.getGlobalOilAndGasPipelines(lat, lon, radius);
+      case 'global_oil_gas_railways':
+        return await this.getGlobalOilAndGasRailways(lat, lon, radius);
+      case 'global_oil_gas_ports':
+        return await this.getGlobalOilAndGasPorts(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

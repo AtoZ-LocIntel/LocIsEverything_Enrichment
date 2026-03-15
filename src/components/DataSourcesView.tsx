@@ -10159,6 +10159,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/PortWatch_ports/FeatureServer/1"
         },
         {
+          name: "Global Oil and Gas Features",
+          description: "Global Oil and Gas Features - Comprehensive global oil and gas infrastructure database including processing plants, LNG facilities, power plants, storage facilities, stations, refineries, basins, fields, mines, wells, platforms and well pads, underground storage, pipelines, railways, and ports. Supports point-in-polygon queries for polygon layers and proximity queries up to 1000 miles for all layers. Contains 16 feature layers covering the complete oil and gas supply chain.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services6.arcgis.com/62zavqsrcK71xG8O/arcgis/rest/services/Global_Oil_and_Gas_Features/FeatureServer"
+        },
+        {
           name: "USGS Earthquake API",
           description: "USGS Earthquake Hazards Program - Global earthquake data from the U.S. Geological Survey. Provides near-real-time earthquake information including magnitude, location, depth, time, tsunami alerts, and event details. The service aggregates seismic data from global networks (ANSS earthquake catalog). Supports proximity queries up to 1000 miles. Data includes earthquakes from the last 30 days for proximity queries and last 48 hours for global map view.",
           coverage: "Global",

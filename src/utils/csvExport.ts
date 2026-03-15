@@ -456,6 +456,104 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // Helper function to export Global Oil and Gas features
+  const exportGlobalOilAndGasLayer = (layerKey: string, layerName: string, dataSourceName: string) => {
+    const allKey = `${layerKey}_all`;
+    const countKey = `${layerKey}_count`;
+    const summaryKey = `${layerKey}_summary`;
+    const proximityKey = `${layerKey}_proximity_distance`;
+    
+    if (enrichments[allKey] && Array.isArray(enrichments[allKey])) {
+      enrichments[allKey].forEach((feature: any) => {
+        const geometry = feature.geometry;
+        let featureLat = location.lat;
+        let featureLon = location.lon;
+        
+        // Extract coordinates from geometry
+        if (geometry) {
+          if (geometry.x !== undefined && geometry.y !== undefined) {
+            featureLat = geometry.y;
+            featureLon = geometry.x;
+          } else if (geometry.paths && geometry.paths.length > 0) {
+            const firstPath = geometry.paths[0];
+            if (firstPath && firstPath.length > 0) {
+              featureLat = firstPath[0][1];
+              featureLon = firstPath[0][0];
+            }
+          } else if (geometry.rings && geometry.rings.length > 0) {
+            const firstRing = geometry.rings[0];
+            if (firstRing && firstRing.length > 0) {
+              featureLat = firstRing[0][1];
+              featureLon = firstRing[0][0];
+            }
+          }
+        }
+        
+        const distance = feature.distance_miles !== null && feature.distance_miles !== undefined
+          ? feature.distance_miles.toFixed(2)
+          : feature.isContaining ? '0.00 (Containing)' : (enrichments[proximityKey] || 0).toFixed(1);
+        
+        // Build attributes string
+        const attributesStr = feature.attributes
+          ? Object.entries(feature.attributes).slice(0, 20).map(([key, value]) => `${key}: ${value !== null && value !== undefined ? String(value) : 'N/A'}`).join('; ')
+          : '';
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          dataSourceName,
+          (location.confidence || 'N/A').toString(),
+          layerKey.toUpperCase().replace(/_/g, '_'),
+          `${layerName} - Object ID: ${feature.objectId || 'N/A'}`,
+          featureLat.toString(),
+          featureLon.toString(),
+          distance,
+          'Global Oil and Gas Features',
+          attributesStr || enrichments[summaryKey] || '',
+          feature.isContaining ? 'Yes' : 'No',
+          dataSourceName
+        ]);
+      });
+    } else if (enrichments[countKey] !== undefined) {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        dataSourceName,
+        (location.confidence || 'N/A').toString(),
+        layerKey.toUpperCase().replace(/_/g, '_'),
+        layerName,
+        location.lat.toString(),
+        location.lon.toString(),
+        (enrichments[proximityKey] || 0).toFixed(1),
+        'Global Oil and Gas Features',
+        `${enrichments[countKey] || 0} found`,
+        enrichments[summaryKey] || '',
+        '',
+        dataSourceName
+      ]);
+    }
+  };
+  
+  // Export all Global Oil and Gas layers
+  exportGlobalOilAndGasLayer('global_oil_gas_processing_plants', 'Processing Plants', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_lng', 'LNG', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_power_plants', 'Power Plants', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_storage', 'Storage', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_stations', 'Stations', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_refineries', 'Refineries', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_basins', 'Basins', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_fields', 'Fields', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_mines', 'Mines', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_wells', 'Wells', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_wells_vector_grid', 'Wells Vector Grid', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_platforms_well_pads', 'Platforms and Well Pads', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_underground_storage', 'Underground Storage', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_pipelines', 'Pipelines', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_railways', 'Railways', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('global_oil_gas_ports', 'Ports', 'Global Oil and Gas');
+
   // Add USGS Wildfire data
   if (enrichments.poi_wildfires_count !== undefined) {
     rows.push([

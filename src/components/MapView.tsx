@@ -4412,6 +4412,22 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'spillovers_port_impact': { icon: '🌊', color: '#3b82f6', title: 'Spillovers Port Impact' },
   'portwatch_ports': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Ports' },
   'usgs_earthquakes': { icon: '🌍', color: '#dc2626', title: 'USGS Earthquakes' },
+  'global_oil_gas_processing_plants': { icon: '🏭', color: '#8b5cf6', title: 'Global Oil and Gas - Processing Plants' },
+  'global_oil_gas_lng': { icon: '⛽', color: '#06b6d4', title: 'Global Oil and Gas - LNG' },
+  'global_oil_gas_power_plants': { icon: '⚡', color: '#f59e0b', title: 'Global Oil and Gas - Power Plants' },
+  'global_oil_gas_storage': { icon: '📦', color: '#10b981', title: 'Global Oil and Gas - Storage' },
+  'global_oil_gas_stations': { icon: '⛽', color: '#3b82f6', title: 'Global Oil and Gas - Stations' },
+  'global_oil_gas_refineries': { icon: '🏭', color: '#dc2626', title: 'Global Oil and Gas - Refineries' },
+  'global_oil_gas_basins': { icon: '🌊', color: '#6366f1', title: 'Global Oil and Gas - Basins' },
+  'global_oil_gas_fields': { icon: '🛢️', color: '#8b5cf6', title: 'Global Oil and Gas - Fields' },
+  'global_oil_gas_mines': { icon: '⛏️', color: '#f59e0b', title: 'Global Oil and Gas - Mines' },
+  'global_oil_gas_wells': { icon: '🛢️', color: '#06b6d4', title: 'Global Oil and Gas - Wells' },
+  'global_oil_gas_wells_vector_grid': { icon: '🛢️', color: '#10b981', title: 'Global Oil and Gas - Wells Vector Grid' },
+  'global_oil_gas_platforms_well_pads': { icon: '🏗️', color: '#3b82f6', title: 'Global Oil and Gas - Platforms and Well Pads' },
+  'global_oil_gas_underground_storage': { icon: '📦', color: '#6366f1', title: 'Global Oil and Gas - Underground Storage' },
+  'global_oil_gas_pipelines': { icon: '🔧', color: '#dc2626', title: 'Global Oil and Gas - Pipelines' },
+  'global_oil_gas_railways': { icon: '🚂', color: '#8b5cf6', title: 'Global Oil and Gas - Railways' },
+  'global_oil_gas_ports': { icon: '⚓', color: '#06b6d4', title: 'Global Oil and Gas - Ports' },
   'noaa_maritime_overview': { icon: '🌊', color: '#3b82f6', title: 'NOAA Maritime Limits - Overview' },
   'noaa_maritime_12nm': { icon: '🌊', color: '#06b6d4', title: 'NOAA Maritime Limits - 12NM Territorial Sea' },
   'noaa_maritime_24nm': { icon: '🌊', color: '#10b981', title: 'NOAA Maritime Limits - 24NM Contiguous Zone' },
@@ -6259,7 +6275,23 @@ const MapView: React.FC<MapViewProps> = ({
     usgs_earthquakes: false,
     climate_risks: false,
     spillovers_port_impact: false,
-    shipping_lanes: false
+    shipping_lanes: false,
+    global_oil_gas_processing_plants: false,
+    global_oil_gas_lng: false,
+    global_oil_gas_power_plants: false,
+    global_oil_gas_storage: false,
+    global_oil_gas_stations: false,
+    global_oil_gas_refineries: false,
+    global_oil_gas_basins: false,
+    global_oil_gas_fields: false,
+    global_oil_gas_mines: false,
+    global_oil_gas_wells: false,
+    global_oil_gas_wells_vector_grid: false,
+    global_oil_gas_platforms_well_pads: false,
+    global_oil_gas_underground_storage: false,
+    global_oil_gas_pipelines: false,
+    global_oil_gas_railways: false,
+    global_oil_gas_ports: false
   });
   const [globalRiskLayerLoading, setGlobalRiskLayerLoading] = useState<Record<string, boolean>>({
     portwatch_disruptions: false,
@@ -6267,7 +6299,23 @@ const MapView: React.FC<MapViewProps> = ({
     portwatch_ports: false,
     usgs_earthquakes: false,
     climate_risks: false,
-    spillovers_port_impact: false
+    spillovers_port_impact: false,
+    global_oil_gas_processing_plants: false,
+    global_oil_gas_lng: false,
+    global_oil_gas_power_plants: false,
+    global_oil_gas_storage: false,
+    global_oil_gas_stations: false,
+    global_oil_gas_refineries: false,
+    global_oil_gas_basins: false,
+    global_oil_gas_fields: false,
+    global_oil_gas_mines: false,
+    global_oil_gas_wells: false,
+    global_oil_gas_wells_vector_grid: false,
+    global_oil_gas_platforms_well_pads: false,
+    global_oil_gas_underground_storage: false,
+    global_oil_gas_pipelines: false,
+    global_oil_gas_railways: false,
+    global_oil_gas_ports: false
   });
   const globalRiskEnrichmentsRef = useRef<Record<string, any>>({});
   
@@ -6323,6 +6371,86 @@ const MapView: React.FC<MapViewProps> = ({
           countKey = 'shipping_lanes_count';
           summaryKey = 'shipping_lanes_summary';
           allKey = 'shipping_lanes_all';
+          break;
+        case 'global_oil_gas_processing_plants':
+          countKey = 'global_oil_gas_processing_plants_count';
+          summaryKey = 'global_oil_gas_processing_plants_summary';
+          allKey = 'global_oil_gas_processing_plants_all';
+          break;
+        case 'global_oil_gas_lng':
+          countKey = 'global_oil_gas_lng_count';
+          summaryKey = 'global_oil_gas_lng_summary';
+          allKey = 'global_oil_gas_lng_all';
+          break;
+        case 'global_oil_gas_power_plants':
+          countKey = 'global_oil_gas_power_plants_count';
+          summaryKey = 'global_oil_gas_power_plants_summary';
+          allKey = 'global_oil_gas_power_plants_all';
+          break;
+        case 'global_oil_gas_storage':
+          countKey = 'global_oil_gas_storage_count';
+          summaryKey = 'global_oil_gas_storage_summary';
+          allKey = 'global_oil_gas_storage_all';
+          break;
+        case 'global_oil_gas_stations':
+          countKey = 'global_oil_gas_stations_count';
+          summaryKey = 'global_oil_gas_stations_summary';
+          allKey = 'global_oil_gas_stations_all';
+          break;
+        case 'global_oil_gas_refineries':
+          countKey = 'global_oil_gas_refineries_count';
+          summaryKey = 'global_oil_gas_refineries_summary';
+          allKey = 'global_oil_gas_refineries_all';
+          break;
+        case 'global_oil_gas_basins':
+          countKey = 'global_oil_gas_basins_count';
+          summaryKey = 'global_oil_gas_basins_summary';
+          allKey = 'global_oil_gas_basins_all';
+          break;
+        case 'global_oil_gas_fields':
+          countKey = 'global_oil_gas_fields_count';
+          summaryKey = 'global_oil_gas_fields_summary';
+          allKey = 'global_oil_gas_fields_all';
+          break;
+        case 'global_oil_gas_mines':
+          countKey = 'global_oil_gas_mines_count';
+          summaryKey = 'global_oil_gas_mines_summary';
+          allKey = 'global_oil_gas_mines_all';
+          break;
+        case 'global_oil_gas_wells':
+          countKey = 'global_oil_gas_wells_count';
+          summaryKey = 'global_oil_gas_wells_summary';
+          allKey = 'global_oil_gas_wells_all';
+          break;
+        case 'global_oil_gas_wells_vector_grid':
+          countKey = 'global_oil_gas_wells_vector_grid_count';
+          summaryKey = 'global_oil_gas_wells_vector_grid_summary';
+          allKey = 'global_oil_gas_wells_vector_grid_all';
+          break;
+        case 'global_oil_gas_platforms_well_pads':
+          countKey = 'global_oil_gas_platforms_well_pads_count';
+          summaryKey = 'global_oil_gas_platforms_well_pads_summary';
+          allKey = 'global_oil_gas_platforms_well_pads_all';
+          break;
+        case 'global_oil_gas_underground_storage':
+          countKey = 'global_oil_gas_underground_storage_count';
+          summaryKey = 'global_oil_gas_underground_storage_summary';
+          allKey = 'global_oil_gas_underground_storage_all';
+          break;
+        case 'global_oil_gas_pipelines':
+          countKey = 'global_oil_gas_pipelines_count';
+          summaryKey = 'global_oil_gas_pipelines_summary';
+          allKey = 'global_oil_gas_pipelines_all';
+          break;
+        case 'global_oil_gas_railways':
+          countKey = 'global_oil_gas_railways_count';
+          summaryKey = 'global_oil_gas_railways_summary';
+          allKey = 'global_oil_gas_railways_all';
+          break;
+        case 'global_oil_gas_ports':
+          countKey = 'global_oil_gas_ports_count';
+          summaryKey = 'global_oil_gas_ports_summary';
+          allKey = 'global_oil_gas_ports_all';
           break;
       }
       
@@ -15734,6 +15862,204 @@ const MapView: React.FC<MapViewProps> = ({
           }
         }
       }
+      
+      // Helper function to render Global Oil and Gas features
+      const renderGlobalOilAndGasFeatures = (layerKey: string, layerIcon: string, layerColor: string, layerTitle: string) => {
+        const allKey = `${layerKey}_all`;
+        const countKey = `${layerKey}_count`;
+        
+        if (enrichments[allKey] && Array.isArray(enrichments[allKey])) {
+          let featureCount = 0;
+          
+          enrichments[allKey].forEach((feature: any) => {
+            try {
+              const geometry = feature.geometry;
+              if (!geometry) return;
+              
+              // Handle point geometry
+              if (geometry.x !== undefined && geometry.y !== undefined) {
+                const lat = geometry.y;
+                const lon = geometry.x;
+                
+                if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+                  const iconHtml = `<div style="
+                    width: 20px;
+                    height: 20px;
+                    background-color: ${layerColor};
+                    border: 2px solid white;
+                    border-radius: 50%;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                  ">${layerIcon}</div>`;
+                  
+                  const marker = L.marker([lat, lon], {
+                    icon: L.divIcon({
+                      className: 'custom-marker',
+                      html: iconHtml,
+                      iconSize: [20, 20],
+                      iconAnchor: [10, 10]
+                    })
+                  });
+                  
+                  const distance = feature.distance_miles !== null && feature.distance_miles !== undefined
+                    ? `${feature.distance_miles.toFixed(2)} miles`
+                    : feature.isContaining ? 'Containing' : 'N/A';
+                  
+                  let popupContent = `<div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${layerIcon} ${layerTitle}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${distance !== 'N/A' ? `<div><strong>Distance:</strong> ${distance}</div>` : ''}
+                      ${feature.objectId ? `<div><strong>Object ID:</strong> ${feature.objectId}</div>` : ''}
+                    </div>
+                    ${feature.attributes ? `<div style="font-size: 11px; color: #1f2937; margin-top: 8px; max-height: 200px; overflow-y: auto;">
+                      ${Object.entries(feature.attributes).slice(0, 10).map(([key, value]) => 
+                        `<div><strong>${key}:</strong> ${value !== null && value !== undefined ? String(value) : 'N/A'}</div>`
+                      ).join('')}
+                    </div>` : ''}
+                  </div>`;
+                  
+                  marker.bindPopup(popupContent, { maxWidth: 400 });
+                  marker.addTo(primary);
+                  (marker as any).__layerType = layerKey;
+                  (marker as any).__layerTitle = layerTitle;
+                  bounds.extend([lat, lon]);
+                  featureCount++;
+                }
+              }
+              // Handle polyline geometry
+              else if (geometry.paths && geometry.paths.length > 0) {
+                geometry.paths.forEach((path: number[][]) => {
+                  if (path && path.length > 0) {
+                    const latlngs = path.map((point: number[]) => [point[1], point[0]]);
+                    const polyline = L.polyline(latlngs, {
+                      color: layerColor,
+                      weight: 3,
+                      opacity: 0.8
+                    });
+                    
+                    const distance = feature.distance_miles !== null && feature.distance_miles !== undefined
+                      ? `${feature.distance_miles.toFixed(2)} miles`
+                      : 'N/A';
+                    
+                    let popupContent = `<div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${layerIcon} ${layerTitle}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance !== 'N/A' ? `<div><strong>Distance:</strong> ${distance}</div>` : ''}
+                        ${feature.objectId ? `<div><strong>Object ID:</strong> ${feature.objectId}</div>` : ''}
+                      </div>
+                      ${feature.attributes ? `<div style="font-size: 11px; color: #1f2937; margin-top: 8px; max-height: 200px; overflow-y: auto;">
+                        ${Object.entries(feature.attributes).slice(0, 10).map(([key, value]) => 
+                          `<div><strong>${key}:</strong> ${value !== null && value !== undefined ? String(value) : 'N/A'}</div>`
+                        ).join('')}
+                      </div>` : ''}
+                    </div>`;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400 });
+                    polyline.addTo(primary);
+                    (polyline as any).__layerType = layerKey;
+                    (polyline as any).__layerTitle = layerTitle;
+                    bounds.extend(polyline.getBounds());
+                    featureCount++;
+                  }
+                });
+              }
+              // Handle polygon geometry
+              else if (geometry.rings && geometry.rings.length > 0) {
+                geometry.rings.forEach((ring: number[][]) => {
+                  if (ring && ring.length > 0) {
+                    const latlngs = ring.map((point: number[]) => [point[1], point[0]]);
+                    const polygon = L.polygon(latlngs, {
+                      color: layerColor,
+                      weight: 2,
+                      opacity: 0.8,
+                      fillColor: layerColor,
+                      fillOpacity: 0.3
+                    });
+                    
+                    const distance = feature.distance_miles !== null && feature.distance_miles !== undefined
+                      ? `${feature.distance_miles.toFixed(2)} miles`
+                      : feature.isContaining ? 'Containing' : 'N/A';
+                    
+                    let popupContent = `<div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        ${layerIcon} ${layerTitle}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        ${distance !== 'N/A' ? `<div><strong>Distance:</strong> ${distance}</div>` : ''}
+                        ${feature.isContaining ? `<div style="color: #10b981; font-weight: 600;">✓ Contains point</div>` : ''}
+                        ${feature.objectId ? `<div><strong>Object ID:</strong> ${feature.objectId}</div>` : ''}
+                      </div>
+                      ${feature.attributes ? `<div style="font-size: 11px; color: #1f2937; margin-top: 8px; max-height: 200px; overflow-y: auto;">
+                        ${Object.entries(feature.attributes).slice(0, 10).map(([key, value]) => 
+                          `<div><strong>${key}:</strong> ${value !== null && value !== undefined ? String(value) : 'N/A'}</div>`
+                        ).join('')}
+                      </div>` : ''}
+                    </div>`;
+                    
+                    polygon.bindPopup(popupContent, { maxWidth: 400 });
+                    polygon.addTo(primary);
+                    (polygon as any).__layerType = layerKey;
+                    (polygon as any).__layerTitle = layerTitle;
+                    bounds.extend(polygon.getBounds());
+                    featureCount++;
+                  }
+                });
+              }
+            } catch (error) {
+              console.error(`Error drawing Global Oil and Gas ${layerTitle} feature:`, error);
+            }
+          });
+          
+          // Add to legend
+          if (featureCount > 0 || enrichments[countKey] !== undefined) {
+            const legendKey = layerKey;
+            const radius = getRadiusForLegendKey(legendKey);
+            const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+            
+            if (!legendAccumulator[legendKey]) {
+              legendAccumulator[legendKey] = {
+                icon: layerIcon,
+                title: layerTitle,
+                count: featureCount || enrichments[countKey] || 0,
+                color: layerColor,
+                radius: radius,
+                radiusDisplay: radiusDisplay
+              };
+            } else {
+              legendAccumulator[legendKey].count = featureCount || enrichments[countKey] || 0;
+              if (radius !== undefined) {
+                legendAccumulator[legendKey].radius = radius;
+                legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+              }
+            }
+          }
+        }
+      };
+      
+      // Render all Global Oil and Gas layers
+      renderGlobalOilAndGasFeatures('global_oil_gas_processing_plants', '🏭', '#8b5cf6', 'Processing Plants');
+      renderGlobalOilAndGasFeatures('global_oil_gas_lng', '⛽', '#06b6d4', 'LNG');
+      renderGlobalOilAndGasFeatures('global_oil_gas_power_plants', '⚡', '#f59e0b', 'Power Plants');
+      renderGlobalOilAndGasFeatures('global_oil_gas_storage', '📦', '#10b981', 'Storage');
+      renderGlobalOilAndGasFeatures('global_oil_gas_stations', '⛽', '#3b82f6', 'Stations');
+      renderGlobalOilAndGasFeatures('global_oil_gas_refineries', '🏭', '#dc2626', 'Refineries');
+      renderGlobalOilAndGasFeatures('global_oil_gas_basins', '🌊', '#6366f1', 'Basins');
+      renderGlobalOilAndGasFeatures('global_oil_gas_fields', '🛢️', '#8b5cf6', 'Fields');
+      renderGlobalOilAndGasFeatures('global_oil_gas_mines', '⛏️', '#f59e0b', 'Mines');
+      renderGlobalOilAndGasFeatures('global_oil_gas_wells', '🛢️', '#06b6d4', 'Wells');
+      renderGlobalOilAndGasFeatures('global_oil_gas_wells_vector_grid', '🛢️', '#10b981', 'Wells Vector Grid');
+      renderGlobalOilAndGasFeatures('global_oil_gas_platforms_well_pads', '🏗️', '#3b82f6', 'Platforms and Well Pads');
+      renderGlobalOilAndGasFeatures('global_oil_gas_underground_storage', '📦', '#6366f1', 'Underground Storage');
+      renderGlobalOilAndGasFeatures('global_oil_gas_pipelines', '🔧', '#dc2626', 'Pipelines');
+      renderGlobalOilAndGasFeatures('global_oil_gas_railways', '🚂', '#8b5cf6', 'Railways');
+      renderGlobalOilAndGasFeatures('global_oil_gas_ports', '⚓', '#06b6d4', 'Ports');
       
       // Draw OpenSky Flight Tracker aircraft as markers on the map
       if (enrichments.opensky_flights_all && Array.isArray(enrichments.opensky_flights_all)) {

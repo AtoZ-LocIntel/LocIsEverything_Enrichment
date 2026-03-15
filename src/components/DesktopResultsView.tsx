@@ -863,7 +863,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NOAA';
       } else if (key.startsWith('nws_')) {
         category = 'Watching the Weather';
-      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('portwatch_ports') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes')) {
+      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('portwatch_ports') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_')) {
         category = 'Global Risk';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';
