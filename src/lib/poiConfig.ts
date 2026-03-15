@@ -142,6 +142,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'NOAA.webp'
   },
   {
+    id: 'nasa',
+    title: 'NASA',
+    description: 'NASA Earth observation data, satellite imagery, and space-based environmental monitoring',
+    icon: 'NASA.webp'
+  },
+  {
     id: 'nationalmap',
     title: 'The National Map',
     description: 'USGS The National Map data and layers',

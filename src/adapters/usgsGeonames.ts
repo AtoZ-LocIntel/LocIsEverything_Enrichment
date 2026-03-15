@@ -153,6 +153,11 @@ async function queryGeonameLayer(
     console.log(
       `📍 USGS GeoNames ${layerName} (Layer ${layerId}) query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`
     );
+    
+    // Debug logging for Transportation layer
+    if (layerId === 1) {
+      console.log(`🔍 [TRANSPORTATION DEBUG] Querying layer ${layerId} (${layerName})`);
+    }
 
     let allFeatures: any[] = [];
     let resultOffset = 0;
@@ -181,12 +186,26 @@ async function queryGeonameLayer(
       const response = await fetchJSONSmart(queryUrl.toString());
 
       if (response.error) {
+        console.error(`❌ USGS GeoNames ${layerName} API error:`, response.error);
         throw new Error(
           `USGS GeoNames ${layerName} API error: ${JSON.stringify(response.error)}`
         );
       }
 
       const batchFeatures = response.features || [];
+      
+      // Debug logging for Transportation layer
+      if (layerId === 1) {
+        console.log(`🔍 [TRANSPORTATION DEBUG] Batch ${Math.floor(resultOffset / maxRecordCount) + 1}: ${batchFeatures.length} features returned`);
+        if (batchFeatures.length > 0 && resultOffset === 0) {
+          console.log(`🔍 [TRANSPORTATION DEBUG] First feature sample:`, {
+            attributes: batchFeatures[0].attributes,
+            hasGeometry: !!batchFeatures[0].geometry,
+            geometryType: batchFeatures[0].geometry ? Object.keys(batchFeatures[0].geometry) : 'none'
+          });
+        }
+      }
+      
       allFeatures = allFeatures.concat(batchFeatures);
 
       hasMore = batchFeatures.length === maxRecordCount || response.exceededTransferLimit === true;
@@ -219,8 +238,24 @@ async function queryGeonameLayer(
           } else if (geometry.rings && geometry.rings.length > 0) {
             // Polygon geometry
             distanceMiles = distanceToPolygon(lat, lon, geometry.rings);
+          } else if (geometry.points && Array.isArray(geometry.points) && geometry.points.length > 0) {
+            // Multipoint geometry (e.g., Landform, Hydro Lines layers) - use closest point
+            let minDistance = Infinity;
+            geometry.points.forEach((point: number[]) => {
+              if (Array.isArray(point) && point.length >= 2) {
+                const pointLon = point[0];
+                const pointLat = point[1];
+                const dist = calculateHaversineDistance(lat, lon, pointLat, pointLon);
+                if (dist < minDistance) {
+                  minDistance = dist;
+                }
+              }
+            });
+            if (minDistance < Infinity) {
+              distanceMiles = minDistance;
+            }
           } else if (geometry.x && geometry.y) {
-            // Point geometry (hydro points, administrative, landform, etc.)
+            // Point geometry (hydro points, administrative, etc.)
             distanceMiles = calculateHaversineDistance(lat, lon, geometry.y, geometry.x);
           }
         }

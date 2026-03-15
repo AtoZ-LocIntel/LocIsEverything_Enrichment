@@ -370,6 +370,34 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsVersion: '1.3.0',
     wmsCrs: 'EPSG3857'
   },
+  
+  // NASA Global Mangrove Canopy ImageServer
+  // CMS (Carbon Monitoring System) Global Map of Mangrove Canopy Height at 1665m resolution
+  nasa_mangrove_canopy: {
+    type: 'tile',
+    name: 'NASA Global Mangrove Canopy',
+    attribution: 'NASA / ORNL',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/C2389107206-ORNL_CLOUD/CMS_Global_Map_Mangrove_Canopy_1665/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA PACE OCI L3M IOP ADG 442 ImageServer
+  // PACE Ocean Color Instrument Level 3 Monthly Inherent Optical Properties - Absorption by Detrital and Gelbstoff at 442nm
+  // Multidimensional service with time extent: 2024/03/05 to 2026/01/17
+  // Uses raster function "ADG_442_scaled" for proper visualization
+  nasa_pace_oci_l3m_iop_adg_442: {
+    type: 'tile',
+    name: 'NASA PACE OCI L3M IOP ADG 442',
+    attribution: 'NASA GESDISC',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/PACE_OCI_L3M_IOP_ADG_442/ImageServer/exportImage',
+    exportImageTime: 'present', // Always use present date (latest available)
+    exportImageRasterFunction: 'ADG_442_scaled', // Use the scaled raster function for proper visualization
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
   // USGS National Map Contours WMS
   usgs_contours: {
     type: 'wms',
@@ -4517,7 +4545,7 @@ const createExportImageTileLayer = (
         // Handle both string and object formats for rasterFunction
         let renderingRuleToSend = layerInstance._renderingRule;
         
-        // If rasterFunction is a string, convert to proper format
+        // If rasterFunction is a string (e.g., "ADG_442_scaled"), convert to proper format
         if (typeof layerInstance._renderingRule.rasterFunction === 'string') {
           renderingRuleToSend = {
             rasterFunction: {
@@ -4533,6 +4561,12 @@ const createExportImageTileLayer = (
         url += `&renderingRule=${encodeURIComponent(renderingRuleJson)}`;
         console.log('🔍 [DEBUG] Full tile URL (first 300 chars):', url.substring(0, 300));
       }
+    }
+    
+    // Add raster function if provided (legacy support - simpler format)
+    if (layerInstance._rasterFunction && typeof layerInstance._rasterFunction === 'string') {
+      // If it's just a string raster function name, use it directly
+      url += `&rasterFunction=${encodeURIComponent(layerInstance._rasterFunction)}`;
     }
     
     // Add raster function if provided (legacy support)
@@ -38695,7 +38729,7 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'usgs_geonames_administrative_all', icon: '📍', color: '#3b82f6', title: 'USGS GeoNames - Administrative', isPoint: true },
         { key: 'usgs_geonames_transportation_all', icon: '🚗', color: '#2563eb', title: 'USGS GeoNames - Transportation', isPoint: true },
         { key: 'usgs_geonames_landform_all', icon: '⛰️', color: '#16a34a', title: 'USGS GeoNames - Landform', isPoint: true },
-        { key: 'usgs_geonames_hydro_lines_all', icon: '💧', color: '#0284c7', title: 'USGS GeoNames - Hydro Lines', isPolyline: true },
+        { key: 'usgs_geonames_hydro_lines_all', icon: '💧', color: '#0284c7', title: 'USGS GeoNames - Hydro Lines', isPolyline: true, isPoint: true, isMultipoint: true },
         { key: 'usgs_geonames_hydro_points_all', icon: '💧', color: '#0ea5e9', title: 'USGS GeoNames - Hydro Points', isPoint: true },
         { key: 'usgs_geonames_antarctica_all', icon: '🧊', color: '#e0e7ff', title: 'USGS GeoNames - Antarctica', isPoint: true },
         { key: 'usgs_geonames_historical_all', icon: '📜', color: '#a855f7', title: 'USGS GeoNames - Historical', isPoint: true }
@@ -38706,12 +38740,36 @@ const MapView: React.FC<MapViewProps> = ({
           try {
             console.log(`📍 Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
             let featureCount = 0;
+            let skippedNoGeometry = 0;
             enrichments[layerConfig.key].forEach((feature: any) => {
-              if (!feature.geometry) return;
+              if (!feature.geometry) {
+                skippedNoGeometry++;
+                if (layerConfig.key === 'usgs_geonames_landform_all' && skippedNoGeometry <= 3) {
+                  console.warn(`⚠️ [LANDFORM DEBUG] Feature missing geometry:`, feature);
+                }
+                return;
+              }
+              
+              // Debug geometry structure for landform and hydro layers
+              if ((layerConfig.key === 'usgs_geonames_landform_all' || 
+                   layerConfig.key === 'usgs_geonames_hydro_lines_all' || 
+                   layerConfig.key === 'usgs_geonames_hydro_points_all') && featureCount < 3) {
+                console.log(`🔍 [${layerConfig.key} DEBUG] Feature ${featureCount} geometry:`, {
+                  hasGeometry: !!feature.geometry,
+                  geometryType: feature.geometry ? Object.keys(feature.geometry) : 'none',
+                  x: feature.geometry?.x,
+                  y: feature.geometry?.y,
+                  points: feature.geometry?.points,
+                  paths: feature.geometry?.paths,
+                  rings: feature.geometry?.rings,
+                  fullFeature: feature
+                });
+              }
 
               try {
+                // Handle polyline geometry first (for Hydro Lines that are actual polylines)
                 if (layerConfig.isPolyline && feature.geometry.paths && feature.geometry.paths.length > 0) {
-                  // Draw polyline (hydro lines)
+                  // Draw polyline (hydro lines that are polylines)
                   const paths = feature.geometry.paths;
                   paths.forEach((path: number[][]) => {
                     const latlngs = path.map((coord: number[]) => {
@@ -38758,10 +38816,128 @@ const MapView: React.FC<MapViewProps> = ({
                     bounds.extend(polyline.getBounds());
                   });
                   featureCount++;
-                } else if (layerConfig.isPoint && feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
-                  // Draw point (administrative, transportation, landform, hydro points, antarctica, historical)
-                  const pointLat = feature.geometry.y;
-                  const pointLon = feature.geometry.x;
+                } else if (layerConfig.isPoint && (layerConfig.isPolyline === false || !feature.geometry.paths || !feature.geometry.paths.length)) {
+                  // Only handle as point if it's not a polyline OR if polyline check already failed
+                  // This allows layers like Hydro Lines to handle both polylines and multipoints
+                  // Handle both point and multipoint geometry
+                  let pointLat: number | undefined;
+                  let pointLon: number | undefined;
+                  
+                  if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+                    // Standard point geometry
+                    pointLat = feature.geometry.y;
+                    pointLon = feature.geometry.x;
+                  } else if (feature.geometry.points && Array.isArray(feature.geometry.points) && feature.geometry.points.length > 0) {
+                    // Multipoint geometry - handle differently for Hydro Lines vs other layers
+                    const points = feature.geometry.points;
+                    
+                    // For Hydro Lines, convert multipoint to polyline segments
+                    if (layerConfig.key === 'usgs_geonames_hydro_lines_all' && points.length > 1) {
+                      // Convert multipoint to polyline by connecting consecutive points
+                      const latlngs: [number, number][] = points
+                        .filter((point: number[]) => Array.isArray(point) && point.length >= 2)
+                        .map((point: number[]) => [point[1], point[0]] as [number, number]);
+                      
+                      if (latlngs.length > 1) {
+                        const featureName = feature.name || feature.FEATURE_NAME || feature.feature_name || 
+                          feature.GNIS_NAME || feature.gnis_name || feature.NAME || feature.NAME1 || 
+                          feature.NAME2 || feature.PRIMARY_NAME || feature.primary_name ||
+                          (feature.attributes ? (feature.attributes.name || feature.attributes.FEATURE_NAME || feature.attributes.GNIS_NAME) : null) ||
+                          feature.layerName || 'Unknown';
+                        const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+                        
+                        const polyline = L.polyline(latlngs, {
+                          color: layerConfig.color,
+                          weight: 3,
+                          opacity: 0.8,
+                          smoothFactor: 1
+                        });
+                        
+                        let popupContent = `
+                          <div style="min-width: 250px; max-width: 400px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                              ${layerConfig.icon} ${featureName}
+                            </h3>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        `;
+                        
+                        const excludeFields = ['name', 'FEATURE_NAME', 'feature_name', 'GNIS_NAME', 'gnis_name', 'NAME', 'NAME1', 'NAME2', 'PRIMARY_NAME', 'primary_name', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                        Object.entries(feature).forEach(([key, value]) => {
+                          if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                            if (typeof value === 'object' && !Array.isArray(value)) return;
+                            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                            popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                          }
+                        });
+                        
+                        popupContent += `</div></div>`;
+                        polyline.bindPopup(popupContent, { maxWidth: 400 });
+                        polyline.addTo(primary);
+                        bounds.extend(polyline.getBounds());
+                        featureCount++;
+                        return; // Skip point rendering for Hydro Lines
+                      }
+                    }
+                    
+                    // For other multipoint layers (Landform, Transportation, etc.), render as individual points
+                    points.forEach((point: number[], pointIndex: number) => {
+                      if (Array.isArray(point) && point.length >= 2) {
+                        const pLon = point[0];
+                        const pLat = point[1];
+                        
+                        const featureName = feature.name || feature.FEATURE_NAME || feature.feature_name || 
+                          feature.GNIS_NAME || feature.gnis_name || feature.NAME || feature.NAME1 || 
+                          feature.NAME2 || feature.PRIMARY_NAME || feature.primary_name ||
+                          (feature.attributes ? (feature.attributes.name || feature.attributes.FEATURE_NAME || feature.attributes.GNIS_NAME) : null) ||
+                          feature.layerName || 'Unknown';
+                        const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
+                        
+                        const icon = createPOIIcon(layerConfig.icon, layerConfig.color);
+                        const marker = L.marker([pLat, pLon], { icon });
+                        
+                        let popupContent = `
+                          <div style="min-width: 250px; max-width: 400px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                              ${layerConfig.icon} ${featureName}${points.length > 1 ? ` (Point ${pointIndex + 1} of ${points.length})` : ''}
+                            </h3>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                              ${distance ? `<div style="color: #d97706; font-weight: 600;">📍 Distance: ${distance} miles</div>` : ''}
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                        `;
+                        
+                        const excludeFields = ['name', 'FEATURE_NAME', 'feature_name', 'GNIS_NAME', 'gnis_name', 'NAME', 'NAME1', 'NAME2', 'PRIMARY_NAME', 'primary_name', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName'];
+                        Object.entries(feature).forEach(([key, value]) => {
+                          if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                            if (typeof value === 'object' && !Array.isArray(value)) return;
+                            const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                            popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                          }
+                        });
+                        
+                        popupContent += `</div></div>`;
+                        marker.bindPopup(popupContent, { maxWidth: 400 });
+                        marker.addTo(primary);
+                        bounds.extend(marker.getLatLng());
+                        featureCount++;
+                      }
+                    });
+                    return; // Skip the single point rendering below for multipoint features
+                  }
+                  
+                  if (pointLat === undefined || pointLon === undefined) {
+                    if (layerConfig.key === 'usgs_geonames_landform_all' || layerConfig.key === 'usgs_geonames_hydro_lines_all' || layerConfig.key === 'usgs_geonames_hydro_points_all') {
+                      console.warn(`⚠️ [${layerConfig.key}] Feature skipped - no valid point coordinates:`, {
+                        geometry: feature.geometry,
+                        geometryKeys: Object.keys(feature.geometry || {})
+                      });
+                    }
+                    return;
+                  }
+                  
                   const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : '';
 
                   const featureName = feature.name || feature.FEATURE_NAME || feature.feature_name || 
@@ -38798,9 +38974,21 @@ const MapView: React.FC<MapViewProps> = ({
                   marker.addTo(primary);
                   bounds.extend(marker.getLatLng());
                   featureCount++;
+                } else if (layerConfig.isPoint && layerConfig.key === 'usgs_geonames_landform_all') {
+                  // Debug: log why point wasn't drawn
+                  console.warn(`⚠️ [LANDFORM] Feature skipped - geometry check failed:`, {
+                    hasGeometry: !!feature.geometry,
+                    hasX: feature.geometry?.x !== undefined,
+                    hasY: feature.geometry?.y !== undefined,
+                    geometryKeys: feature.geometry ? Object.keys(feature.geometry) : [],
+                    geometry: feature.geometry
+                  });
                 }
               } catch (error) {
                 console.error(`Error drawing ${layerConfig.title} feature:`, error);
+                if (layerConfig.key === 'usgs_geonames_landform_all') {
+                  console.error(`⚠️ [LANDFORM] Error details:`, error, feature);
+                }
               }
             });
 
@@ -38815,6 +39003,8 @@ const MapView: React.FC<MapViewProps> = ({
                 };
               }
               legendAccumulator[legendKey].count += featureCount;
+            } else if (layerConfig.key === 'usgs_geonames_landform_all' && enrichments[layerConfig.key].length > 0) {
+              console.warn(`⚠️ [LANDFORM] No features drawn despite ${enrichments[layerConfig.key].length} features in data. Skipped ${skippedNoGeometry} features with no geometry.`);
             }
           } catch (error) {
             console.error(`Error processing ${layerConfig.title}:`, error);

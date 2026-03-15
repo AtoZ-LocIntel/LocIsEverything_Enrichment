@@ -2318,6 +2318,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://gis.earthdata.nasa.gov/image/rest/services/ulandsat/ulandsat_gmis_v1/ImageServer"
         },
+        {
+          name: "NASA Global Mangrove Canopy",
+          description: "NASA CMS (Carbon Monitoring System) Global Map of Mangrove Canopy Height at 1665-meter resolution. Provides global mapping of mangrove forest canopy height derived from satellite observations. Mangroves are critical coastal ecosystems that store significant amounts of carbon and provide important habitat. This dataset helps monitor mangrove extent and health globally. Coverage: Global (39°S to 31°N latitude).",
+          coverage: "Global (39°S to 31°N)",
+          accuracy: "Very High (1665m resolution)",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/C2389107206-ORNL_CLOUD/CMS_Global_Map_Mangrove_Canopy_1665/ImageServer"
+        },
+        {
+          name: "NASA PACE OCI L3M IOP ADG 442",
+          description: "NASA PACE (Plankton, Aerosol, Cloud, ocean Ecosystem) Ocean Color Instrument (OCI) Level 3 Monthly Inherent Optical Properties - Absorption by Detrital and Gelbstoff (ADG) at 442nm wavelength. Provides global ocean color data for studying marine ecosystems, phytoplankton distribution, and ocean biogeochemistry. ADG represents absorption by colored dissolved organic matter (CDOM) and detrital particles in ocean waters. Global coverage with time series data from 2024-2026.",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/PACE_OCI_L3M_IOP_ADG_442/ImageServer"
+        },
         ]
     },
     {
