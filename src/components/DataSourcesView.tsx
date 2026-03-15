@@ -2216,7 +2216,7 @@ export const getDataSources = (): DataSourceCategory[] => {
         },
         {
           name: "NASA MODIS",
-          description: "NASA Moderate Resolution Imaging Spectroradiometer (MODIS) imagery service providing global satellite imagery",
+          description: "NASA Moderate Resolution Imaging Spectroradiometer (MODIS) imagery service providing global satellite imagery. Uses true color band combination (Bands 1-4-3: Red-Green-Blue) from MODIS Surface Reflectance product, creating a natural-looking, aerosol-free view of Earth's surface. Automatically displays daily composite imagery for the present date, which updates throughout the day as the Terra satellite collects data. Temporal coverage: February 24, 2000 to present. Provided through NASA Global Imagery Browse Services (GIBS) and NASA LANCE.",
           coverage: "Global",
           accuracy: "Very High",
           cost: "Free",
@@ -2261,6 +2261,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/TROPOMI_SO2_DAILY/ImageServer"
+        },
+        {
+          name: "NASA Crater Lake Hillshade Depths",
+          description: "NASA Crater Lake Hillshade Depths - 2-meter resolution hillshade visualization of Crater Lake bathymetry. MRF (Meta Raster Format) raster layer showing detailed depth contours and terrain features of Crater Lake, Oregon. Provided by UNH CCOM (Center for Coastal and Ocean Mapping).",
+          coverage: "Crater Lake, Oregon",
+          accuracy: "Very High (2-meter resolution)",
+          cost: "Free",
+          url: "https://gis.ccom.unh.edu/server/rest/services/CraterLake/Crater_Lake_Depths/MapServer/0"
+        },
+        {
+          name: "NASA Crater Lake Depths",
+          description: "NASA Crater Lake Depths - 2-meter resolution depth visualization of Crater Lake bathymetry. MRF (Meta Raster Format) raster layer showing detailed depth measurements and bathymetric contours of Crater Lake, Oregon. Provided by UNH CCOM (Center for Coastal and Ocean Mapping).",
+          coverage: "Crater Lake, Oregon",
+          accuracy: "Very High (2-meter resolution)",
+          cost: "Free",
+          url: "https://gis.ccom.unh.edu/server/rest/services/CraterLake/Crater_Lake_Depths/MapServer/1"
         },
         ]
     },

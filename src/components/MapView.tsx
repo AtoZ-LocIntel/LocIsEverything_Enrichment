@@ -50,6 +50,9 @@ export interface BasemapConfig {
   tileUrl?: string; // URL template with {z}/{y}/{x} placeholders, or ExportImage endpoint URL, or MapServer base URL for ExportMap
   // For ExportImage-based tile layers
   exportImageRasterFunction?: string; // Raster function name for ExportImage endpoint
+  exportImageTime?: string | 'present'; // Time parameter for time-enabled ImageServer services ('present' = current date)
+  exportImageRenderingRule?: any; // Rendering rule JSON for band combinations and other rendering options
+  exportImageBandIds?: number[]; // Band IDs array for band combination (e.g., [1, 4, 3] for RGB)
   // For ExportMap-based tile layers (MapServer raster services)
   exportMapLayerId?: number; // Layer ID for MapServer ExportMap endpoint (e.g., 0, 1, 2...)
 }
@@ -183,12 +186,17 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsFormat: 'image/png',
   },
   
-  // NASA MODIS ImageServer
+  // NASA MODIS ImageServer - True Color (Bands 1-4-3: Red-Green-Blue)
+  // Uses daily composite imagery for present date
+  // Band combination: Band 1 (Red, 0.620-0.670 µm, 250m) -> Red channel, Band 4 (Green, 0.545-0.565 µm, 500m) -> Green channel, Band 3 (Blue, 0.459-0.479 µm, 500m) -> Blue channel
+  // This creates a natural-looking, aerosol-free view of Earth's surface using MODIS Surface Reflectance product
   nasa_modis: {
     type: 'tile',
     name: 'NASA MODIS',
     attribution: 'NASA',
     tileUrl: 'https://modis.arcgis.com/arcgis/rest/services/MODIS/ImageServer/exportImage',
+    exportImageTime: 'present', // Always use present date (today) - daily composite updates throughout the day as satellite collects data
+    exportImageBandIds: [1, 4, 3], // True color: Band 1 (Red) -> Red, Band 4 (Green) -> Green, Band 3 (Blue) -> Blue
     wmsFormat: 'image/png',
     wmsVersion: '1.3.0',
     wmsCrs: 'EPSG3857'
@@ -244,6 +252,36 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     name: 'NASA TROPOMI SO2 Daily',
     attribution: 'NASA GESDISC',
     tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/TROPOMI_SO2_DAILY/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA Crater Lake Hillshade Depths (MRF raster layer)
+  // Limited extent: Crater Lake, Oregon area only
+  nasa_crater_lake_hillshade: {
+    type: 'tile',
+    name: 'NASA Crater Lake Hillshade Depths',
+    attribution: 'NASA / UNH CCOM',
+    tileUrl: 'https://gis.ccom.unh.edu/server/rest/services/CraterLake/Crater_Lake_Depths/MapServer',
+    exportMapLayerId: 0, // Layer 0: Hillshade_CraterLake_Depths_2m.mrf
+    // Layer extent: XMin: -13599285.81, YMin: 5297430.03, XMax: -13586569.81, YMax: 5308738.03 (Web Mercator)
+    // Approximate lat/lon: ~42.9°N, ~122.1°W (Crater Lake, Oregon)
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA Crater Lake Depths (MRF raster layer)
+  // Limited extent: Crater Lake, Oregon area only
+  nasa_crater_lake_depths: {
+    type: 'tile',
+    name: 'NASA Crater Lake Depths',
+    attribution: 'NASA / UNH CCOM',
+    tileUrl: 'https://gis.ccom.unh.edu/server/rest/services/CraterLake/Crater_Lake_Depths/MapServer',
+    exportMapLayerId: 1, // Layer 1: CraterLake_Depths_2m.mrf
+    // Layer extent: XMin: -13599285.81, YMin: 5297430.03, XMax: -13586569.81, YMax: 5308738.03 (Web Mercator)
+    // Approximate lat/lon: ~42.9°N, ~122.1°W (Crater Lake, Oregon)
     wmsFormat: 'image/png',
     wmsVersion: '1.3.0',
     wmsCrs: 'EPSG3857'
@@ -4322,13 +4360,23 @@ async function fetchAndTransformVectorTileStyle(styleUrl: string): Promise<any> 
   }
 }
 
-const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: string | undefined, options: any): L.TileLayer => {
+const createExportImageTileLayer = (
+  exportImageUrl: string, 
+  rasterFunction: string | undefined, 
+  options: any,
+  time?: string | 'present',
+  renderingRule?: any,
+  bandIds?: number[]
+): L.TileLayer => {
   // Create a standard tile layer with a placeholder URL
   const layer = L.tileLayer('', options);
   
-  // Store the export image URL and raster function
+  // Store the export image URL, raster function, time, rendering rule, and band IDs
   (layer as any)._exportImageUrl = exportImageUrl;
   (layer as any)._rasterFunction = rasterFunction;
+  (layer as any)._time = time;
+  (layer as any)._renderingRule = renderingRule;
+  (layer as any)._bandIds = bandIds;
   
   // Override getTileUrl method
   (layer as any).getTileUrl = function(coords: any) {
@@ -4352,8 +4400,41 @@ const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: stri
     
     const bbox = `${bboxMinX},${bboxMinY},${bboxMaxX},${bboxMaxY}`;
     
-    // Build URL - include rasterFunction only if provided
+    // Build URL - include rasterFunction, time, and renderingRule if provided
     let url = `${layerInstance._exportImageUrl}?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&f=image`;
+    
+    // Add time parameter if specified
+    if (layerInstance._time) {
+      if (layerInstance._time === 'present') {
+        // Use current date in ISO 8601 format (YYYY-MM-DD)
+        // MODIS uses daily composites that update throughout the day
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+        url += `&time=${todayStr}`;
+      } else {
+        url += `&time=${layerInstance._time}`;
+      }
+    }
+    
+    // Add band IDs if provided (simpler approach for band combinations)
+    if (layerInstance._bandIds && Array.isArray(layerInstance._bandIds) && layerInstance._bandIds.length > 0) {
+      const bandIdsStr = layerInstance._bandIds.join(',');
+      url += `&bandIds=${bandIdsStr}`;
+    }
+    
+    // Add rendering rule if provided (for complex rendering scenarios)
+    if (layerInstance._renderingRule) {
+      // Check if rendering rule has band indexes for simpler bandIds parameter
+      if (layerInstance._renderingRule.rasterFunction?.rasterFunctionArguments?.BandIndexes && !layerInstance._bandIds) {
+        const bandIds = layerInstance._renderingRule.rasterFunction.rasterFunctionArguments.BandIndexes.join(',');
+        url += `&bandIds=${bandIds}`;
+      } else {
+        // Use full rendering rule JSON
+        url += `&renderingRule=${encodeURIComponent(JSON.stringify(layerInstance._renderingRule))}`;
+      }
+    }
+    
+    // Add raster function if provided (legacy support)
     if (layerInstance._rasterFunction) {
       const rasterFunctionJson = JSON.stringify({ rasterFunction: layerInstance._rasterFunction });
       url += `&rasterFunction=${encodeURIComponent(rasterFunctionJson)}`;
@@ -4366,7 +4447,7 @@ const createExportImageTileLayer = (exportImageUrl: string, rasterFunction: stri
 };
 
 // Create a tile layer for ArcGIS MapServer Export Map endpoint
-// Used for MapServer raster services (like NOAA tsunami energy)
+// Used for MapServer raster services (like NOAA tsunami energy, Crater Lake)
 // Note: Handles global layers that wrap around the dateline
 const createExportMapTileLayer = (mapServerUrl: string, layerId: number, options: any): L.TileLayer => {
   // Create a standard tile layer with a placeholder URL
@@ -4380,6 +4461,18 @@ const createExportMapTileLayer = (mapServerUrl: string, layerId: number, options
   
   // Track requested tiles to prevent duplicates
   const tileCache = new Map<string, string>();
+  
+  // Crater Lake extent in Web Mercator (EPSG:3857)
+  // Layer extent: XMin: -13599285.81, YMin: 5297430.03, XMax: -13586569.81, YMax: 5308738.03
+  const CRATER_LAKE_EXTENT = {
+    minX: -13599285.81,
+    minY: 5297430.03,
+    maxX: -13586569.81,
+    maxY: 5308738.03
+  };
+  
+  // Check if this is a Crater Lake service
+  const isCraterLake = mapServerUrl.includes('CraterLake');
   
   // Override getTileUrl method
   (layer as any).getTileUrl = function(coords: any) {
@@ -4414,12 +4507,28 @@ const createExportMapTileLayer = (mapServerUrl: string, layerId: number, options
     const bboxMinY = Math.log(Math.tan((90 + latMin) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
     const bboxMaxY = Math.log(Math.tan((90 + latMax) * Math.PI / 360)) / (Math.PI / 180) * 20037508.34 / 180;
     
+    // For Crater Lake layers, check if tile bbox intersects with layer extent
+    // If not, return a transparent 1x1 pixel data URL to avoid unnecessary requests
+    if (isCraterLake) {
+      const tileIntersects = !(bboxMaxX < CRATER_LAKE_EXTENT.minX || 
+                               bboxMinX > CRATER_LAKE_EXTENT.maxX || 
+                               bboxMaxY < CRATER_LAKE_EXTENT.minY || 
+                               bboxMinY > CRATER_LAKE_EXTENT.maxY);
+      
+      if (!tileIntersects) {
+        // Return transparent 1x1 pixel data URL for tiles outside Crater Lake extent
+        const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        tileCache.set(tileKey, transparentPixel);
+        return transparentPixel;
+      }
+    }
+    
     const bbox = `${bboxMinX},${bboxMinY},${bboxMaxX},${bboxMaxY}`;
     
     // Export Map endpoint format: /export?bbox=...&size=...&format=png&f=image&layers=show:0
     // Use Web Mercator (EPSG:3857) which matches Leaflet's coordinate system
-    // This should prevent duplicate rendering issues
-    const url = `${layerInstance._mapServerUrl}/export?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&format=png&f=image&layers=show:${layerInstance._layerId}`;
+    // Add transparent=true to ensure transparent background for areas without data
+    const url = `${layerInstance._mapServerUrl}/export?bbox=${bbox}&bboxSR=3857&imageSR=3857&size=256,256&format=png&transparent=true&f=image&layers=show:${layerInstance._layerId}`;
     
     // Cache the URL for this normalized tile
     tileCache.set(tileKey, url);
@@ -7013,7 +7122,10 @@ const MapView: React.FC<MapViewProps> = ({
                 noWrap: true,
                 opacity: 1.0, // Full opacity - this is the base
                 tileSize: 256,
-              }
+              },
+              baseBasemapConfig.exportImageTime, // Time parameter
+              baseBasemapConfig.exportImageRenderingRule, // Rendering rule
+              baseBasemapConfig.exportImageBandIds // Band IDs for band combination
             );
             // Mark basemap with key for comparison
             (basemapLayer as any)._basemapKey = selectedBaseBasemap;
@@ -7174,7 +7286,10 @@ const MapView: React.FC<MapViewProps> = ({
                     noWrap: true,
                     opacity: 0.7, // Transparent overlay
                     tileSize: 256,
-                  }
+                  },
+                  thematicConfig.exportImageTime, // Time parameter
+                  thematicConfig.exportImageRenderingRule, // Rendering rule
+                  thematicConfig.exportImageBandIds // Band IDs for band combination
                 ).addTo(map);
               } else {
                 // Standard tile layer
@@ -8610,7 +8725,10 @@ const MapView: React.FC<MapViewProps> = ({
               noWrap: true,
               opacity: 1.0, // Full opacity - this is the base, replaces any previous basemap
               tileSize: 256,
-            }
+            },
+            finalBaseConfig.exportImageTime, // Time parameter
+            finalBaseConfig.exportImageRenderingRule, // Rendering rule
+            finalBaseConfig.exportImageBandIds // Band IDs for band combination
           );
           // Mark basemap with key for comparison
           (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
