@@ -324,6 +324,7 @@ import {
   getGlobalOilAndGasRailwaysData,
   getGlobalOilAndGasPortsData
 } from '../adapters/globalOilAndGas';
+import { getMaritimeBoundariesData } from '../adapters/maritimeBoundaries';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -2196,6 +2197,81 @@ export class EnrichmentService {
     return this.getGlobalOilAndGasLayer('global_oil_gas_ports', getGlobalOilAndGasPortsData, lat, lon, radiusMiles);
   }
 
+  private async getMaritimeBoundaries(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      const features = await getMaritimeBoundariesData(lat, lon, radiusMiles);
+      
+      if (!features || features.length === 0) {
+        return {
+          maritime_boundaries_count: 0,
+          maritime_boundaries_summary: `No maritime boundaries found within ${radiusMiles} miles`,
+          maritime_boundaries_all: [],
+          maritime_boundaries_proximity_distance: radiusMiles
+        };
+      }
+      
+      // Calculate summary statistics
+      const containingFeatures = features.filter(f => f.isContaining).length;
+      const nearbyFeatures = features.filter(f => !f.isContaining).length;
+      
+      // Extract boundary types from attributes (polyline layer uses LINE_TYPE)
+      const boundaryTypes = [...new Set(features.map(f => {
+        const type = f.attributes?.LINE_TYPE || f.attributes?.line_type || 
+                     f.attributes?.Type || f.attributes?.TYPE || 
+                     f.attributes?.BoundaryType || f.attributes?.POL_TYPE || 'Unknown';
+        return type;
+      }).filter(Boolean))];
+      
+      // Extract territories/sovereigns (polyline layer uses TERRITORY1/SOVEREIGN1)
+      const territories = [...new Set(features.map(f => {
+        const territory = f.attributes?.TERRITORY1 || f.attributes?.territory1 || 
+                         f.attributes?.TERRITORY2 || f.attributes?.territory2 ||
+                         f.attributes?.Country || f.attributes?.COUNTRY || 
+                         f.attributes?.CountryName || null;
+        return territory;
+      }).filter(Boolean))];
+      
+      const sovereigns = [...new Set(features.map(f => {
+        const sovereign = f.attributes?.SOVEREIGN1 || f.attributes?.sovereign1 || 
+                         f.attributes?.SOVEREIGN2 || f.attributes?.sovereign2 || null;
+        return sovereign;
+      }).filter(Boolean))];
+      
+      const countries = [...new Set([...territories, ...sovereigns].filter(Boolean))];
+      
+      const summary = `Found ${features.length} maritime boundary feature${features.length !== 1 ? 's' : ''} within ${radiusMiles} miles. ` +
+        `${containingFeatures > 0 ? `${containingFeatures} containing the point. ` : ''}` +
+        `${nearbyFeatures > 0 ? `${nearbyFeatures} nearby. ` : ''}` +
+        `${boundaryTypes.length > 0 ? `Types: ${boundaryTypes.join(', ')}. ` : ''}` +
+        `${countries.length > 0 ? `Countries: ${countries.length}.` : ''}`;
+      
+      return {
+        maritime_boundaries_count: features.length,
+        maritime_boundaries_summary: summary,
+        maritime_boundaries_containing_count: containingFeatures,
+        maritime_boundaries_nearby_count: nearbyFeatures,
+        maritime_boundaries_types: boundaryTypes,
+        maritime_boundaries_countries: countries,
+        maritime_boundaries_proximity_distance: radiusMiles,
+        maritime_boundaries_all: features.map(feature => ({
+          objectId: feature.objectId,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          attributes: feature.attributes,
+          geometry: feature.geometry
+        }))
+      };
+    } catch (error) {
+      console.error('Error fetching Maritime Boundaries data:', error);
+      return {
+        maritime_boundaries_count: 0,
+        maritime_boundaries_summary: 'Error querying Maritime Boundaries data',
+        maritime_boundaries_all: [],
+        maritime_boundaries_proximity_distance: radiusMiles
+      };
+    }
+  }
+
   private async getUSGSEarthquakes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
       console.log(`🌍 USGS Earthquakes query for coordinates [${lat}, ${lon}] within ${radiusMiles} miles`);
@@ -3425,6 +3501,8 @@ export class EnrichmentService {
         return await this.getGlobalOilAndGasRailways(lat, lon, radius);
       case 'global_oil_gas_ports':
         return await this.getGlobalOilAndGasPorts(lat, lon, radius);
+      case 'maritime_boundaries':
+        return await this.getMaritimeBoundaries(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

@@ -182,6 +182,72 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsLayers: 'USGSNAIPPlus', // Use service name as layer for ImageServer WMS
     wmsFormat: 'image/png',
   },
+  
+  // NASA MODIS ImageServer
+  nasa_modis: {
+    type: 'tile',
+    name: 'NASA MODIS',
+    attribution: 'NASA',
+    tileUrl: 'https://modis.arcgis.com/arcgis/rest/services/MODIS/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA VIIRS ImageServer
+  nasa_viirs: {
+    type: 'tile',
+    name: 'NASA VIIRS',
+    attribution: 'NASA',
+    tileUrl: 'https://modis.arcgis.com/arcgis/rest/services/VIIRS/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA PACE OCI L3M AVW ImageServer
+  nasa_pace_oci_l3m_avw: {
+    type: 'tile',
+    name: 'NASA PACE OCI L3M AVW',
+    attribution: 'NASA GESDISC',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/PACE_OCI_L3M_AVW/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA PACE OCI L3M AOD ImageServer
+  nasa_pace_oci_l3m_aod: {
+    type: 'tile',
+    name: 'NASA PACE OCI L3M AOD',
+    attribution: 'NASA GESDISC',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/PACE_OCI_L3M_AOD/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA GPM 3IMERGHHE ImageServer
+  nasa_gpm_3imerghhe: {
+    type: 'tile',
+    name: 'NASA GPM 3IMERGHHE',
+    attribution: 'NASA GESDISC',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/GPM_3IMERGHHE/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA TROPOMI SO2 Daily ImageServer
+  nasa_tropomi_so2_daily: {
+    type: 'tile',
+    name: 'NASA TROPOMI SO2 Daily',
+    attribution: 'NASA GESDISC',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/TROPOMI_SO2_DAILY/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
   // USGS National Map Contours WMS
   usgs_contours: {
     type: 'wms',
@@ -4412,6 +4478,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'spillovers_port_impact': { icon: '🌊', color: '#3b82f6', title: 'Spillovers Port Impact' },
   'portwatch_ports': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Ports' },
   'usgs_earthquakes': { icon: '🌍', color: '#dc2626', title: 'USGS Earthquakes' },
+  'maritime_boundaries': { icon: '🌊', color: '#06b6d4', title: "World's Maritime Boundaries" },
   'global_oil_gas_processing_plants': { icon: '🏭', color: '#8b5cf6', title: 'Global Oil and Gas - Processing Plants' },
   'global_oil_gas_lng': { icon: '⛽', color: '#06b6d4', title: 'Global Oil and Gas - LNG' },
   'global_oil_gas_power_plants': { icon: '⚡', color: '#f59e0b', title: 'Global Oil and Gas - Power Plants' },
@@ -6248,6 +6315,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [showWFIGSWildfires, setShowWFIGSWildfires] = useState<boolean>(false);
   const [showNASAFIRMS, setShowNASAFIRMS] = useState<boolean>(false);
   const [showShippingLanes, setShowShippingLanes] = useState<boolean>(false);
+  const [showMaritimeBoundaries, setShowMaritimeBoundaries] = useState<boolean>(false);
   const [firmsRegions, setFirmsRegions] = useState<Record<string, boolean>>({
     USA: false,
     Canada: false,
@@ -6266,6 +6334,7 @@ const MapView: React.FC<MapViewProps> = ({
   const wfigsWildfireMarkersRef = useRef<L.Marker[]>([]);
   const nasaFIRMSMarkersRef = useRef<L.Marker[]>([]);
   const shippingLanesLayerRef = useRef<L.GeoJSON | null>(null);
+  const maritimeBoundariesLayerRef = useRef<L.GeoJSON | null>(null);
   
   // Global Risk TOC layer states
   const [globalRiskLayerStates, setGlobalRiskLayerStates] = useState<Record<string, boolean>>({
@@ -6276,6 +6345,7 @@ const MapView: React.FC<MapViewProps> = ({
     climate_risks: false,
     spillovers_port_impact: false,
     shipping_lanes: false,
+    maritime_boundaries: false,
     global_oil_gas_processing_plants: false,
     global_oil_gas_lng: false,
     global_oil_gas_power_plants: false,
@@ -6300,6 +6370,7 @@ const MapView: React.FC<MapViewProps> = ({
     usgs_earthquakes: false,
     climate_risks: false,
     spillovers_port_impact: false,
+    maritime_boundaries: false,
     global_oil_gas_processing_plants: false,
     global_oil_gas_lng: false,
     global_oil_gas_power_plants: false,
@@ -6371,6 +6442,11 @@ const MapView: React.FC<MapViewProps> = ({
           countKey = 'shipping_lanes_count';
           summaryKey = 'shipping_lanes_summary';
           allKey = 'shipping_lanes_all';
+          break;
+        case 'maritime_boundaries':
+          countKey = 'maritime_boundaries_count';
+          summaryKey = 'maritime_boundaries_summary';
+          allKey = 'maritime_boundaries_all';
           break;
         case 'global_oil_gas_processing_plants':
           countKey = 'global_oil_gas_processing_plants_count';
@@ -6548,6 +6624,7 @@ const MapView: React.FC<MapViewProps> = ({
     'USFS': false,
     'USDA': false,
     'Alaska': false,
+    'NASA': false,
   });
   const [showThematicThemes, setShowThematicThemes] = useState<boolean>(false); // Toggle to show/hide thematic themes list
   const [showEventThemes, setShowEventThemes] = useState<boolean>(false); // Toggle to show/hide event themes list
@@ -6556,6 +6633,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [usfsSearchQuery, setUsfsSearchQuery] = useState<string>('');
   const [usdaSearchQuery, setUsdaSearchQuery] = useState<string>('');
   const [nationalmapSearchQuery, setNationalmapSearchQuery] = useState<string>('');
+  const [nasaSearchQuery, setNasaSearchQuery] = useState<string>('');
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
@@ -7891,6 +7969,291 @@ const MapView: React.FC<MapViewProps> = ({
     fetchAndDisplayShippingLanes();
   }, [showShippingLanes, isInitialized]);
 
+  // Handle Maritime Boundaries toggle (separate from Shipping Lanes)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showMaritimeBoundaries) {
+      // Clear maritime boundaries when toggled off
+      if (maritimeBoundariesLayerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(maritimeBoundariesLayerRef.current);
+        maritimeBoundariesLayerRef.current = null;
+      }
+      return;
+    }
+    
+    // Function to fetch and display maritime boundaries
+    const fetchAndDisplayMaritimeBoundaries = async () => {
+      try {
+        console.log('🌊 Fetching maritime boundaries...');
+        const { primary } = layerGroupsRef.current;
+        
+        // Remove old maritime boundaries layer if it exists
+        if (maritimeBoundariesLayerRef.current && mapInstanceRef.current) {
+          mapInstanceRef.current.removeLayer(maritimeBoundariesLayerRef.current);
+          maritimeBoundariesLayerRef.current = null;
+        }
+        
+        // Query ALL maritime boundaries globally (no spatial filter)
+        // For toggle view, we want to show the full global dataset
+        // Using polyline layer (layer 0) which works better for global queries
+        const baseServiceUrl = 'https://gis.ccom.unh.edu/server/rest/services/Global/Maritime_Boundaries_and_Exclusive_Economic_Zones_200NM/MapServer';
+        
+        const queryUrl = new URL(`${baseServiceUrl}/0/query`);
+        queryUrl.searchParams.set('f', 'json');
+        queryUrl.searchParams.set('where', '1=1'); // Get all features
+        queryUrl.searchParams.set('outFields', '*');
+        // NO geometry parameter - query all features globally
+        // Service will return up to MaxRecordCount (2000) features with full geometries
+        queryUrl.searchParams.set('outSR', '4326');
+        queryUrl.searchParams.set('returnGeometry', 'true');
+        // Note: Service has MaxRecordCount: 2000, so we'll get up to 2000 boundary lines globally
+        
+        console.log(`🔗 Maritime Boundaries Query URL: ${queryUrl.toString()}`);
+        
+        const response = await fetch(queryUrl.toString());
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`❌ Maritime boundaries API error: ${response.status} ${response.statusText}`);
+          console.error(`❌ Error response:`, errorText);
+          throw new Error(`Maritime boundaries API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          console.error(`❌ Maritime boundaries API error:`, JSON.stringify(data.error, null, 2));
+          console.error(`❌ Full API response:`, JSON.stringify(data, null, 2));
+          return;
+        }
+        
+        const finalData = data;
+        
+          console.log(`🌊 Maritime boundaries query returned ${finalData.features?.length || 0} features`);
+        
+        if (finalData && finalData.features && finalData.features.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          // Log geometry info for debugging
+          finalData.features.slice(0, 5).forEach((feature: any, idx: number) => {
+            if (feature.geometry && feature.geometry.paths) {
+              const path = feature.geometry.paths[0];
+              if (path && path.length > 0) {
+                const firstPoint = path[0];
+                const lastPoint = path[path.length - 1];
+                console.log(`🌊 Feature ${idx} polyline bounds: [${firstPoint[0]}, ${firstPoint[1]}] to [${lastPoint[0]}, ${lastPoint[1]}]`);
+                console.log(`🌊 Feature ${idx} name: ${feature.attributes?.LINE_NAME || 'Unknown'}`);
+              }
+            }
+          });
+          
+          // Convert ESRI geometry to GeoJSON
+          // Service uses WGS84 (4326) natively, no conversion needed
+          // Filter out features with null geometry, but preserve all valid features
+          // Layer 0 is polylines, so we expect paths
+          const geoJsonFeatures = finalData.features
+            .filter((feature: any) => feature.geometry && feature.geometry.paths)
+            .map((feature: any) => {
+            const geom = feature.geometry;
+            let geoJsonGeom: any = null;
+            
+            if (geom.paths) {
+              // Polyline - coordinates are already in WGS84
+              // Layer 0 is polylines, so handle multiple paths (could be MultiLineString)
+              if (geom.paths.length === 1) {
+                // Single LineString
+                geoJsonGeom = {
+                  type: 'LineString',
+                  coordinates: geom.paths[0].map((point: number[]) => {
+                    const lon = point[0];
+                    const lat = point[1];
+                    // Don't filter - preserve all coordinates
+                    return [lon, lat];
+                  })
+                };
+              } else {
+                // Multiple paths = MultiLineString
+                geoJsonGeom = {
+                  type: 'MultiLineString',
+                  coordinates: geom.paths.map((path: number[][]) =>
+                    path.map((point: number[]) => {
+                      const lon = point[0];
+                      const lat = point[1];
+                      // Don't filter - preserve all coordinates
+                      return [lon, lat];
+                    })
+                  )
+                };
+              }
+            } else if (geom.rings) {
+              // Polygon fallback (shouldn't happen with layer 0, but handle it)
+              geoJsonGeom = {
+                type: 'Polygon',
+                coordinates: geom.rings.map((ring: number[][]) => 
+                  ring.map((point: number[]) => {
+                    const lon = point[0];
+                    const lat = point[1];
+                    return [lon, lat];
+                  })
+                )
+              };
+            }
+            
+            return {
+              type: 'Feature',
+              geometry: geoJsonGeom,
+              properties: feature.attributes || {}
+            };
+          })
+          .filter((feature: any) => feature.geometry !== null); // Final filter for valid geometries
+          
+          const geoJsonData = {
+            type: 'FeatureCollection',
+            features: geoJsonFeatures
+          };
+          
+          // Helper function to generate a unique color from a string
+          const stringToColor = (str: string): string => {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+              hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            // Generate RGB values with good saturation and brightness
+            const hue = Math.abs(hash) % 360;
+            const saturation = 60 + (Math.abs(hash) % 20); // 60-80% saturation
+            const lightness = 45 + (Math.abs(hash) % 15); // 45-60% lightness
+            
+            // Convert HSL to RGB
+            const h = hue / 360;
+            const s = saturation / 100;
+            const l = lightness / 100;
+            
+            let r, g, b;
+            if (s === 0) {
+              r = g = b = l;
+            } else {
+              const hue2rgb = (p: number, q: number, t: number) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+              };
+              
+              const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+              const p = 2 * l - q;
+              r = hue2rgb(p, q, h + 1/3);
+              g = hue2rgb(p, q, h);
+              b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            const toHex = (x: number) => {
+              const hex = Math.round(x * 255).toString(16);
+              return hex.length === 1 ? '0' + hex : hex;
+            };
+            
+            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+          };
+          
+          // Create GeoJSON layer with custom styling
+          const maritimeBoundariesLayer = L.geoJSON(geoJsonData, {
+            style: (feature) => {
+              // Use LINE_NAME field for unique color coding (polyline layer)
+              const lineName = feature?.properties?.LINE_NAME || feature?.properties?.line_name || 
+                              feature?.properties?.GEONAME || feature?.properties?.geoname || 
+                              feature?.properties?.Name || feature?.properties?.name || 'Unknown';
+              
+              // Generate unique color based on name
+              const color = stringToColor(lineName);
+              
+              // Polylines don't have fill, so adjust styling
+              const weight = 2;
+              const opacity = 0.8;
+              
+              return {
+                color: color,
+                weight: weight,
+                opacity: opacity
+              };
+            },
+            onEachFeature: (feature, layer) => {
+              const lineName = feature?.properties?.LINE_NAME || feature?.properties?.line_name || 'Unknown';
+              const lineType = feature?.properties?.LINE_TYPE || feature?.properties?.line_type || '';
+              const territory1 = feature?.properties?.TERRITORY1 || feature?.properties?.territory1 || '';
+              const sovereign1 = feature?.properties?.SOVEREIGN1 || feature?.properties?.sovereign1 || '';
+              const territory2 = feature?.properties?.TERRITORY2 || feature?.properties?.territory2 || '';
+              const sovereign2 = feature?.properties?.SOVEREIGN2 || feature?.properties?.sovereign2 || '';
+              const lengthKm = feature?.properties?.LENGTH_KM || feature?.properties?.length_km || '';
+              
+              const popupContent = `
+                <div style="min-width: 200px; max-width: 300px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🌊 Maritime Boundary Line
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280;">
+                    <div><strong>Name:</strong> ${lineName}</div>
+                    ${lineType ? `<div><strong>Type:</strong> ${lineType}</div>` : ''}
+                    ${territory1 ? `<div><strong>Territory 1:</strong> ${territory1}</div>` : ''}
+                    ${sovereign1 ? `<div><strong>Sovereign 1:</strong> ${sovereign1}</div>` : ''}
+                    ${territory2 ? `<div><strong>Territory 2:</strong> ${territory2}</div>` : ''}
+                    ${sovereign2 ? `<div><strong>Sovereign 2:</strong> ${sovereign2}</div>` : ''}
+                    ${lengthKm ? `<div><strong>Length:</strong> ${lengthKm.toFixed(2)} km</div>` : ''}
+                  </div>
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
+                    VLIZ Maritime Boundaries Geodatabase (UNH)
+                  </div>
+                </div>
+              `;
+              layer.bindPopup(popupContent, { maxWidth: 300 });
+            }
+          });
+          
+          maritimeBoundariesLayer.addTo(primary);
+          (maritimeBoundariesLayer as any).__layerType = 'maritime_boundaries_toggle';
+          (maritimeBoundariesLayer as any).__layerTitle = "World's Maritime Boundaries";
+          maritimeBoundariesLayerRef.current = maritimeBoundariesLayer;
+          
+          console.log(`🌊 Loaded Maritime Boundaries: ${geoJsonFeatures.length} features`);
+          
+          // Fit map to bounds if we have features
+          if (geoJsonFeatures.length > 0) {
+            try {
+              const allBounds = new L.LatLngBounds([]);
+              geoJsonFeatures.forEach((feature: any) => {
+                if (feature.geometry && feature.geometry.coordinates) {
+                  if (feature.geometry.type === 'Polygon') {
+                    feature.geometry.coordinates[0].forEach((coord: number[]) => {
+                      allBounds.extend([coord[1], coord[0]]);
+                    });
+                  } else if (feature.geometry.type === 'LineString') {
+                    feature.geometry.coordinates.forEach((coord: number[]) => {
+                      allBounds.extend([coord[1], coord[0]]);
+                    });
+                  }
+                }
+              });
+              if (!allBounds.isValid() || allBounds.getNorth() === allBounds.getSouth()) {
+                // Don't fit if bounds are invalid
+                console.log('🌊 Maritime boundaries bounds invalid, skipping fit');
+              }
+            } catch (boundsError) {
+              console.warn('🌊 Error calculating maritime boundaries bounds:', boundsError);
+            }
+          }
+        } else {
+          console.warn(`🌊 Maritime boundaries query returned no features or invalid data`);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching maritime boundaries:', error);
+      }
+    };
+    
+    // Fetch maritime boundaries immediately when enabled
+    fetchAndDisplayMaritimeBoundaries();
+  }, [showMaritimeBoundaries, isInitialized]);
+
   // Handle NASA FIRMS Wildfire toggle
   useEffect(() => {
     if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
@@ -8066,7 +8429,8 @@ const MapView: React.FC<MapViewProps> = ({
               layer.__layerType !== 'opensky_flights' &&
               layer.__layerType !== 'wfigs_wildfires_toggle' &&
               layer.__layerType !== 'nasa_firms_toggle' &&
-              layer.__layerType !== 'shipping_lanes_toggle') {
+              layer.__layerType !== 'shipping_lanes_toggle' &&
+              layer.__layerType !== 'maritime_boundaries_toggle') {
             primary.removeLayer(layer);
           }
         }
@@ -16060,6 +16424,9 @@ const MapView: React.FC<MapViewProps> = ({
       renderGlobalOilAndGasFeatures('global_oil_gas_pipelines', '🔧', '#dc2626', 'Pipelines');
       renderGlobalOilAndGasFeatures('global_oil_gas_railways', '🚂', '#8b5cf6', 'Railways');
       renderGlobalOilAndGasFeatures('global_oil_gas_ports', '⚓', '#06b6d4', 'Ports');
+      
+      // Render Maritime Boundaries features
+      renderGlobalOilAndGasFeatures('maritime_boundaries', '🌊', '#06b6d4', "World's Maritime Boundaries");
       
       // Draw OpenSky Flight Tracker aircraft as markers on the map
       if (enrichments.opensky_flights_all && Array.isArray(enrichments.opensky_flights_all)) {
@@ -46093,6 +46460,77 @@ const MapView: React.FC<MapViewProps> = ({
                         )}
                       </div>
                       
+                      {/* NASA basemaps */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'NASA': !prev['NASA'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#7c3aed' }}
+                        >
+                          <span>NASA</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['NASA'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['NASA'] && (
+                          <div className="pb-1 bg-white">
+                            {/* Search bar for NASA */}
+                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Search NASA basemaps..."
+                                  value={nasaSearchQuery}
+                                  onChange={(e) => setNasaSearchQuery(e.target.value)}
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  style={{ color: '#000000' }}
+                                />
+                                <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+                                {nasaSearchQuery && (
+                                  <button
+                                    onClick={() => setNasaSearchQuery('')}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                              {nasaSearchQuery && (
+                                <div className="mt-1 text-xs text-gray-500">
+                                  Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
+                                    key.startsWith('nasa_') && 
+                                    (BASEMAP_CONFIGS[key].name.toLowerCase().includes(nasaSearchQuery.toLowerCase()) ||
+                                     key.toLowerCase().includes(nasaSearchQuery.toLowerCase()))
+                                  ).length} of {Object.entries(BASEMAP_CONFIGS).filter(([key]) => key.startsWith('nasa_')).length} basemaps
+                                </div>
+                              )}
+                            </div>
+                            {Object.entries(BASEMAP_CONFIGS)
+                              .filter(([key]) => {
+                                if (!key.startsWith('nasa_')) return false;
+                                if (!nasaSearchQuery) return true;
+                                const searchLower = nasaSearchQuery.toLowerCase();
+                                return BASEMAP_CONFIGS[key].name.toLowerCase().includes(searchLower) ||
+                                       key.toLowerCase().includes(searchLower);
+                              })
+                              .map(([key, config]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => {
+                                    // Toggle: if already selected, deselect it; otherwise select it
+                                    setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
+                                  }}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {config.name}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
+                      
                       {/* NOAA basemaps */}
                       <div className="border-b border-gray-200">
                         <button
@@ -46545,9 +46983,12 @@ const MapView: React.FC<MapViewProps> = ({
                     )}
                   </div>
                   
-                  {/* Shipping Lanes Toggle */}
+                  {/* Global Views Grouping */}
                   <div className="px-3 border-t border-gray-200 pt-3 pb-2">
-                    <label className="flex items-center space-x-2 cursor-pointer">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Global Views</h4>
+                    
+                    {/* Shipping Lanes Toggle */}
+                    <label className="flex items-center space-x-2 cursor-pointer mb-2">
                       <input
                         type="checkbox"
                         checked={showShippingLanes}
@@ -46558,8 +46999,24 @@ const MapView: React.FC<MapViewProps> = ({
                         🚢 Global Shipping Lanes
                       </span>
                     </label>
-                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                    <p className="text-xs text-gray-500 mt-1 ml-6 mb-3">
                       Shows major, medium, and minor global shipping routes
+                    </p>
+                    
+                    {/* Maritime Boundaries Toggle */}
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showMaritimeBoundaries}
+                        onChange={(e) => setShowMaritimeBoundaries(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-black">
+                        🌊 Maritime Boundaries
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1 ml-6">
+                      Shows EEZ, Territorial Seas, Contiguous Zones, and other maritime boundaries
                     </p>
                   </div>
                 </div>

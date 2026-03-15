@@ -2214,6 +2214,54 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://services.arcgis.com/QVENGdaPbd4LUkLV/arcgis/rest/services/Bighorn_Sheep/FeatureServer/0"
         },
+        {
+          name: "NASA MODIS",
+          description: "NASA Moderate Resolution Imaging Spectroradiometer (MODIS) imagery service providing global satellite imagery",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://modis.arcgis.com/arcgis/rest/services/MODIS/ImageServer"
+        },
+        {
+          name: "NASA VIIRS",
+          description: "NASA Visible Infrared Imaging Radiometer Suite (VIIRS) imagery service providing global satellite imagery",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://modis.arcgis.com/arcgis/rest/services/VIIRS/ImageServer"
+        },
+        {
+          name: "NASA PACE OCI L3M AVW",
+          description: "NASA PACE (Plankton, Aerosol, Cloud, ocean Ecosystem) Ocean Color Instrument (OCI) Level 3 Monthly Aerosol Volume Weight (AVW) imagery. Global coverage with time series data from 2024-2026",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/PACE_OCI_L3M_AVW/ImageServer"
+        },
+        {
+          name: "NASA PACE OCI L3M AOD",
+          description: "NASA PACE (Plankton, Aerosol, Cloud, ocean Ecosystem) Ocean Color Instrument (OCI) Level 3 Monthly Aerosol Optical Depth (AOD) imagery. Global coverage with time series data from 2024-2026",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/PACE_OCI_L3M_AOD/ImageServer"
+        },
+        {
+          name: "NASA GPM 3IMERGHHE",
+          description: "NASA Global Precipitation Measurement (GPM) Integrated Multi-satellitE Retrievals for GPM (IMERG) Half-Hourly Enhanced (HHE) precipitation data. Global coverage with high temporal resolution",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/GPM_3IMERGHHE/ImageServer"
+        },
+        {
+          name: "NASA TROPOMI SO2 Daily",
+          description: "NASA TROPOMI (TROPOspheric Monitoring Instrument) Sulfur Dioxide (SO2) Daily imagery. Global coverage providing daily SO2 measurements from satellite observations",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/GESDISC/TROPOMI_SO2_DAILY/ImageServer"
+        },
         ]
     },
     {
@@ -10165,6 +10213,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://services6.arcgis.com/62zavqsrcK71xG8O/arcgis/rest/services/Global_Oil_and_Gas_Features/FeatureServer"
+        },
+        {
+          name: "Maritime Boundaries and Exclusive Economic Zones",
+          description: "Maritime Boundaries and Exclusive Economic Zones from the VLIZ Maritime Boundaries Geodatabase (UNH). Boundaries have been built using information about treaties between coastal countries. When treaties are not available, median lines have been calculated. An exclusive economic zone (EEZ) is a seazone extending from a state's coast or baseline over which the state has special rights over the exploration and use of marine resources. Generally a state's EEZ extends 200 nautical miles out from its coast, except where resulting points would be closer to another country. This dataset also contains delimitation of overlapping claims and joint regimes. Includes Exclusive Economic Zones (200NM), Territorial Seas (12NM), Contiguous Zones (24NM), Internal Waters, and Archipelagic Waters. Supports point-in-polygon queries for polygon layers and proximity queries up to 1000 miles.",
+          url: "https://gis.ccom.unh.edu/server/rest/services/Global/Maritime_Boundaries_and_Exclusive_Economic_Zones_200NM/MapServer/1",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free"
         },
         {
           name: "USGS Earthquake API",

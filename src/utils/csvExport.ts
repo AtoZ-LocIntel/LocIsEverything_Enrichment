@@ -553,6 +553,7 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
   exportGlobalOilAndGasLayer('global_oil_gas_pipelines', 'Pipelines', 'Global Oil and Gas');
   exportGlobalOilAndGasLayer('global_oil_gas_railways', 'Railways', 'Global Oil and Gas');
   exportGlobalOilAndGasLayer('global_oil_gas_ports', 'Ports', 'Global Oil and Gas');
+  exportGlobalOilAndGasLayer('maritime_boundaries', "World's Maritime Boundaries", 'Maritime Boundaries');
 
   // Add USGS Wildfire data
   if (enrichments.poi_wildfires_count !== undefined) {
