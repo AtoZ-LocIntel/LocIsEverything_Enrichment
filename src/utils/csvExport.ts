@@ -372,6 +372,71 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
 
 
   // Add USGS Earthquakes data
+  if (enrichments.acled_all && Array.isArray(enrichments.acled_all)) {
+    enrichments.acled_all.forEach((event: any) => {
+      // Extract coordinates
+      let lat = location.lat;
+      let lon = location.lon;
+      if (event.geometry && event.geometry.y !== undefined && event.geometry.x !== undefined) {
+        lat = event.geometry.y;
+        lon = event.geometry.x;
+      } else if (event.latitude !== null && event.longitude !== null) {
+        lat = event.latitude;
+        lon = event.longitude;
+      } else if (event.centroid_latitude && event.centroid_longitude) {
+        lat = event.centroid_latitude;
+        lon = event.centroid_longitude;
+      }
+      
+      // Build event type description
+      const eventTypes: string[] = [];
+      if (event.battles > 0) eventTypes.push('Battles');
+      if (event.explosions_remote_violence > 0) eventTypes.push('Explosions/Remote Violence');
+      if (event.protests > 0) eventTypes.push('Protests');
+      if (event.riots > 0) eventTypes.push('Riots');
+      if (event.strategic_developments > 0) eventTypes.push('Strategic Developments');
+      if (event.violence_against_civilians > 0) eventTypes.push('Violence Against Civilians');
+      const eventTypeStr = eventTypes.length > 0 ? eventTypes.join(', ') : 'Unknown';
+      
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'ACLED',
+        (location.confidence || 'N/A').toString(),
+        'ACLED',
+        eventTypeStr,
+        lat.toString(),
+        lon.toString(),
+        (event.distance_miles || enrichments.acled_proximity_distance || 0).toFixed(2),
+        'ACLED - Armed Conflict Location & Event Data',
+        `Country: ${event.country || 'Unknown'}, Admin1: ${event.admin1 || 'N/A'}, Event Month: ${event.event_month || 'N/A'}, Fatalities: ${event.fatalities || 0}, Violent Actors: ${event.violent_actors || 0}`,
+        enrichments.acled_summary || '',
+        '',
+        'ACLED'
+      ]);
+    });
+  } else if (enrichments.acled_count !== undefined) {
+    // Fallback to summary row if no individual events
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'ACLED',
+      (location.confidence || 'N/A').toString(),
+      'ACLED',
+      enrichments.acled_summary || 'No ACLED events found',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.acled_proximity_distance || 0).toFixed(2),
+      'ACLED - Armed Conflict Location & Event Data',
+      enrichments.acled_summary || '',
+      '',
+      '',
+      'ACLED'
+    ]);
+  }
+  
   if (enrichments.usgs_earthquakes_all && Array.isArray(enrichments.usgs_earthquakes_all)) {
     enrichments.usgs_earthquakes_all.forEach((earthquake: any) => {
       const timeStr = earthquake.time 

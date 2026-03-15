@@ -10279,6 +10279,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services9.arcgis.com/weJ1QsnbMYJlCHdG/ArcGIS/rest/services/PortWatch_ports/FeatureServer/1"
         },
         {
+          name: "ACLED - Armed Conflict Location & Event Data",
+          description: "ACLED - Armed Conflict Location & Event Data - Global conflict and event data including battles, explosions/remote violence, protests, riots, strategic developments, and violence against civilians. Includes fatality counts, violent actor counts, event dates, and geographic information (country, admin1). Supports proximity queries up to 1000 miles.",
+          coverage: "Global",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services8.arcgis.com/xu983xJB6fIDCjpX/ArcGIS/rest/services/ACLED/FeatureServer/0"
+        },
+        {
           name: "Global Oil and Gas Features",
           description: "Global Oil and Gas Features - Comprehensive global oil and gas infrastructure database including processing plants, LNG facilities, power plants, storage facilities, stations, refineries, basins, fields, mines, wells, platforms and well pads, underground storage, pipelines, railways, and ports. Supports point-in-polygon queries for polygon layers and proximity queries up to 1000 miles for all layers. Contains 16 feature layers covering the complete oil and gas supply chain.",
           coverage: "Global",

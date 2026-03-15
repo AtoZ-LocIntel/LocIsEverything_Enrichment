@@ -420,10 +420,12 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
   usgs_wetlands: {
     type: 'wms',
     name: 'USGS/FWS Wetlands',
-    attribution: 'USGS/FWS National Wetlands Inventory',
-    wmsUrl: 'https://fwspublicservices.wim.usgs.gov/wetlandsmapservice/services/Wetlands/MapServer/WMSServer',
-    wmsLayers: '1', // Wetlands layer
+    attribution: 'USFWS NWI',
+    wmsUrl: 'https://www.fws.gov/wetlands/arcgis/services/Wetlands/MapServer/WMSServer',
+    wmsLayers: '0', // Layer 0: Wetlands
     wmsFormat: 'image/png',
+    wmsVersion: '1.1.1', // Try 1.1.1 instead of 1.3.0 - some ArcGIS WMS services prefer this
+    wmsTransparent: true, // Ensure transparency is enabled
   },
   // BLM PLSS (Public Land Survey System) WMS
   blm_plss: {
@@ -6553,6 +6555,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedThematicBasemap, setSelectedThematicBasemap] = useState<string | null>(null); // Thematic basemap from other sections (WMS, tile, etc.) - optional overlay
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
   const [showZoomWarningPopup, setShowZoomWarningPopup] = useState<boolean>(false); // Show warning when thematic basemap is selected at low zoom
+  const [showEventLayerZoomWarning, setShowEventLayerZoomWarning] = useState<boolean>(false); // Show warning when event layers are active at low zoom
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
   const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
@@ -6560,6 +6563,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [showNASAFIRMS, setShowNASAFIRMS] = useState<boolean>(false);
   const [showShippingLanes, setShowShippingLanes] = useState<boolean>(false);
   const [showMaritimeBoundaries, setShowMaritimeBoundaries] = useState<boolean>(false);
+  const [showACLED, setShowACLED] = useState<boolean>(false);
   const [firmsRegions, setFirmsRegions] = useState<Record<string, boolean>>({
     USA: false,
     Canada: false,
@@ -6579,9 +6583,11 @@ const MapView: React.FC<MapViewProps> = ({
   const nasaFIRMSMarkersRef = useRef<L.Marker[]>([]);
   const shippingLanesLayerRef = useRef<L.GeoJSON | null>(null);
   const maritimeBoundariesLayerRef = useRef<L.GeoJSON | null>(null);
+  const acledLayerRef = useRef<L.LayerGroup | null>(null);
   
   // Global Risk TOC layer states
   const [globalRiskLayerStates, setGlobalRiskLayerStates] = useState<Record<string, boolean>>({
+    acled: false,
     portwatch_disruptions: false,
     portwatch_chokepoints: false,
     portwatch_ports: false,
@@ -6652,6 +6658,11 @@ const MapView: React.FC<MapViewProps> = ({
       let allKey = '';
       
       switch (layerId) {
+        case 'acled':
+          countKey = 'acled_count';
+          summaryKey = 'acled_summary';
+          allKey = 'acled_all';
+          break;
         case 'portwatch_disruptions':
           countKey = 'portwatch_disruptions_count';
           summaryKey = 'portwatch_disruptions_summary';
@@ -7480,7 +7491,27 @@ const MapView: React.FC<MapViewProps> = ({
                 wmsOptions.rasterFunction = thematicConfig.wmsRasterFunction;
               }
               
+              // Debug logging for wetlands
+              if (selectedThematicBasemap === 'usgs_wetlands') {
+                console.log('🌿 [WETLANDS DEBUG] Creating WMS layer:', {
+                  url: thematicConfig.wmsUrl,
+                  options: wmsOptions,
+                  config: thematicConfig
+                });
+              }
+              
               overlayLayer = L.tileLayer.wms(thematicConfig.wmsUrl!, wmsOptions);
+              
+              // Add error handlers for debugging
+              if (selectedThematicBasemap === 'usgs_wetlands') {
+                overlayLayer.on('tileerror', (error: any, tile: any) => {
+                  console.error('🌿 [WETLANDS ERROR] Tile error:', error, tile);
+                });
+                overlayLayer.on('tileload', () => {
+                  console.log('🌿 [WETLANDS] Tile loaded successfully');
+                });
+              }
+              
               overlayLayer.addTo(map);
             }
             
@@ -8508,6 +8539,322 @@ const MapView: React.FC<MapViewProps> = ({
     fetchAndDisplayMaritimeBoundaries();
   }, [showMaritimeBoundaries, isInitialized]);
 
+  // Handle ACLED toggle (Global Views)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+    
+    if (!showACLED) {
+      // Clear ACLED when toggled off
+      if (acledLayerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(acledLayerRef.current);
+        acledLayerRef.current = null;
+      }
+      return;
+    }
+    
+    // Function to fetch and display ACLED events globally
+    const fetchAndDisplayACLED = async () => {
+      try {
+        console.log('⚔️ Fetching ACLED events for toggle view...');
+        if (!layerGroupsRef.current) {
+          console.warn('⚔️ Layer groups not initialized');
+          return;
+        }
+        const { primary } = layerGroupsRef.current;
+        
+        // Remove old ACLED layer if it exists
+        if (acledLayerRef.current && mapInstanceRef.current) {
+          mapInstanceRef.current.removeLayer(acledLayerRef.current);
+          acledLayerRef.current = null;
+        }
+        
+        // Query ACLED events globally with pagination to get all records from last 2 years
+        const baseServiceUrl = 'https://services8.arcgis.com/xu983xJB6fIDCjpX/ArcGIS/rest/services/ACLED/FeatureServer/0';
+        const maxRecordCount = 1000; // Service max per request
+        const allFeatures: any[] = [];
+        let resultOffset = 0;
+        let hasMore = true;
+        
+        // Calculate date 6 months ago for filtering
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        sixMonthsAgo.setHours(0, 0, 0, 0); // Set to start of day
+        const sixMonthsAgoMs = sixMonthsAgo.getTime();
+        
+        // Try server-side filtering first, fall back to client-side if it fails
+        let useServerSideFilter = true;
+        let whereClause = '1=1'; // Default: get all records
+        
+        // Try different date filter formats for server-side filtering
+        // Format 1: DATE function with string
+        const year = sixMonthsAgo.getFullYear();
+        const month = String(sixMonthsAgo.getMonth() + 1).padStart(2, '0');
+        const day = String(sixMonthsAgo.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        
+        // Try DATE function format first
+        whereClause = `event_month >= DATE '${dateString}'`;
+        
+        // Fetch records with pagination
+        while (hasMore) {
+          const queryUrl = new URL(`${baseServiceUrl}/query`);
+          queryUrl.searchParams.set('f', 'json');
+          queryUrl.searchParams.set('where', whereClause);
+          queryUrl.searchParams.set('outFields', '*');
+          queryUrl.searchParams.set('outSR', '4326');
+          queryUrl.searchParams.set('returnGeometry', 'true');
+          queryUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+          queryUrl.searchParams.set('resultOffset', resultOffset.toString());
+          
+          console.log(`🔗 ACLED Query URL (offset ${resultOffset}): ${queryUrl.toString()}`);
+          
+          const response = await fetch(queryUrl.toString());
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`❌ ACLED API error: ${response.status} ${response.statusText}`);
+            console.error(`❌ Error response:`, errorText);
+            
+            // If server-side filter fails, fall back to client-side filtering
+            if (useServerSideFilter && resultOffset === 0) {
+              console.warn(`⚠️ ACLED: Server-side date filter failed, falling back to client-side filtering`);
+              useServerSideFilter = false;
+              whereClause = '1=1'; // Get all records, filter client-side
+              resultOffset = 0; // Reset offset
+              allFeatures.length = 0; // Clear any partial results
+              continue; // Retry with client-side filtering
+            } else {
+              throw new Error(`ACLED API error: ${response.status} ${response.statusText}`);
+            }
+          }
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            // If server-side filter fails, fall back to client-side filtering
+            if (useServerSideFilter && resultOffset === 0) {
+              console.warn(`⚠️ ACLED: Server-side date filter failed (${data.error.message}), falling back to client-side filtering`);
+              useServerSideFilter = false;
+              whereClause = '1=1'; // Get all records, filter client-side
+              resultOffset = 0; // Reset offset
+              allFeatures.length = 0; // Clear any partial results
+              continue; // Retry with client-side filtering
+            } else {
+              console.error(`❌ ACLED API error:`, JSON.stringify(data.error, null, 2));
+              break;
+            }
+          }
+          
+          const features = data.features || [];
+          
+          // If using client-side filtering, filter by date here
+          if (!useServerSideFilter) {
+            const filteredFeatures = features.filter((feature: any) => {
+              const attributes = feature.attributes || {};
+              const eventMonth = attributes.event_month;
+              
+              // event_month is stored as milliseconds since epoch in ArcGIS
+              if (eventMonth && typeof eventMonth === 'number') {
+                return eventMonth >= sixMonthsAgoMs;
+              }
+              
+              // If event_month is a date string, try to parse it
+              if (eventMonth && typeof eventMonth === 'string') {
+                const eventDate = new Date(eventMonth);
+                if (!isNaN(eventDate.getTime())) {
+                  return eventDate.getTime() >= sixMonthsAgoMs;
+                }
+              }
+              
+              // If we can't determine the date, exclude it for safety
+              return false;
+            });
+            
+            allFeatures.push(...filteredFeatures);
+            console.log(`⚔️ ACLED fetched ${features.length} events, ${filteredFeatures.length} within last 6 months (total filtered: ${allFeatures.length})`);
+          } else {
+            allFeatures.push(...features);
+            console.log(`⚔️ ACLED fetched ${features.length} events (total: ${allFeatures.length})`);
+          }
+          
+          // Check if there are more records
+          hasMore = features.length === maxRecordCount || data.exceededTransferLimit === true;
+          resultOffset += features.length;
+          
+          // Safety limit to prevent infinite loops
+          if (resultOffset > 100000) {
+            console.warn(`⚠️ ACLED: Stopping pagination at 100k records for safety`);
+            hasMore = false;
+          }
+          
+          // Small delay between requests
+          if (hasMore) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+        
+        console.log(`⚔️ ACLED total events fetched (last 6 months): ${allFeatures.length}`);
+        
+        if (allFeatures.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
+          const layerGroup = L.layerGroup();
+          
+          allFeatures.forEach((feature: any) => {
+            const attributes = feature.attributes || {};
+            const geometry = feature.geometry;
+            
+            if (!geometry || geometry.x === undefined || geometry.y === undefined) {
+              return;
+            }
+            
+            const lat = geometry.y;
+            const lon = geometry.x;
+            
+            // Determine color and icon based on event type fields
+            let eventColor = '#dc2626'; // Default red for violence
+            let eventIcon = '⚔️';
+            
+            // Check which event type fields are non-zero
+            if (attributes.protests > 0) {
+              eventColor = '#f59e0b'; // Orange for protests
+              eventIcon = '📢';
+            } else if (attributes.riots > 0) {
+              eventColor = '#ea580c'; // Orange-red for riots
+              eventIcon = '🔥';
+            } else if (attributes.strategic_developments > 0) {
+              eventColor = '#3b82f6'; // Blue for strategic developments
+              eventIcon = '📋';
+            } else if (attributes.battles > 0) {
+              eventColor = '#dc2626'; // Red for battles
+              eventIcon = '🎯';
+            } else if (attributes.explosions_remote_violence > 0) {
+              eventColor = '#ef4444'; // Bright red for explosions
+              eventIcon = '💥';
+            } else if (attributes.violence_against_civilians > 0) {
+              eventColor = '#991b1b'; // Dark red for violence against civilians
+              eventIcon = '⚔️';
+            }
+            
+            const iconHtml = `<div style="
+              width: 12px;
+              height: 12px;
+              background-color: ${eventColor};
+              border: 1px solid white;
+              border-radius: 50%;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 8px;
+            ">${eventIcon}</div>`;
+            
+            const marker = L.marker([lat, lon], {
+              icon: L.divIcon({
+                className: 'custom-marker',
+                html: iconHtml,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+              })
+            });
+            
+            // Build event type description from fields
+            const eventTypes: string[] = [];
+            if (attributes.battles > 0) eventTypes.push('Battles');
+            if (attributes.explosions_remote_violence > 0) eventTypes.push('Explosions/Remote Violence');
+            if (attributes.protests > 0) eventTypes.push('Protests');
+            if (attributes.riots > 0) eventTypes.push('Riots');
+            if (attributes.strategic_developments > 0) eventTypes.push('Strategic Developments');
+            if (attributes.violence_against_civilians > 0) eventTypes.push('Violence Against Civilians');
+            const eventTypeStr = eventTypes.length > 0 ? eventTypes.join(', ') : 'Unknown';
+            
+            // Build popup with all attributes
+            const formatAttribute = (key: string, value: any): string => {
+              if (value === null || value === undefined || value === '') return '';
+              if (typeof value === 'number') {
+                if (value === 0 && (key.includes('battles') || key.includes('protests') || key.includes('riots') || key.includes('explosions') || key.includes('strategic') || key.includes('violence'))) {
+                  return ''; // Skip zero values for event type fields
+                }
+                return value.toString();
+              }
+              return String(value);
+            };
+            
+            let popupContent = `
+              <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                  ${eventIcon} ${eventTypeStr}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+            `;
+            
+            // Add all attributes
+            Object.entries(attributes).forEach(([key, value]) => {
+              // Skip ObjectId as it's not user-friendly
+              if (key === 'ObjectId' || key === 'objectId') return;
+              
+              const formattedValue = formatAttribute(key, value);
+              if (formattedValue === '') return;
+              
+              // Format field names for display
+              const displayKey = key
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+              
+              // Special formatting for certain fields
+              if (key === 'event_month') {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Event Month:</strong> ${formattedValue}</div>`;
+              } else if (key === 'country') {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Country:</strong> ${formattedValue}</div>`;
+              } else if (key === 'admin1') {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>Admin 1:</strong> ${formattedValue}</div>`;
+              } else if (key === 'fatalities') {
+                if (Number(value) > 0) {
+                  popupContent += `<div style="margin-bottom: 4px; color: #dc2626; font-weight: 600;"><strong>Fatalities:</strong> ${formattedValue}</div>`;
+                }
+              } else if (key === 'violent_actors') {
+                if (Number(value) > 0) {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Violent Actors:</strong> ${formattedValue}</div>`;
+                }
+              } else if (key.includes('battles') || key.includes('protests') || key.includes('riots') || key.includes('explosions') || key.includes('strategic') || key.includes('violence')) {
+                // Skip event type count fields (already shown in title)
+                return;
+              } else {
+                popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${formattedValue}</div>`;
+              }
+            });
+            
+            // Add geometry info if available
+            if (attributes.centroid_latitude && attributes.centroid_longitude) {
+              popupContent += `<div style="margin-bottom: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af;"><strong>Centroid:</strong> ${attributes.centroid_latitude.toFixed(4)}, ${attributes.centroid_longitude.toFixed(4)}</div>`;
+            }
+            
+            popupContent += `
+                </div>
+              </div>
+            `;
+            
+            marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            layerGroup.addLayer(marker);
+          });
+          
+          layerGroup.addTo(mapInstanceRef.current);
+          (layerGroup as any).__layerType = 'acled_toggle';
+          (layerGroup as any).__layerTitle = 'Armed Conflict Location & Event Data';
+          acledLayerRef.current = layerGroup;
+          
+          console.log(`⚔️ Loaded ACLED: ${allFeatures.length} events`);
+        } else {
+          console.warn(`⚔️ ACLED query returned no events or invalid data`);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching ACLED events:', error);
+      }
+    };
+    
+    // Fetch ACLED immediately when enabled
+    fetchAndDisplayACLED();
+  }, [showACLED, isInitialized]);
+
   // Handle NASA FIRMS Wildfire toggle
   useEffect(() => {
     if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
@@ -9126,15 +9473,44 @@ const MapView: React.FC<MapViewProps> = ({
               wmsOptions.rasterFunction = thematicConfig.wmsRasterFunction;
             }
             
+            // Debug logging for wetlands
+            if (selectedThematicBasemap === 'usgs_wetlands') {
+              console.log('🌿 [WETLANDS DEBUG] Creating WMS layer:', {
+                url: thematicConfig.wmsUrl,
+                options: wmsOptions,
+                config: thematicConfig
+              });
+            }
+            
             newOverlayLayer = L.tileLayer.wms(thematicConfig.wmsUrl!, wmsOptions);
-            newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
-              if (tile && tile.src) {
-                const img = tile as HTMLImageElement;
-                if (img.naturalWidth === 0 && img.naturalHeight === 0) {
-                  return;
+            
+            // Add error handlers for debugging
+            if (selectedThematicBasemap === 'usgs_wetlands') {
+              newOverlayLayer.on('tileerror', (error: any, tile: any) => {
+                if (tile && tile.src) {
+                  console.error('🌿 [WETLANDS ERROR] Failed tile URL:', tile.src);
+                  console.error('🌿 [WETLANDS ERROR] Error details:', error);
+                  console.error('🌿 [WETLANDS ERROR] Tile coords:', tile.coords);
+                } else {
+                  console.error('🌿 [WETLANDS ERROR] Tile error (no src):', error, tile);
                 }
-              }
-            });
+              });
+              newOverlayLayer.on('tileload', (event: any) => {
+                if (event.tile && event.tile.src) {
+                  console.log('🌿 [WETLANDS] Tile loaded:', event.tile.src);
+                }
+              });
+            } else {
+              newOverlayLayer.on('tileerror', (_error: any, tile: any) => {
+                if (tile && tile.src) {
+                  const img = tile as HTMLImageElement;
+                  if (img.naturalWidth === 0 && img.naturalHeight === 0) {
+                    return;
+                  }
+                }
+              });
+            }
+            
             newOverlayLayer.addTo(map);
           }
         }
@@ -9203,6 +9579,31 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [selectedThematicBasemap, isInitialized]);
 
+  // Show zoom warning popup when event layers are active at low zoom levels
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized) {
+      return;
+    }
+
+    // Check if any event layers are active (ACLED, NASA FIRMS, etc.)
+    const hasActiveEventLayers = showACLED || showNASAFIRMS || showWFIGSWildfires || showEarthquakes || showFlights;
+    
+    if (hasActiveEventLayers) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      // Show warning if zoom level is 7 or below (regional/state level)
+      // Event layers perform better when zoomed in more
+      if (currentZoom <= 7) {
+        setShowEventLayerZoomWarning(true);
+      } else {
+        // If user zooms in, hide the warning
+        setShowEventLayerZoomWarning(false);
+      }
+    } else {
+      // No event layers active, hide warning
+      setShowEventLayerZoomWarning(false);
+    }
+  }, [showACLED, showNASAFIRMS, showWFIGSWildfires, showEarthquakes, showFlights, isInitialized]);
+
   // Listen to zoom changes to hide warning when user zooms in
   useEffect(() => {
     if (!mapInstanceRef.current || !isInitialized || !selectedThematicBasemap) {
@@ -9228,6 +9629,38 @@ const MapView: React.FC<MapViewProps> = ({
       }
     };
   }, [selectedThematicBasemap, isInitialized]);
+
+  // Listen to zoom changes for event layer warning
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized) {
+      return;
+    }
+
+    const hasActiveEventLayers = showACLED || showNASAFIRMS || showWFIGSWildfires || showEarthquakes || showFlights;
+    
+    if (!hasActiveEventLayers) {
+      return;
+    }
+
+    const handleZoomEnd = () => {
+      if (mapInstanceRef.current) {
+        const currentZoom = mapInstanceRef.current.getZoom();
+        if (currentZoom > 7) {
+          setShowEventLayerZoomWarning(false);
+        } else if (currentZoom <= 7) {
+          setShowEventLayerZoomWarning(true);
+        }
+      }
+    };
+
+    mapInstanceRef.current.on('zoomend', handleZoomEnd);
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.off('zoomend', handleZoomEnd);
+      }
+    };
+  }, [showACLED, showNASAFIRMS, showWFIGSWildfires, showEarthquakes, showFlights, isInitialized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -15825,29 +16258,45 @@ const MapView: React.FC<MapViewProps> = ({
         const acledIcon = '⚔️';
         
         enrichments.acled_all.forEach((event: any) => {
-          const lat = event.latitude;
-          const lon = event.longitude;
+          // ACLED uses geometry or centroid fields
+          let lat = null;
+          let lon = null;
+          if (event.geometry && event.geometry.y !== undefined && event.geometry.x !== undefined) {
+            lat = event.geometry.y;
+            lon = event.geometry.x;
+          } else if (event.latitude !== null && event.longitude !== null) {
+            lat = event.latitude;
+            lon = event.longitude;
+          } else if (event.centroid_latitude && event.centroid_longitude) {
+            lat = event.centroid_latitude;
+            lon = event.centroid_longitude;
+          }
           
           if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
             try {
-              // Determine color based on disorder type
+              // Determine color and icon based on event type fields
               let eventColor = '#dc2626'; // Default red for violence
-              if (event.disorder_type === 'Demonstrations') {
-                eventColor = '#f59e0b'; // Orange for demonstrations
-              } else if (event.disorder_type === 'Strategic developments') {
-                eventColor = '#3b82f6'; // Blue for strategic developments
-              }
-              
-              // Determine icon based on event type
               let eventIcon = '⚔️';
-              if (event.event_type?.toLowerCase().includes('protest')) {
+              
+              // Check which event type fields are non-zero
+              if (event.protests > 0) {
+                eventColor = '#f59e0b'; // Orange for protests
                 eventIcon = '📢';
-              } else if (event.event_type?.toLowerCase().includes('riot')) {
+              } else if (event.riots > 0) {
+                eventColor = '#ea580c'; // Orange-red for riots
                 eventIcon = '🔥';
-              } else if (event.event_type?.toLowerCase().includes('violence')) {
-                eventIcon = '⚔️';
-              } else if (event.event_type?.toLowerCase().includes('battle')) {
+              } else if (event.strategic_developments > 0) {
+                eventColor = '#3b82f6'; // Blue for strategic developments
+                eventIcon = '📋';
+              } else if (event.battles > 0) {
+                eventColor = '#dc2626'; // Red for battles
                 eventIcon = '🎯';
+              } else if (event.explosions_remote_violence > 0) {
+                eventColor = '#ef4444'; // Bright red for explosions
+                eventIcon = '💥';
+              } else if (event.violence_against_civilians > 0) {
+                eventColor = '#991b1b'; // Dark red for violence against civilians
+                eventIcon = '⚔️';
               }
               
               const iconHtml = `<div style="
@@ -15872,45 +16321,91 @@ const MapView: React.FC<MapViewProps> = ({
                 })
               });
 
-              const eventDate = event.event_date || 'N/A';
-              const eventType = event.event_type || 'Unknown';
-              const subEventType = event.sub_event_type || '';
-              const disorderType = event.disorder_type || 'Unknown';
-              const country = event.country || 'Unknown';
-              const location = event.location || 'Unknown';
-              const admin1 = event.admin1 || '';
-              const admin2 = event.admin2 || '';
-              const fatalities = event.fatalities || 0;
-              const actor1 = event.actor1 || 'Unknown';
-              const actor2 = event.actor2 || '';
-              const notes = event.notes || '';
-              const source = event.source || 'Unknown';
-
+              // Build event type description from fields
+              const eventTypes: string[] = [];
+              if (event.battles > 0) eventTypes.push('Battles');
+              if (event.explosions_remote_violence > 0) eventTypes.push('Explosions/Remote Violence');
+              if (event.protests > 0) eventTypes.push('Protests');
+              if (event.riots > 0) eventTypes.push('Riots');
+              if (event.strategic_developments > 0) eventTypes.push('Strategic Developments');
+              if (event.violence_against_civilians > 0) eventTypes.push('Violence Against Civilians');
+              const eventTypeStr = eventTypes.length > 0 ? eventTypes.join(', ') : 'Unknown';
+              
+              // Build popup with all attributes
+              const formatAttribute = (key: string, value: any): string => {
+                if (value === null || value === undefined || value === '') return '';
+                if (typeof value === 'number') {
+                  if (value === 0 && (key.includes('battles') || key.includes('protests') || key.includes('riots') || key.includes('explosions') || key.includes('strategic') || key.includes('violence'))) {
+                    return ''; // Skip zero values for event type fields
+                  }
+                  return value.toString();
+                }
+                return String(value);
+              };
+              
               let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    ${acledIcon} ${eventType}${subEventType ? ` - ${subEventType}` : ''}
+                <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                    ${eventIcon} ${eventTypeStr}
                   </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    <div><strong>Date:</strong> ${eventDate}</div>
-                    <div><strong>Disorder Type:</strong> ${disorderType}</div>
-                    <div><strong>Country:</strong> ${country}</div>
-                    <div><strong>Location:</strong> ${location}</div>
-                    ${admin1 ? `<div><strong>Admin 1:</strong> ${admin1}</div>` : ''}
-                    ${admin2 ? `<div><strong>Admin 2:</strong> ${admin2}</div>` : ''}
-                    <div><strong>Actor 1:</strong> ${actor1}</div>
-                    ${actor2 ? `<div><strong>Actor 2:</strong> ${actor2}</div>` : ''}
-                    ${fatalities > 0 ? `<div style="color: #dc2626; font-weight: 600;"><strong>Fatalities:</strong> ${fatalities}</div>` : ''}
-                    ${notes ? `<div style="margin-top: 8px;"><strong>Notes:</strong> ${notes.substring(0, 200)}${notes.length > 200 ? '...' : ''}</div>` : ''}
-                    <div style="margin-top: 8px; font-size: 11px; color: #9ca3af;"><strong>Source:</strong> ${source}</div>
+                  <div style="font-size: 12px; color: #6b7280;">
+              `;
+              
+              // Add all attributes from the event object
+              Object.entries(event).forEach(([key, value]) => {
+                // Skip internal fields and geometry (handled separately)
+                if (key === 'geometry' || key === 'distance_miles' || key === 'latitude' || key === 'longitude' || key === 'objectId' || key === 'event_types') return;
+                
+                const formattedValue = formatAttribute(key, value);
+                if (formattedValue === '') return;
+                
+                // Format field names for display
+                const displayKey = key
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (l) => l.toUpperCase());
+                
+                // Special formatting for certain fields
+                if (key === 'event_month') {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Event Month:</strong> ${formattedValue}</div>`;
+                } else if (key === 'country') {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Country:</strong> ${formattedValue}</div>`;
+                } else if (key === 'admin1') {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>Admin 1:</strong> ${formattedValue}</div>`;
+                } else if (key === 'fatalities') {
+                  if (Number(value) > 0) {
+                    popupContent += `<div style="margin-bottom: 4px; color: #dc2626; font-weight: 600;"><strong>Fatalities:</strong> ${formattedValue}</div>`;
+                  }
+                } else if (key === 'violent_actors') {
+                  if (Number(value) > 0) {
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>Violent Actors:</strong> ${formattedValue}</div>`;
+                  }
+                } else if (key.includes('battles') || key.includes('protests') || key.includes('riots') || key.includes('explosions') || key.includes('strategic') || key.includes('violence')) {
+                  // Skip event type count fields (already shown in title)
+                  return;
+                } else {
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${formattedValue}</div>`;
+                }
+              });
+              
+              // Add distance if available
+              if (event.distance_miles !== undefined) {
+                popupContent += `<div style="margin-bottom: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${event.distance_miles.toFixed(2)} miles</div>`;
+              }
+              
+              // Add geometry info if available
+              if (event.centroid_latitude && event.centroid_longitude) {
+                popupContent += `<div style="margin-bottom: 4px; font-size: 11px; color: #9ca3af;"><strong>Centroid:</strong> ${event.centroid_latitude.toFixed(4)}, ${event.centroid_longitude.toFixed(4)}</div>`;
+              }
+              
+              popupContent += `
                   </div>
                 </div>
               `;
               
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
               marker.addTo(primary);
               (marker as any).__layerType = 'acled';
-              (marker as any).__layerTitle = 'ACLED Conflict Events';
+              (marker as any).__layerTitle = 'Armed Conflict Location & Event Data';
               bounds.extend([lat, lon]);
               acledFeatureCount++;
             } catch (error) {
@@ -47400,6 +47895,24 @@ const MapView: React.FC<MapViewProps> = ({
                   <div className="px-3 border-t border-gray-200 pt-3 pb-2">
                     <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">Global Views</h4>
                     
+                    {/* ACLED Toggle */}
+                    <div className="mb-3">
+                      <label className="flex items-center space-x-2 cursor-pointer mb-1">
+                        <input
+                          type="checkbox"
+                          checked={showACLED}
+                          onChange={(e) => setShowACLED(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-semibold text-black">
+                          ⚔️ Armed Conflict Location & Event Data
+                        </span>
+                      </label>
+                      <p className="text-xs text-gray-600 ml-6 mt-1">
+                        The information collected includes the type of event, its date, the location, the actors involved, a brief narrative summary, and any reported fatalities for the last 6 months.
+                      </p>
+                    </div>
+                    
                     {/* Shipping Lanes Toggle */}
                     <label className="flex items-center space-x-2 cursor-pointer mb-2">
                       <input
@@ -47718,6 +48231,34 @@ const MapView: React.FC<MapViewProps> = ({
               </div>
               <button
                 onClick={() => setShowZoomWarningPopup(false)}
+                className="flex-shrink-0 ml-3 text-yellow-700 hover:text-yellow-900 transition-colors"
+                aria-label="Close warning"
+              >
+                <span className="text-xl font-bold">×</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Zoom Warning Popup for Event Layers */}
+        {showEventLayerZoomWarning && (showACLED || showNASAFIRMS || showWFIGSWildfires || showEarthquakes || showFlights) && (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-50 border-2 border-yellow-400 rounded-lg shadow-xl z-[1000] max-w-md mx-4">
+            <div className="flex items-start justify-between p-4">
+              <div className="flex items-start space-x-3 flex-1">
+                <div className="flex-shrink-0 mt-0.5">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-yellow-900 mb-1">
+                    Zoom In For Better Event Layer Performance!
+                  </h3>
+                  <p className="text-xs text-yellow-800">
+                    Performance is affected for Event layers when zoomed out too much. Please zoom in for optimal performance.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEventLayerZoomWarning(false)}
                 className="flex-shrink-0 ml-3 text-yellow-700 hover:text-yellow-900 transition-colors"
                 aria-label="Close warning"
               >

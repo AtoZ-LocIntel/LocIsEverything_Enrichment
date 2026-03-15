@@ -1586,65 +1586,87 @@ export class EnrichmentService {
         };
       }
       
-      // Group by event type
+      // Group by event type and country
       const eventTypeCounts: Record<string, number> = {};
-      const disorderTypeCounts: Record<string, number> = {};
       const countryCounts: Record<string, number> = {};
       let totalFatalities = 0;
       
       events.forEach(event => {
-        const eventType = event.event_type || 'Unknown';
-        const disorderType = event.disorder_type || 'Unknown';
-        const country = event.country || 'Unknown';
+        // ACLED service uses different field names - map from attributes
+        const attributes = event.attributes || {};
+        const country = attributes.country || 'Unknown';
         
-        eventTypeCounts[eventType] = (eventTypeCounts[eventType] || 0) + 1;
-        disorderTypeCounts[disorderType] = (disorderTypeCounts[disorderType] || 0) + 1;
+        // Count event types based on non-zero fields
+        if (attributes.battles > 0) eventTypeCounts['Battles'] = (eventTypeCounts['Battles'] || 0) + 1;
+        if (attributes.explosions_remote_violence > 0) eventTypeCounts['Explosions/Remote Violence'] = (eventTypeCounts['Explosions/Remote Violence'] || 0) + 1;
+        if (attributes.protests > 0) eventTypeCounts['Protests'] = (eventTypeCounts['Protests'] || 0) + 1;
+        if (attributes.riots > 0) eventTypeCounts['Riots'] = (eventTypeCounts['Riots'] || 0) + 1;
+        if (attributes.strategic_developments > 0) eventTypeCounts['Strategic Developments'] = (eventTypeCounts['Strategic Developments'] || 0) + 1;
+        if (attributes.violence_against_civilians > 0) eventTypeCounts['Violence Against Civilians'] = (eventTypeCounts['Violence Against Civilians'] || 0) + 1;
+        
         countryCounts[country] = (countryCounts[country] || 0) + 1;
-        totalFatalities += event.fatalities || 0;
+        totalFatalities += attributes.fatalities || 0;
       });
       
       // Build summary
       let summary = `Found ${events.length} ACLED conflict event${events.length !== 1 ? 's' : ''} within ${radiusMiles} miles`;
       
-      const disorderTypes = Object.keys(disorderTypeCounts);
-      if (disorderTypes.length > 0) {
-        summary += `. Disorder types: ${disorderTypes.join(', ')}`;
+      const eventTypes = Object.keys(eventTypeCounts);
+      if (eventTypes.length > 0) {
+        summary += `. Event types: ${eventTypes.join(', ')}`;
       }
       
       if (totalFatalities > 0) {
         summary += `. Total fatalities: ${totalFatalities}`;
       }
       
+      const countries = Object.keys(countryCounts);
+      if (countries.length > 0 && countries.length <= 5) {
+        summary += `. Countries: ${countries.join(', ')}`;
+      } else if (countries.length > 5) {
+        summary += `. ${countries.length} countries`;
+      }
+      
       return {
         acled_count: events.length,
         acled_summary: summary,
         acled_event_types: eventTypeCounts,
-        acled_disorder_types: disorderTypeCounts,
         acled_countries: countryCounts,
         acled_total_fatalities: totalFatalities,
         acled_proximity_distance: radiusMiles,
-        acled_all: events.map(event => ({
-          event_id_cnty: event.event_id_cnty,
-          event_date: event.event_date,
-          year: event.year,
-          disorder_type: event.disorder_type,
-          event_type: event.event_type,
-          sub_event_type: event.sub_event_type,
-          actor1: event.actor1,
-          actor2: event.actor2,
-          country: event.country,
-          region: event.region,
-          location: event.location,
-          admin1: event.admin1,
-          admin2: event.admin2,
-          admin3: event.admin3,
-          latitude: event.latitude,
-          longitude: event.longitude,
-          fatalities: event.fatalities,
-          source: event.source,
-          notes: event.notes,
-          tags: event.tags
-        }))
+        acled_all: events.map(event => {
+          const attributes = event.attributes || {};
+          const geometry = event.geometry;
+          
+          // Extract coordinates from geometry or centroid fields
+          let lat = null;
+          let lon = null;
+          if (geometry && geometry.y !== undefined && geometry.x !== undefined) {
+            lat = geometry.y;
+            lon = geometry.x;
+          } else if (attributes.centroid_latitude && attributes.centroid_longitude) {
+            lat = attributes.centroid_latitude;
+            lon = attributes.centroid_longitude;
+          }
+          
+          return {
+            ...attributes, // Include all attributes
+            objectId: event.objectId,
+            geometry: geometry,
+            distance_miles: event.distance_miles,
+            latitude: lat,
+            longitude: lon,
+            // Map event type fields to readable names
+            event_types: {
+              battles: attributes.battles || 0,
+              explosions_remote_violence: attributes.explosions_remote_violence || 0,
+              protests: attributes.protests || 0,
+              riots: attributes.riots || 0,
+              strategic_developments: attributes.strategic_developments || 0,
+              violence_against_civilians: attributes.violence_against_civilians || 0
+            }
+          };
+        })
       };
     } catch (error) {
       console.error('Error in ACLED query:', error);
