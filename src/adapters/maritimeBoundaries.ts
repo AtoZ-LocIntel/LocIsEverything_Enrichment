@@ -23,51 +23,6 @@ export interface MaritimeBoundaryFeature {
 }
 
 /**
- * Point-in-polygon check using ray casting algorithm
- */
-function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
-  if (!rings || rings.length === 0) return false;
-  
-  const outerRing = rings[0];
-  if (!outerRing || outerRing.length < 3) return false;
-  
-  let inside = false;
-  for (let i = 0, j = outerRing.length - 1; i < outerRing.length; j = i++) {
-    const xi = outerRing[i][0]; // lon
-    const yi = outerRing[i][1]; // lat
-    const xj = outerRing[j][0]; // lon
-    const yj = outerRing[j][1]; // lat
-    
-    const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  
-  // Check if point is in any holes
-  for (let h = 1; h < rings.length; h++) {
-    const hole = rings[h];
-    if (!hole || hole.length < 3) continue;
-    
-    let inHole = false;
-    for (let i = 0, j = hole.length - 1; i < hole.length; j = i++) {
-      const xi = hole[i][0];
-      const yi = hole[i][1];
-      const xj = hole[j][0];
-      const yj = hole[j][1];
-      
-      const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-      if (intersect) inHole = !inHole;
-    }
-    
-    if (inHole) {
-      inside = false; // Point is in a hole, so not inside polygon
-      break;
-    }
-  }
-  
-  return inside;
-}
-
-/**
  * Calculate haversine distance between two points in miles
  */
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -83,38 +38,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Calculate centroid of polygon rings
- */
-function calculateCentroid(rings: number[][][]): { lat: number; lon: number } | null {
-  if (!rings || rings.length === 0) return null;
-  
-  const outerRing = rings[0];
-  if (!outerRing || outerRing.length === 0) return null;
-  
-  let sumLat = 0;
-  let sumLon = 0;
-  let count = 0;
-  
-  for (const ring of rings) {
-    for (const point of ring) {
-      if (point && point.length >= 2) {
-        sumLon += point[0]; // lon
-        sumLat += point[1]; // lat
-        count++;
-      }
-    }
-  }
-  
-  if (count === 0) return null;
-  
-  return {
-    lat: sumLat / count,
-    lon: sumLon / count
-  };
-}
-
-/**
- * Query Maritime Boundaries for point-in-polygon and proximity
+ * Query Maritime Boundaries for proximity queries (polylines)
  */
 export async function getMaritimeBoundariesData(
   lat: number,
@@ -282,15 +206,12 @@ export async function getMaritimeBoundariesData(
               }
               
               let distanceMiles = radiusMiles;
-              let featureLat: number | null = null;
-              let featureLon: number | null = null;
 
               // Calculate distance for polyline geometry
               // Service uses WGS84 (4326) natively, no conversion needed
               if (geometry && geometry.paths && geometry.paths.length > 0) {
                 // Polyline geometry - find closest point on line to query point
                 let minDistance = Infinity;
-                let closestPoint: { lat: number; lon: number } | null = null;
                 
                 geometry.paths.forEach((path: number[][]) => {
                   for (let i = 0; i < path.length - 1; i++) {
@@ -315,14 +236,11 @@ export async function getMaritimeBoundariesData(
                     
                     if (dist < minDistance) {
                       minDistance = dist;
-                      closestPoint = { lat: closestLat, lon: closestLon };
                     }
                   }
                 });
                 
-                if (closestPoint) {
-                  featureLat = closestPoint.lat;
-                  featureLon = closestPoint.lon;
+                if (minDistance < Infinity) {
                   distanceMiles = minDistance;
                 }
               }

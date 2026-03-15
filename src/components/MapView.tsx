@@ -286,6 +286,90 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     wmsVersion: '1.3.0',
     wmsCrs: 'EPSG3857'
   },
+  
+  // NASA Global Landslide Susceptibility ImageServer
+  // Thematic data with values 0-5 (0=No data, 1=Very Low, 2=Low, 3=Medium, 4=High, 5=Very High)
+  // Service has no built-in colormap (Has Colormap: false), so we must apply a rendering rule
+  // Color scheme matches NASA map viewer: Blue (very low) -> Light Blue (low) -> Light Yellow (medium) -> Orange (high) -> Red (very high)
+  // Values: 0=No Data, 1=Very Low, 2=Low, 3=Medium, 4=High, 5=Very High
+  nasa_landslide_susceptibility: {
+    type: 'tile',
+    name: 'NASA Global Landslide Susceptibility',
+    attribution: 'NASA',
+    tileUrl: 'https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/Global_Landslide_Susceptibility/ImageServer/exportImage',
+    // Apply colormap rendering rule - service doesn't have built-in colormap, so raw values appear as grey
+    // Using ArcGIS Colormap raster function with proper object structure
+    exportImageRenderingRule: {
+      rasterFunction: {
+        type: 'Colormap',
+        rasterFunctionArguments: {
+          Raster: '$$',
+          Colormap: [
+            [0, 255, 255, 255, 0], // Value 0: No Data - transparent white
+            [1, 0, 0, 255, 255], // Value 1: Very Low - blue
+            [2, 173, 216, 230, 255], // Value 2: Low - light blue  
+            [3, 255, 255, 224, 255], // Value 3: Medium - light yellow
+            [4, 255, 165, 0, 255], // Value 4: High - orange
+            [5, 255, 0, 0, 255] // Value 5: Very High - red
+          ]
+        }
+      }
+    },
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA LHASA Hazard Today ImageServer
+  // Displays current landslide hazard assessment for today
+  nasa_lhasa_hazard_today: {
+    type: 'tile',
+    name: 'NASA LHASA Hazard Today',
+    attribution: 'NASA',
+    tileUrl: 'https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/LHASA_Hazard_Today/ImageServer/exportImage',
+    exportImageTime: 'present', // Always use present date (today)
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA LHASA Hazard Tomorrow ImageServer
+  // Displays forecasted landslide hazard assessment for tomorrow
+  nasa_lhasa_hazard_tomorrow: {
+    type: 'tile',
+    name: 'NASA LHASA Hazard Tomorrow',
+    attribution: 'NASA',
+    tileUrl: 'https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/LHASA_Hazard_Tomorrow/ImageServer/exportImage',
+    exportImageTime: 'present', // Always use present date (tomorrow forecast)
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA TEMPO NO2 L3 NRT V02 Hourly Tropospheric Vertical Column ImageServer
+  // TEMPO (Tropospheric Emissions: Monitoring of Pollution) instrument providing hourly NO2 measurements
+  nasa_tempo_no2_hourly: {
+    type: 'tile',
+    name: 'NASA TEMPO NO2 Hourly',
+    attribution: 'NASA LARC',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/C3685668637-LARC_CLOUD/TEMPO_NO2_L3_NRT_V02_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer/exportImage',
+    exportImageTime: 'present', // Always use present date/time (hourly updates)
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
+  
+  // NASA Landsat GMIS V1 ImageServer
+  // Global Man-made Impervious Surface (GMIS) dataset from Landsat
+  nasa_landsat_gmis_v1: {
+    type: 'tile',
+    name: 'NASA Landsat GMIS V1',
+    attribution: 'NASA',
+    tileUrl: 'https://gis.earthdata.nasa.gov/image/rest/services/ulandsat/ulandsat_gmis_v1/ImageServer/exportImage',
+    wmsFormat: 'image/png',
+    wmsVersion: '1.3.0',
+    wmsCrs: 'EPSG3857'
+  },
   // USGS National Map Contours WMS
   usgs_contours: {
     type: 'wms',
@@ -4430,7 +4514,24 @@ const createExportImageTileLayer = (
         url += `&bandIds=${bandIds}`;
       } else {
         // Use full rendering rule JSON
-        url += `&renderingRule=${encodeURIComponent(JSON.stringify(layerInstance._renderingRule))}`;
+        // Handle both string and object formats for rasterFunction
+        let renderingRuleToSend = layerInstance._renderingRule;
+        
+        // If rasterFunction is a string, convert to proper format
+        if (typeof layerInstance._renderingRule.rasterFunction === 'string') {
+          renderingRuleToSend = {
+            rasterFunction: {
+              type: layerInstance._renderingRule.rasterFunction,
+              rasterFunctionArguments: layerInstance._renderingRule.rasterFunctionArguments || {}
+            }
+          };
+        }
+        
+        const renderingRuleJson = JSON.stringify(renderingRuleToSend);
+        console.log('🔍 [DEBUG] Applying rendering rule:', renderingRuleJson);
+        console.log('🔍 [DEBUG] Rendering rule URL encoded:', encodeURIComponent(renderingRuleJson));
+        url += `&renderingRule=${encodeURIComponent(renderingRuleJson)}`;
+        console.log('🔍 [DEBUG] Full tile URL (first 300 chars):', url.substring(0, 300));
       }
     }
     
@@ -8103,6 +8204,10 @@ const MapView: React.FC<MapViewProps> = ({
     const fetchAndDisplayMaritimeBoundaries = async () => {
       try {
         console.log('🌊 Fetching maritime boundaries...');
+        if (!layerGroupsRef.current) {
+          console.warn('🌊 Layer groups not initialized');
+          return;
+        }
         const { primary } = layerGroupsRef.current;
         
         // Remove old maritime boundaries layer if it exists
@@ -8222,7 +8327,7 @@ const MapView: React.FC<MapViewProps> = ({
           })
           .filter((feature: any) => feature.geometry !== null); // Final filter for valid geometries
           
-          const geoJsonData = {
+          const geoJsonData: GeoJSON.FeatureCollection = {
             type: 'FeatureCollection',
             features: geoJsonFeatures
           };
@@ -8273,7 +8378,7 @@ const MapView: React.FC<MapViewProps> = ({
           };
           
           // Create GeoJSON layer with custom styling
-          const maritimeBoundariesLayer = L.geoJSON(geoJsonData, {
+          const maritimeBoundariesLayer = L.geoJSON(geoJsonData as any, {
             style: (feature) => {
               // Use LINE_NAME field for unique color coding (polyline layer)
               const lineName = feature?.properties?.LINE_NAME || feature?.properties?.line_name || 

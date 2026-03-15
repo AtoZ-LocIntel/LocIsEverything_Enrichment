@@ -2278,6 +2278,46 @@ export const getDataSources = (): DataSourceCategory[] => {
           cost: "Free",
           url: "https://gis.ccom.unh.edu/server/rest/services/CraterLake/Crater_Lake_Depths/MapServer/1"
         },
+        {
+          name: "NASA Global Landslide Susceptibility",
+          description: "NASA Global Landslide Susceptibility dataset providing worldwide assessment of landslide susceptibility. Thematic raster data with pixel values ranging from 0-5 indicating susceptibility levels. Global coverage from 60°S to 72°N latitude with 0.0083° (approximately 1km) resolution. Based on analysis of terrain, geology, and other factors contributing to landslide risk.",
+          coverage: "Global (60°S to 72°N)",
+          accuracy: "Very High (1km resolution)",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/Global_Landslide_Susceptibility/ImageServer"
+        },
+        {
+          name: "NASA LHASA Hazard Today",
+          description: "NASA Landslide Hazard Assessment for Situational Awareness (LHASA) - Today's hazard assessment. Provides near-real-time landslide hazard predictions for the current day based on rainfall data and terrain analysis. Global coverage from 60°S to 60°N latitude. Automatically displays current day's hazard assessment, updating throughout the day as new data becomes available.",
+          coverage: "Global (60°S to 60°N)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/LHASA_Hazard_Today/ImageServer"
+        },
+        {
+          name: "NASA LHASA Hazard Tomorrow",
+          description: "NASA Landslide Hazard Assessment for Situational Awareness (LHASA) - Tomorrow's forecast. Provides forecasted landslide hazard predictions for the next day based on forecasted rainfall data and terrain analysis. Global coverage from 60°S to 60°N latitude. Automatically displays tomorrow's forecast, updating as new forecast data becomes available.",
+          coverage: "Global (60°S to 60°N)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/gis05/rest/services/Landslides/LHASA_Hazard_Tomorrow/ImageServer"
+        },
+        {
+          name: "NASA TEMPO NO2 Hourly",
+          description: "NASA TEMPO (Tropospheric Emissions: Monitoring of Pollution) NO2 Level 3 Near Real-Time Version 02 Hourly Tropospheric Vertical Column data. Provides hourly measurements of nitrogen dioxide (NO2) concentrations in the troposphere over North America. TEMPO is the first space-based instrument to provide hourly air quality measurements during daylight hours. Data is updated hourly with near real-time availability.",
+          coverage: "North America",
+          accuracy: "Very High (hourly temporal resolution)",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/C3685668637-LARC_CLOUD/TEMPO_NO2_L3_NRT_V02_HOURLY_TROPOSPHERIC_VERTICAL_COLUMN/ImageServer"
+        },
+        {
+          name: "NASA Landsat GMIS V1",
+          description: "NASA Global Man-made Impervious Surface (GMIS) dataset Version 1 from Landsat. Provides global mapping of impervious surfaces (built-up areas, roads, parking lots, etc.) derived from Landsat satellite imagery. The dataset identifies areas where natural surfaces have been replaced by man-made impervious materials, which is important for understanding urbanization, water runoff, and environmental impacts.",
+          coverage: "Global",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.earthdata.nasa.gov/image/rest/services/ulandsat/ulandsat_gmis_v1/ImageServer"
+        },
         ]
     },
     {
