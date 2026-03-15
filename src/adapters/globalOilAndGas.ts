@@ -195,7 +195,6 @@ export async function getGlobalOilAndGasLayerData(
               if (geometry && geometry.rings) {
                 // Verify point is actually in polygon using client-side check
                 if (pointInPolygon(lat, lon, geometry.rings)) {
-                  const centroid = calculateCentroid(geometry.rings);
                   results.push({
                     objectId,
                     attributes,

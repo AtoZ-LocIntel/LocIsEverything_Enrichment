@@ -15935,7 +15935,7 @@ const MapView: React.FC<MapViewProps> = ({
               else if (geometry.paths && geometry.paths.length > 0) {
                 geometry.paths.forEach((path: number[][]) => {
                   if (path && path.length > 0) {
-                    const latlngs = path.map((point: number[]) => [point[1], point[0]]);
+                    const latlngs: [number, number][] = path.map((point: number[]) => [point[1], point[0]] as [number, number]);
                     const polyline = L.polyline(latlngs, {
                       color: layerColor,
                       weight: 3,
@@ -15974,7 +15974,7 @@ const MapView: React.FC<MapViewProps> = ({
               else if (geometry.rings && geometry.rings.length > 0) {
                 geometry.rings.forEach((ring: number[][]) => {
                   if (ring && ring.length > 0) {
-                    const latlngs = ring.map((point: number[]) => [point[1], point[0]]);
+                    const latlngs: [number, number][] = ring.map((point: number[]) => [point[1], point[0]] as [number, number]);
                     const polygon = L.polygon(latlngs, {
                       color: layerColor,
                       weight: 2,
