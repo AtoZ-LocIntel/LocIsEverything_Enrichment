@@ -8206,6 +8206,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/arcgis/rest/services/CPWSpeciesData/FeatureServer"
+        },
+        {
+          name: "Colorado Department of Transportation (CDOT) Open Data",
+          description: "Colorado Spatial Portal - CDOT Open Data Feature Service with 41 layers covering transportation infrastructure including bridges, highways, roads, interchanges, maintenance districts, planning regions, wetlands, projects, structures, tunnels, and more. Polygon layers support point-in-polygon and proximity queries up to 50 miles. Point and line layers support proximity queries up to 25 miles.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer"
         }
       ]
     },

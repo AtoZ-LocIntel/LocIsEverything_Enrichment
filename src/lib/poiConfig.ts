@@ -1322,6 +1322,386 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
     category: 'co_spatial_portal',
     section: 'co'
   },
+  {
+    id: 'co_spatial_portal_cdot_bridges_and_major_culverts',
+    label: 'Bridges and Major Culverts',
+    description: 'Colorado Spatial Portal - CDOT: Bridges and Major Culverts for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_cdot_row_project_archive',
+    label: 'CDOT ROW Project Archive',
+    description: 'Colorado Spatial Portal - CDOT: CDOT ROW Project Archive for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_commission_districts',
+    label: 'Commission Districts',
+    description: 'Colorado Spatial Portal - CDOT: Commission Districts for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_engineering_regions',
+    label: 'Engineering Regions',
+    description: 'Colorado Spatial Portal - CDOT: Engineering Regions for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_frontage_roads',
+    label: 'Frontage Roads',
+    description: 'Colorado Spatial Portal - CDOT: Frontage Roads for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_generalized',
+    label: 'Highways (generalized)',
+    description: 'Colorado Spatial Portal - CDOT: Highways (generalized) for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways',
+    label: 'Highways',
+    description: 'Colorado Spatial Portal - CDOT: Highways for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highway_interchanges',
+    label: 'Highway Interchanges',
+    description: 'Colorado Spatial Portal - CDOT: Highway Interchanges for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_access_categories',
+    label: 'Highways: Access Categories',
+    description: 'Colorado Spatial Portal - CDOT: Highways: Access Categories for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_drivability_life',
+    label: 'Highways: Drivability Life',
+    description: 'Colorado Spatial Portal - CDOT: Highways: Drivability Life for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_functional_class',
+    label: 'Highways: Functional Class',
+    description: 'Colorado Spatial Portal - CDOT: Highways: Functional Class for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_geometrics',
+    label: 'Highways: Geometrics',
+    description: 'Colorado Spatial Portal - CDOT: Highways: Geometrics for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_traffic_counts',
+    label: 'Highways: Traffic Counts',
+    description: 'Colorado Spatial Portal - CDOT: Highways: Traffic Counts for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_local_roads',
+    label: 'Local Roads',
+    description: 'Colorado Spatial Portal - CDOT: Local Roads for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_maintenance_patrols',
+    label: 'Maintenance Patrols',
+    description: 'Colorado Spatial Portal - CDOT: Maintenance Patrols for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_maintenance_sections',
+    label: 'Maintenance Sections',
+    description: 'Colorado Spatial Portal - CDOT: Maintenance Sections for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_major_roads',
+    label: 'Major Roads',
+    description: 'Colorado Spatial Portal - CDOT: Major Roads for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_metropolitan_planning_orgs_mpo',
+    label: 'Metropolitan Planning Orgs (MPO)',
+    description: 'Colorado Spatial Portal - CDOT: Metropolitan Planning Orgs (MPO) for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_milepoints',
+    label: 'Milepoints',
+    description: 'Colorado Spatial Portal - CDOT: Milepoints for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_ms4_aug_2015_to_current',
+    label: 'MS4 - Aug 2015 to Current',
+    description: 'Colorado Spatial Portal - CDOT: MS4 - Aug 2015 to Current for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_outdoor_advertising',
+    label: 'Outdoor Advertising',
+    description: 'Colorado Spatial Portal - CDOT: Outdoor Advertising for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_projects_all_types_line',
+    label: 'Projects (all types) - Line',
+    description: 'Colorado Spatial Portal - CDOT: Projects (all types) - Line for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_projects_all_types_point',
+    label: 'Projects (all types) - Point',
+    description: 'Colorado Spatial Portal - CDOT: Projects (all types) - Point for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_project_wetlands',
+    label: 'Project Wetlands',
+    description: 'Colorado Spatial Portal - CDOT: Project Wetlands for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_potential_fen_wetlands',
+    label: 'Potential Fen Wetlands',
+    description: 'Colorado Spatial Portal - CDOT: Potential Fen Wetlands for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_ramps',
+    label: 'Ramps',
+    description: 'Colorado Spatial Portal - CDOT: Ramps for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_scenic_byways',
+    label: 'Scenic Byways',
+    description: 'Colorado Spatial Portal - CDOT: Scenic Byways for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_seed_mixes',
+    label: 'Seed Mixes',
+    description: 'Colorado Spatial Portal - CDOT: Seed Mixes for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_structures_all_types',
+    label: 'Structures (all types)',
+    description: 'Colorado Spatial Portal - CDOT: Structures (all types) for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_transportation_planning_regions_tpr',
+    label: 'Transportation Planning Regions (TPR)',
+    description: 'Colorado Spatial Portal - CDOT: Transportation Planning Regions (TPR) for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_tunnels',
+    label: 'Tunnels',
+    description: 'Colorado Spatial Portal - CDOT: Tunnels for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_urban_areas_adjusted_2020',
+    label: 'Urban Areas - Adjusted 2020',
+    description: 'Colorado Spatial Portal - CDOT: Urban Areas - Adjusted 2020 for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_noise_barriers',
+    label: 'Noise Barriers',
+    description: 'Colorado Spatial Portal - CDOT: Noise Barriers for proximity queries (up to 25 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 25,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_cdot_row_boundaries',
+    label: 'CDOT ROW Boundaries',
+    description: 'Colorado Spatial Portal - CDOT: CDOT ROW Boundaries for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_cdot_parcels',
+    label: 'CDOT Parcels',
+    description: 'Colorado Spatial Portal - CDOT: CDOT Parcels for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_maintenance_regions',
+    label: 'Maintenance Regions',
+    description: 'Colorado Spatial Portal - CDOT: Maintenance Regions for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_maintenance_supervisor_areas',
+    label: 'Maintenance Supervisor Areas',
+    description: 'Colorado Spatial Portal - CDOT: Maintenance Supervisor Areas for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_highways_alias',
+    label: 'Highways: Alias',
+    description: 'Colorado Spatial Portal - CDOT: Highways: Alias for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
   { id: 'co_spatial_portal_cpw_aberts_squirrel_overall_range', label: 'Abert\'s Squirrel Overall Range', description: 'Colorado Spatial Portal - CPW Species Data: Abert\'s Squirrel Overall Range for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'co_spatial_portal', section: 'co' },
   { id: 'co_spatial_portal_cpw_bald_eagle_nest_sites', label: 'Bald Eagle Nest Sites', description: 'Colorado Spatial Portal - CPW Species Data: Bald Eagle Nest Sites for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'co_spatial_portal', section: 'co' },
   { id: 'co_spatial_portal_cpw_bald_eagle_roost_sites', label: 'Bald Eagle Roost Sites', description: 'Colorado Spatial Portal - CPW Species Data: Bald Eagle Roost Sites for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'co_spatial_portal', section: 'co' },

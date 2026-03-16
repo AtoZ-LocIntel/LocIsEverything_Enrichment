@@ -12,6 +12,7 @@ import { getNHParcelData } from '../adapters/nhParcels';
 import { getCOParcelData } from '../adapters/coParcels';
 import { getCOActiveDistrictData } from '../adapters/coActiveDistricts';
 import { getCPWSpeciesLayerData, CPW_LAYER_NAMES, layerNameToId } from '../adapters/coCPWSpeciesData';
+import { getCDOTLayerData, CDOT_LAYER_NAMES, layerNameToId as cdotLayerNameToId } from '../adapters/coCDOT';
 import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
 import { getNHNursingHomesData } from '../adapters/nhNursingHomes';
 import { getNHEMSData } from '../adapters/nhEMS';
@@ -3309,6 +3310,10 @@ export class EnrichmentService {
     // Handle CO CPW Species Data layers (all 315 layers) before switch statement
     if (enrichmentId.startsWith('co_spatial_portal_cpw_')) {
       return await this.getCPWSpeciesData(enrichmentId, lat, lon, radius);
+    }
+    
+    if (enrichmentId.startsWith('co_spatial_portal_cdot_')) {
+      return await this.getCDOTData(enrichmentId, lat, lon, radius);
     }
     
     switch (enrichmentId) {
@@ -14792,6 +14797,103 @@ export class EnrichmentService {
       console.error(`❌ Error fetching CPW Species Data for ${enrichmentId}:`, error);
       return {
         [`${enrichmentId}_error`]: `Error fetching CPW Species Data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  private async getCDOTData(enrichmentId: string, lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚧 Fetching CDOT Data for ${enrichmentId} at [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Extract layer name from enrichment ID
+      // Format: co_spatial_portal_cdot_[sanitized_layer_name]
+      const layerNamePart = enrichmentId.replace('co_spatial_portal_cdot_', '');
+      
+      // Find the layer ID by matching the sanitized name to the actual layer name
+      let layerId: number | null = null;
+      let layerName: string | null = null;
+      
+      for (const [id, name] of Object.entries(CDOT_LAYER_NAMES)) {
+        const sanitizedName = cdotLayerNameToId(name);
+        if (sanitizedName === layerNamePart) {
+          layerId = parseInt(id, 10);
+          layerName = name;
+          break;
+        }
+      }
+      
+      if (layerId === null || layerName === null) {
+        console.error(`❌ Could not find layer ID for enrichment ID: ${enrichmentId}`);
+        return {
+          [`${enrichmentId}_error`]: `Layer not found for ${enrichmentId}`
+        };
+      }
+      
+      const radiusMiles = radius || (layerId >= 2 && layerId <= 40 && [2, 3, 9, 10, 11, 12, 13, 15, 16, 18, 20, 26, 27, 32, 34, 36, 37, 38, 39, 40].includes(layerId) ? 5 : 2);
+      const features = await getCDOTLayerData(layerId, layerName, lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      // Separate containing and nearby features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const nearbyFeatures = features.filter(f => !f.isContaining);
+      
+      // Combine all features into a single array
+      const allFeatures: any[] = [];
+      
+      // Add containing features first
+      containingFeatures.forEach(feature => {
+        allFeatures.push({
+          ...feature.attributes,
+          objectId: feature.objectId,
+          isContaining: true,
+          distance_miles: 0,
+          geometry: feature.geometry,
+          layerId: feature.layerId,
+          layerName: feature.layerName
+        });
+      });
+      
+      // Add nearby features
+      nearbyFeatures.forEach(feature => {
+        allFeatures.push({
+          ...feature.attributes,
+          objectId: feature.objectId,
+          isContaining: false,
+          distance_miles: feature.distance_miles,
+          geometry: feature.geometry,
+          layerId: feature.layerId,
+          layerName: feature.layerName
+        });
+      });
+      
+      // Set result fields
+      const baseKey = enrichmentId;
+      result[`${baseKey}_containing_count`] = containingFeatures.length;
+      result[`${baseKey}_nearby_count`] = nearbyFeatures.length;
+      result[`${baseKey}_total_count`] = features.length;
+      result[`${baseKey}_all`] = allFeatures;
+      result[`${baseKey}_search_radius_miles`] = radiusMiles;
+      
+      if (containingFeatures.length > 0) {
+        result[`${baseKey}_containing`] = containingFeatures.map(f => f.objectId).join(', ');
+        result[`${baseKey}_containing_summary`] = `Point is within ${containingFeatures.length} ${layerName} feature(s)`;
+      } else {
+        result[`${baseKey}_containing`] = null;
+        result[`${baseKey}_containing_summary`] = `No ${layerName} features found containing this location`;
+      }
+      
+      console.log(`✅ CDOT Data (${layerName}) processed:`, {
+        containing: containingFeatures.length,
+        nearby: nearbyFeatures.length,
+        total: features.length
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching CDOT Data for ${enrichmentId}:`, error);
+      return {
+        [`${enrichmentId}_error`]: `Error fetching CDOT Data: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }

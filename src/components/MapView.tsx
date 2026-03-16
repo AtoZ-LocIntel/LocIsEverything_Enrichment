@@ -5812,6 +5812,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'co_spatial_portal_parcels_all' || // Skip CO parcels array (handled separately for map drawing)
     key === 'co_spatial_portal_active_districts_all' || // Skip CO Active Districts array (handled separately for map drawing)
     key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') || // Skip CPW Species Data arrays (handled separately for map drawing)
+    key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') || // Skip CDOT arrays (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
     key === 'de_parcels_all' || // Skip DE parcels array (handled separately for map drawing)
     key === 'de_lulc_2007_all' || // Skip DE LULC arrays (handled separately for map drawing)
@@ -21180,6 +21181,334 @@ const MapView: React.FC<MapViewProps> = ({
           }
         }
       });
+
+      // Draw CDOT layers (Colorado Spatial Portal) - polygons, lines, and points
+      try {
+        const cdotKeys = Object.keys(enrichments).filter(k => k.startsWith('co_spatial_portal_cdot_'));
+        console.log(`🗺️ CDOT Keys found:`, cdotKeys);
+        Object.keys(enrichments).forEach(key => {
+          if (key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') && Array.isArray(enrichments[key])) {
+            const baseKey = key.replace('_all', '');
+            const layerName = baseKey.replace('co_spatial_portal_cdot_', '').replace(/_/g, ' ');
+            const features = enrichments[key] as any[];
+            console.log(`🗺️ CDOT Drawing: Processing ${layerName} with ${features.length} features`);
+            let featureCount = 0;
+            
+            features.forEach((feature: any, featureIndex: number) => {
+              try {
+                if (featureIndex === 0) {
+                  console.log(`🗺️ CDOT Feature ${featureIndex + 1}/${features.length} (${layerName}) - First feature:`, {
+                  hasGeometry: !!feature.geometry,
+                  geometryKeys: feature.geometry ? Object.keys(feature.geometry) : [],
+                  geometryType: feature.geometry ? (feature.geometry.rings ? 'polygon' : feature.geometry.paths ? 'line' : feature.geometry.x !== undefined ? 'point' : 'unknown') : 'none',
+                  hasRings: !!(feature.geometry && feature.geometry.rings),
+                  ringsCount: feature.geometry && feature.geometry.rings ? feature.geometry.rings.length : 0,
+                  spatialRef: feature.geometry && feature.geometry.spatialReference ? feature.geometry.spatialReference.wkid : 'none',
+                  featureKeys: Object.keys(feature).slice(0, 10)
+                  });
+                }
+              
+                if (!feature.geometry) {
+                  if (featureIndex < 3) {
+                    console.warn(`⚠️ CDOT Feature ${featureIndex + 1} (${layerName}) has no geometry`);
+                  }
+                  return;
+                }
+              
+                if (feature.geometry) {
+                  // Handle polygons
+                  if (feature.geometry.rings && feature.geometry.rings.length > 0) {
+                  const rings = feature.geometry.rings;
+                  const outerRing = rings[0];
+                  
+                  // Check if coordinates are in UTM (large numbers) vs WGS84 (small numbers)
+                  const firstCoord = outerRing[0];
+                  const sampleCoords = outerRing.slice(0, 3).map(c => `[${c[0]?.toFixed(2)}, ${c[1]?.toFixed(2)}]`).join(', ');
+                  const isUTM = firstCoord && firstCoord.length >= 2 && (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
+                  
+                  console.log(`🔍 CDOT polygon (${layerName}) coordinate check:`, {
+                    firstCoord: firstCoord ? `[${firstCoord[0]?.toFixed(2)}, ${firstCoord[1]?.toFixed(2)}]` : 'none',
+                    sampleCoords,
+                    isUTM,
+                    coordCount: outerRing.length,
+                    xRange: outerRing.length > 0 ? `[${Math.min(...outerRing.map(c => c[0])).toFixed(2)}, ${Math.max(...outerRing.map(c => c[0])).toFixed(2)}]` : 'none',
+                    yRange: outerRing.length > 0 ? `[${Math.min(...outerRing.map(c => c[1])).toFixed(2)}, ${Math.max(...outerRing.map(c => c[1])).toFixed(2)}]` : 'none'
+                  });
+                  
+                  let latlngs: [number, number][];
+                  
+                  if (isUTM) {
+                    console.warn(`⚠️ CDOT polygon (${layerName}) appears to be in UTM coordinates (26913), transforming to WGS84. Sample: ${sampleCoords}`);
+                    // Transform from UTM Zone 13N (26913) to WGS84 (4326)
+                    // UTM Zone 13N: Central Meridian = -105°, False Easting = 500000
+                    const centralMeridian = -105;
+                    const falseEasting = 500000;
+                    const k0 = 0.9996; // Scale factor
+                    const a = 6378137; // WGS84 semi-major axis (meters)
+                    const e2 = 0.00669438; // WGS84 first eccentricity squared
+                    
+                    latlngs = outerRing.map((coord: number[]) => {
+                      const x = coord[0] - falseEasting; // Remove false easting
+                      const y = coord[1];
+                      
+                      // UTM to lat/lon conversion
+                      const M = y / k0;
+                      const mu = M / (a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256));
+                      
+                      const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+                      const J1 = 3 * e1 / 2 - 27 * e1 * e1 * e1 / 32;
+                      const J2 = 21 * e1 * e1 / 16 - 55 * e1 * e1 * e1 * e1 / 32;
+                      const J3 = 151 * e1 * e1 * e1 / 96;
+                      const J4 = 1097 * e1 * e1 * e1 * e1 / 512;
+                      
+                      const fp = mu + J1 * Math.sin(2 * mu) + J2 * Math.sin(4 * mu) + J3 * Math.sin(6 * mu) + J4 * Math.sin(8 * mu);
+                      
+                      const e_2 = e2 / (1 - e2);
+                      const C1 = e_2 * Math.cos(fp) * Math.cos(fp);
+                      const T1 = Math.tan(fp) * Math.tan(fp);
+                      const N1 = a / Math.sqrt(1 - e2 * Math.sin(fp) * Math.sin(fp));
+                      const R1 = a * (1 - e2) / Math.pow(1 - e2 * Math.sin(fp) * Math.sin(fp), 1.5);
+                      const D = x / (N1 * k0);
+                      
+                      const lat = fp - (N1 * Math.tan(fp) / R1) * (D * D / 2 - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * e_2) * D * D * D * D / 24 + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * e_2 - 3 * C1 * C1) * D * D * D * D * D * D / 720);
+                      const lon = (centralMeridian * Math.PI / 180) + (D - (1 + 2 * T1 + C1) * D * D * D / 6 + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * e_2 + 24 * T1 * T1) * D * D * D * D * D / 120) / Math.cos(fp);
+                      
+                      return [lat * 180 / Math.PI, lon * 180 / Math.PI] as [number, number];
+                    });
+                  } else {
+                    // Coordinates are already in WGS84, just swap [lon, lat] to [lat, lon]
+                    latlngs = outerRing.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+                  }
+
+                  if (latlngs.length < 3) {
+                    console.warn(`CDOT polygon (${layerName}) has less than 3 coordinates, skipping`);
+                    return;
+                  }
+                  
+                  // Validate coordinates are reasonable lat/lon values
+                  const invalidCoords = latlngs.filter(([lat, lon]) => 
+                    isNaN(lat) || isNaN(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180
+                  );
+                  
+                  if (invalidCoords.length > 0) {
+                    console.error(`❌ CDOT polygon (${layerName}) has invalid coordinates:`, invalidCoords.slice(0, 3));
+                    return;
+                  }
+
+                  const isContaining = feature.isContaining;
+                  const color = isContaining ? '#dc2626' : '#f59e0b'; // Red for containing, amber for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+
+                  let polygon: L.Polygon;
+                  try {
+                    polygon = L.polygon(latlngs, {
+                      color: color,
+                      weight: weight,
+                      opacity: opacity,
+                      fillColor: color,
+                      fillOpacity: 0.2
+                    });
+                    const polygonBounds = polygon.getBounds();
+                    console.log(`✅ CDOT polygon created successfully for ${layerName}:`, {
+                      bounds: polygonBounds,
+                      center: polygonBounds.getCenter(),
+                      latlngsSample: latlngs.slice(0, 3),
+                      latRange: `[${Math.min(...latlngs.map(c => c[0])).toFixed(6)}, ${Math.max(...latlngs.map(c => c[0])).toFixed(6)}]`,
+                      lonRange: `[${Math.min(...latlngs.map(c => c[1])).toFixed(6)}, ${Math.max(...latlngs.map(c => c[1])).toFixed(6)}]`
+                    });
+                  } catch (polyError) {
+                    console.error(`❌ Error creating CDOT polygon (${layerName}):`, polyError, 'latlngs sample:', latlngs.slice(0, 3));
+                    return;
+                  }
+
+                  // Build popup content
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                        ${isContaining ? '📍 Containing Feature' : '🚧 Nearby Feature'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280;">
+                        <div style="margin-bottom: 4px;"><strong>Layer:</strong> ${feature.layerName || layerName}</div>
+                  `;
+
+                  const excludeFields = ['isContaining', 'distance_miles', 'geometry', 'layerId', 'layerName', 'objectId'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  try {
+                    polygon.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+                    polygon.addTo(primary);
+                    bounds.extend(polygon.getBounds());
+                    featureCount++;
+                    console.log(`✅ CDOT polygon added to map for ${layerName}, total features drawn: ${featureCount}`);
+                  } catch (addError) {
+                    console.error(`❌ Error adding CDOT polygon to map (${layerName}):`, addError);
+                  }
+                }
+                // Handle lines/polylines
+                else if (feature.geometry.paths && feature.geometry.paths.length > 0) {
+                  const paths = feature.geometry.paths;
+                  paths.forEach((path: number[][]) => {
+                    const latlngs = path.map((coord: number[]) => {
+                      return [coord[1], coord[0]] as [number, number];
+                    });
+
+                    if (latlngs.length < 2) {
+                      return;
+                    }
+
+                    const isContaining = feature.isContaining;
+                    const color = isContaining ? '#dc2626' : '#f59e0b';
+                    const weight = isContaining ? 4 : 3;
+                    const opacity = isContaining ? 0.9 : 0.6;
+
+                    const polyline = L.polyline(latlngs, {
+                      color: color,
+                      weight: weight,
+                      opacity: opacity
+                    });
+
+                    // Build popup content
+                    let popupContent = `
+                      <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                        <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                          ${isContaining ? '📍 Containing Feature' : '🚧 Nearby Feature'}
+                        </h3>
+                        <div style="font-size: 12px; color: #6b7280;">
+                          <div style="margin-bottom: 4px;"><strong>Layer:</strong> ${feature.layerName || layerName}</div>
+                    `;
+
+                    const excludeFields = ['isContaining', 'distance_miles', 'geometry', 'layerId', 'layerName', 'objectId'];
+                    Object.entries(feature).forEach(([key, value]) => {
+                      if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                        const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue = '';
+
+                        if (typeof value === 'object') {
+                          displayValue = JSON.stringify(value);
+                        } else if (typeof value === 'number') {
+                          displayValue = value.toLocaleString();
+                        } else {
+                          displayValue = String(value);
+                        }
+
+                        popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                      }
+                    });
+
+                    popupContent += `
+                        </div>
+                      </div>
+                    `;
+                    
+                    polyline.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+                    polyline.addTo(primary);
+                    bounds.extend(polyline.getBounds());
+                    featureCount++;
+                  });
+                }
+                // Handle points
+                else if (feature.geometry.x !== undefined && feature.geometry.y !== undefined) {
+                  const latlng: [number, number] = [feature.geometry.y, feature.geometry.x];
+                  
+                  const isContaining = feature.isContaining;
+                  const color = isContaining ? '#dc2626' : '#f59e0b';
+                  const iconSize = isContaining ? 12 : 10;
+                  
+                  const icon = L.divIcon({
+                    className: 'custom-marker-icon',
+                    html: `<div style="background-color: ${color}; width: ${iconSize}px; height: ${iconSize}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [iconSize, iconSize],
+                    iconAnchor: [iconSize / 2, iconSize / 2]
+                  });
+
+                  const marker = L.marker(latlng, { icon });
+
+                  // Build popup content
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                        ${isContaining ? '📍 Containing Feature' : '🚧 Nearby Feature'}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280;">
+                        <div style="margin-bottom: 4px;"><strong>Layer:</strong> ${feature.layerName || layerName}</div>
+                  `;
+
+                  const excludeFields = ['isContaining', 'distance_miles', 'geometry', 'layerId', 'layerName', 'objectId'];
+                  Object.entries(feature).forEach(([key, value]) => {
+                    if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+
+                      if (typeof value === 'object') {
+                        displayValue = JSON.stringify(value);
+                      } else if (typeof value === 'number') {
+                        displayValue = value.toLocaleString();
+                      } else {
+                        displayValue = String(value);
+                      }
+
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+                  marker.addTo(primary);
+                  bounds.extend(latlng);
+                  featureCount++;
+                  }
+                }
+              } catch (error) {
+                console.error(`Error drawing CDOT feature (${layerName}):`, error);
+              }
+            });
+          
+          // Add legend entry for this CDOT layer
+          if (featureCount > 0 && features.length > 0) {
+            const firstFeature = features[0];
+            const displayName = firstFeature?.layerName || layerName.replace(/\b\w/g, l => l.toUpperCase());
+            if (!legendAccumulator[baseKey]) {
+              legendAccumulator[baseKey] = {
+                icon: '🚧',
+                color: '#f59e0b',
+                title: displayName,
+                count: 0,
+              };
+            }
+            legendAccumulator[baseKey].count += featureCount;
+          }
+        }
+        });
+      } catch (cdotError) {
+        console.error(`❌ Error in CDOT drawing block:`, cdotError);
+      }
 
       // Draw CO Active Districts (Colorado Spatial Portal) as polygons on the map
       if (enrichments.co_spatial_portal_active_districts_all && Array.isArray(enrichments.co_spatial_portal_active_districts_all)) {

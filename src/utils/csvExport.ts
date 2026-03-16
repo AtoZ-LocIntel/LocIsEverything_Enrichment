@@ -771,6 +771,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'co_spatial_portal_parcels_all' || // Skip CO parcels array (handled separately)
         key === 'co_spatial_portal_active_districts_all' || // Skip CO Active Districts array (handled separately)
         (key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all')) || // Skip CPW Species Data arrays (handled separately)
+        (key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all')) || // Skip CDOT arrays (handled separately)
         key === 'de_parcels_all' || // Skip _all arrays (handled separately)
         key === 'de_lulc_2007_all' || // Skip _all arrays (handled separately)
         key === 'de_lulc_2007_revised_all' || // Skip _all arrays (handled separately)
@@ -2274,6 +2275,48 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           '',
           attributesJson,
           'Colorado Spatial Portal'
+        ]);
+      });
+    } else if (key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') && Array.isArray(value)) {
+      // Handle CDOT layers - each feature gets its own row with all attributes
+      const layerName = key.replace('co_spatial_portal_cdot_', '').replace('_all', '').replace(/_/g, ' ');
+      value.forEach((feature: any) => {
+        const featureId = feature.objectId || feature.OBJECTID || feature.objectid || feature.FID || feature.fid || 'Unknown';
+        const featureType = feature.isContaining ? 'Containing Feature' : 'Nearby Feature';
+        
+        // Collect all attributes as JSON string
+        const allAttributes = { ...feature };
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal - CDOT',
+          (location.confidence || 'N/A').toString(),
+          `CO_CDOT_${layerName.toUpperCase().replace(/\s+/g, '_')}`,
+          `${featureType} - ${featureId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined
+            ? feature.distance_miles.toFixed(2)
+            : feature.isContaining
+            ? '0.00'
+            : '',
+          featureType,
+          feature.layerName || layerName,
+          '', // Owner (not applicable)
+          '', // Phone (not applicable)
+          attributesJson,
+          'Colorado Spatial Portal - CDOT'
         ]);
       });
     } else if (key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') && Array.isArray(value)) {
