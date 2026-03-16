@@ -1232,14 +1232,35 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'co') {
-          // CO will have sub-categories (to be added later)
+          // Colorado sub-categories
+          // For now, define the Colorado Spatial Portal sub-category so we can begin adding layers
+          const coSpatialPortalEnrichments = sectionEnrichments.filter(e =>
+            e.id.startsWith('co_spatial_portal_')
+          );
+
+          const coSubCategories: EnrichmentCategory[] = [
+            {
+              id: 'co_spatial_portal',
+              title: 'Colorado Spatial Portal',
+              icon: (
+                <img
+                  src="/assets/COSpatialDataPortal.webp"
+                  alt="Colorado Spatial Portal"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ),
+              description: 'Colorado Spatial Portal data layers and services',
+              enrichments: coSpatialPortalEnrichments
+            }
+          ];
+
           return {
             id: section.id,
             title: section.title,
             icon: SECTION_ICONS[section.id] || <span className="text-xl">⚙️</span>,
             description: section.description,
-            enrichments: [],
-            subCategories: []
+            enrichments: [], // CO parent category has no direct enrichments; use sub-categories
+            subCategories: coSubCategories
           };
         }
         

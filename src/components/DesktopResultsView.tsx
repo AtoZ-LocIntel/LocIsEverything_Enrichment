@@ -879,6 +879,9 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Natural Hazards';
       } else if (key.includes('poi_epa_')) {
         category = 'Human Caused Hazards';
+      } else if (key.includes('co_spatial_portal')) {
+        // Colorado Spatial Portal - check BEFORE AT/PCT to avoid false matches
+        category = 'Colorado Spatial Portal';
       } else if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || (key.includes('poi_') && (key.includes('national_park') || key.includes('state_park') || key.includes('wildlife') || key.includes('trailhead') || key.includes('picnic') || key.includes('visitor_center') || key.includes('ranger_station')))) {
         category = 'Public Lands & Protected Areas';
       } else if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {

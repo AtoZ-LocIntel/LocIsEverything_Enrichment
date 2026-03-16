@@ -45,6 +45,7 @@ export interface BasemapConfig {
   wmsCrs?: string; // 'EPSG4326' or 'EPSG3857'
   wmsVersion?: string; // '1.1.1' or '1.3.0' (default: '1.3.0')
   wmsUppercase?: boolean; // Required for some WMS 1.3.0 services
+  wmsTransparent?: boolean; // Enable transparency for WMS layers
   wmsRasterFunction?: string; // Raster function name for ImageServer services (e.g., 'RoadDensity')
   // For direct tile layers (ArcGIS MapServer tiles)
   tileUrl?: string; // URL template with {z}/{y}/{x} placeholders, or ExportImage endpoint URL, or MapServer base URL for ExportMap
@@ -4842,6 +4843,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_colleges_universities': { icon: '🎓', color: '#7c3aed', title: 'Colleges & Universities' },
   'ct_urgent_care': { icon: '🏥', color: '#f97316', title: 'CT Urgent Care' },
   'ct_parcels': { icon: '🏠', color: '#059669', title: 'CT Parcels' },
+  'co_spatial_portal_parcels': { icon: '🏠', color: '#059669', title: 'CO Parcels' },
+  'co_spatial_portal_active_districts': { icon: '🏛️', color: '#7c3aed', title: 'CO Active Districts' },
   'ct_tribal_lands': { icon: '🏛️', color: '#8b5cf6', title: 'CT Tribal Lands' },
   'ct_drinking_water_watersheds': { icon: '💧', color: '#0891b2', title: 'CT Drinking Water Watersheds' },
   'ct_broadband_availability': { icon: '📡', color: '#7c3aed', title: 'CT 2025 Broadband Availability by Block' },
@@ -5806,6 +5809,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ma_regional_planning_agencies_all' || // Skip MA Regional Planning Agencies array (handled separately for map drawing)
     key === 'ma_acecs_all' || // Skip MA ACECs array (handled separately for map drawing)
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
+    key === 'co_spatial_portal_parcels_all' || // Skip CO parcels array (handled separately for map drawing)
+    key === 'co_spatial_portal_active_districts_all' || // Skip CO Active Districts array (handled separately for map drawing)
+    key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') || // Skip CPW Species Data arrays (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
     key === 'de_parcels_all' || // Skip DE parcels array (handled separately for map drawing)
     key === 'de_lulc_2007_all' || // Skip DE LULC arrays (handled separately for map drawing)
@@ -8562,7 +8568,6 @@ const MapView: React.FC<MapViewProps> = ({
           console.warn('⚔️ Layer groups not initialized');
           return;
         }
-        const { primary } = layerGroupsRef.current;
         
         // Remove old ACLED layer if it exists
         if (acledLayerRef.current && mapInstanceRef.current) {
@@ -21073,6 +21078,312 @@ const MapView: React.FC<MapViewProps> = ({
           }
           legendAccumulator['ct_parcels'].count += parcelCount;
         }
+      }
+
+      // Draw CO CPW Species Data polygons (all 315 layers) - generic handler
+      Object.keys(enrichments).forEach(key => {
+        if (key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') && Array.isArray(enrichments[key])) {
+          const baseKey = key.replace('_all', '');
+          const layerName = baseKey.replace('co_spatial_portal_cpw_', '').replace(/_/g, ' ');
+          const features = enrichments[key] as any[];
+          let featureCount = 0;
+          
+          features.forEach((feature: any) => {
+            if (feature.geometry && feature.geometry.rings) {
+              try {
+                const rings = feature.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => {
+                    return [coord[1], coord[0]] as [number, number];
+                  });
+
+                  if (latlngs.length < 3) {
+                    console.warn(`CPW Species Data polygon (${layerName}) has less than 3 coordinates, skipping`);
+                    return;
+                  }
+
+                  const isContaining = feature.isContaining;
+                  const color = isContaining ? '#dc2626' : '#3b82f6'; // Red for containing, blue for nearby
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.8 : 0.5;
+
+                  const polygon = L.polygon(latlngs, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    fillColor: color,
+                    fillOpacity: 0.2
+                  });
+
+                  // Build popup content with all attributes
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                        🦌 ${isContaining ? '📍 Containing' : '🏠 Nearby'} - ${feature.layerName || layerName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280;">
+                  `;
+                  
+                  // Add all feature attributes
+                  const excludeFields = ['objectId', 'isContaining', 'distance_miles', 'geometry', 'layerId', 'layerName'];
+                  Object.entries(feature).forEach(([attrKey, attrValue]) => {
+                    if (!excludeFields.includes(attrKey) && attrValue !== null && attrValue !== undefined && attrValue !== '') {
+                      const displayKey = attrKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      let displayValue = '';
+                      
+                      if (typeof attrValue === 'object') {
+                        displayValue = JSON.stringify(attrValue);
+                      } else if (typeof attrValue === 'number') {
+                        displayValue = attrValue.toLocaleString();
+                      } else {
+                        displayValue = String(attrValue);
+                      }
+                      
+                      popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                    }
+                  });
+                  
+                  if (feature.distance_miles !== null && feature.distance_miles !== undefined) {
+                    popupContent += `<div style="margin-bottom: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${feature.distance_miles.toFixed(2)} miles</div>`;
+                  }
+                  
+                  popupContent += `
+                      </div>
+                    </div>
+                  `;
+                  
+                  polygon.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  featureCount++;
+                }
+              } catch (error) {
+                console.error(`Error drawing CPW Species Data polygon (${layerName}):`, error);
+              }
+            }
+          });
+          
+          // Add legend entry for this CPW Species Data layer
+          if (featureCount > 0 && features.length > 0) {
+            const firstFeature = features[0];
+            const displayName = firstFeature?.layerName || layerName.replace(/\b\w/g, l => l.toUpperCase());
+            if (!legendAccumulator[baseKey]) {
+              legendAccumulator[baseKey] = {
+                icon: '🦌',
+                color: '#3b82f6',
+                title: displayName,
+                count: 0,
+              };
+            }
+            legendAccumulator[baseKey].count += featureCount;
+          }
+        }
+      });
+
+      // Draw CO Active Districts (Colorado Spatial Portal) as polygons on the map
+      if (enrichments.co_spatial_portal_active_districts_all && Array.isArray(enrichments.co_spatial_portal_active_districts_all)) {
+        console.log(`🗺️ Drawing CO Active Districts: ${enrichments.co_spatial_portal_active_districts_all.length} districts in array`);
+        const containingDistricts = enrichments.co_spatial_portal_active_districts_all.filter((d: any) => d.isContaining);
+        const nearbyDistricts = enrichments.co_spatial_portal_active_districts_all.filter((d: any) => !d.isContaining);
+        console.log(`🗺️ CO Active Districts breakdown: ${containingDistricts.length} containing, ${nearbyDistricts.length} nearby`);
+        
+        enrichments.co_spatial_portal_active_districts_all.forEach((district: any, index: number) => {
+          const isContaining = district.isContaining;
+          console.log(`🗺️ District ${index + 1}: isContaining=${isContaining}, hasGeometry=${!!district.geometry}, geometry keys:`, district.geometry ? Object.keys(district.geometry) : 'none', 'hasRings=', !!(district.geometry && district.geometry.rings), 'districtId:', district.districtId || district.OBJECTID);
+          
+          if (district.geometry && district.geometry.rings) {
+            try {
+              const rings = district.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = district.isContaining;
+                const color = isContaining ? '#dc2626' : '#7c3aed'; // Red for containing, purple for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color,
+                  weight,
+                  opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all district attributes
+                const districtName = district.lgname || district.LGNAME || district.districtId || 'Unknown';
+                const districtType = district.lgtypeid || district.LGTYPEID || '';
+                const districtId = district.lgid || district.LGID || district.districtId || 'Unknown';
+                
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                      ${isContaining ? '📍 Containing District' : '🏛️ Nearby District'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                      <div style="margin-bottom: 4px;"><strong>District Name:</strong> ${districtName}</div>
+                      ${districtId ? `<div style="margin-bottom: 4px;"><strong>District ID:</strong> ${districtId}</div>` : ''}
+                      ${districtType ? `<div style="margin-bottom: 4px;"><strong>Type ID:</strong> ${districtType}</div>` : ''}
+                `;
+
+                const excludeFields = ['districtId', 'lgid', 'LGID', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(district).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+
+                if (district.distance_miles !== null && district.distance_miles !== undefined) {
+                  popupContent += `<div style="margin-bottom: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;"><strong>Distance:</strong> ${district.distance_miles.toFixed(2)} miles</div>`;
+                }
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                console.log(`✅ CO Active Districts: Drew ${isContaining ? 'containing' : 'nearby'} district polygon - ${districtName}`);
+              } else {
+                console.warn(`⚠️ CO Active Districts: District ${index + 1} has geometry but no rings or empty rings array`);
+              }
+            } catch (error) {
+              console.error(`❌ Error drawing CO Active District polygon (${isContaining ? 'containing' : 'nearby'}):`, error, 'district:', district);
+            }
+          } else {
+            console.warn(`⚠️ CO Active Districts: District ${index + 1} (${isContaining ? 'containing' : 'nearby'}) missing geometry or rings:`, {
+              hasGeometry: !!district.geometry,
+              geometryType: district.geometry ? typeof district.geometry : 'none',
+              hasRings: !!(district.geometry && district.geometry.rings),
+              districtId: district.districtId || district.OBJECTID
+            });
+          }
+        });
+      }
+
+      // Add CO Active Districts to legend accumulator
+      if (enrichments.co_spatial_portal_active_districts_all && Array.isArray(enrichments.co_spatial_portal_active_districts_all)) {
+        const districtCount = enrichments.co_spatial_portal_active_districts_all.length;
+        if (districtCount > 0) {
+          if (!legendAccumulator['co_spatial_portal_active_districts']) {
+            const radius = getRadiusForLegendKey('co_spatial_portal_active_districts');
+            const radiusDisplay = formatRadiusDisplay('co_spatial_portal_active_districts', radius);
+            legendAccumulator['co_spatial_portal_active_districts'] = {
+              icon: '🏛️',
+              color: '#7c3aed',
+              title: 'CO Active Districts',
+              count: 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          }
+          legendAccumulator['co_spatial_portal_active_districts'].count += districtCount;
+        }
+      }
+
+      // Add CO Active Districts to legend accumulator
+      if (enrichments.co_spatial_portal_active_districts_all && Array.isArray(enrichments.co_spatial_portal_active_districts_all)) {
+        const districtCount = enrichments.co_spatial_portal_active_districts_all.length;
+        if (districtCount > 0) {
+          if (!legendAccumulator['co_spatial_portal_active_districts']) {
+            const radius = getRadiusForLegendKey('co_spatial_portal_active_districts');
+            const radiusDisplay = formatRadiusDisplay('co_spatial_portal_active_districts', radius);
+            legendAccumulator['co_spatial_portal_active_districts'] = {
+              icon: '🏛️',
+              color: '#7c3aed',
+              title: 'CO Active Districts',
+              count: 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          }
+          legendAccumulator['co_spatial_portal_active_districts'].count += districtCount;
+        }
+      }
+
+      // Draw CO Parcels (Colorado Spatial Portal) as polygons on the map
+      if (enrichments.co_spatial_portal_parcels_all && Array.isArray(enrichments.co_spatial_portal_parcels_all)) {
+        enrichments.co_spatial_portal_parcels_all.forEach((parcel: any) => {
+          if (parcel.geometry && parcel.geometry.rings) {
+            try {
+              const rings = parcel.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => {
+                  return [coord[1], coord[0]] as [number, number];
+                });
+
+                const isContaining = parcel.isContaining;
+                const color = isContaining ? '#dc2626' : '#059669'; // Red for containing, green for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color,
+                  weight,
+                  opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2
+                });
+
+                // Build popup content with all parcel attributes
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${isContaining ? '📍 Containing CO Parcel' : '🏠 Nearby CO Parcel'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 400px; overflow-y: auto;">
+                `;
+
+                const excludeFields = ['parcelId', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(parcel).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              }
+            } catch (error) {
+              console.error('Error drawing CO parcel polygon:', error);
+            }
+          }
+        });
       }
 
       // Draw NJ Parcels as polygons on the map

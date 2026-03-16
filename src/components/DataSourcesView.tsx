@@ -8184,11 +8184,28 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "Colorado Sources",
       sources: [
         {
-          name: "Sources Coming Soon...",
-          description: "State-specific data sources for Colorado will be added in future updates",
+          name: "Colorado Public Parcels",
+          description: "Colorado Public Parcels FeatureServer - statewide public parcel boundaries with point-in-polygon queries and proximity queries (0.1, 0.25, 0.5 miles) via the Colorado Spatial Portal.",
           coverage: "Colorado",
-          accuracy: "N/A",
-          cost: "N/A"
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.colorado.gov/public/rest/services/Address_and_Parcel/Colorado_Public_Parcels/FeatureServer/0"
+        },
+        {
+          name: "Colorado DOLA Active Districts",
+          description: "Colorado Spatial Portal - Colorado Department of Local Affairs (DOLA) Active Districts FeatureServer including school districts, water districts, sanitation districts, park and recreation districts, and other special districts. Supports point-in-polygon queries and proximity queries up to 50 miles.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/DgjqnJA1rgO92Soi/arcgis/rest/services/All_Active_DOLA_Districts_-_private_staging_area_view/FeatureServer/0"
+        },
+        {
+          name: "Colorado Parks and Wildlife (CPW) Species Data",
+          description: "Colorado Spatial Portal - CPW Species Data Feature Service with 315 layers covering wildlife distributions, habitat ranges, migration patterns, nesting areas, and species presence data for mammals, birds, reptiles, amphibians, fish, and bats. All layers support point-in-polygon and proximity queries up to 50 miles.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/arcgis/rest/services/CPWSpeciesData/FeatureServer"
         }
       ]
     },

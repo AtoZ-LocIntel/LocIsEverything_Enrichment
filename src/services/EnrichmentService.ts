@@ -9,6 +9,9 @@ import { getNHSSURGOContainingData } from '../adapters/nhSSURGO';
 import { getNHBedrockGeologyContainingData } from '../adapters/nhBedrockGeology';
 import { getNHGeographicNamesNearbyData } from '../adapters/nhGeographicNames';
 import { getNHParcelData } from '../adapters/nhParcels';
+import { getCOParcelData } from '../adapters/coParcels';
+import { getCOActiveDistrictData } from '../adapters/coActiveDistricts';
+import { getCPWSpeciesLayerData, CPW_LAYER_NAMES, layerNameToId } from '../adapters/coCPWSpeciesData';
 import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
 import { getNHNursingHomesData } from '../adapters/nhNursingHomes';
 import { getNHEMSData } from '../adapters/nhEMS';
@@ -3303,6 +3306,11 @@ export class EnrichmentService {
     const radius = Math.min(requestedRadius, maxRadius);
     console.log(`🔍 DEBUG EnrichmentService: requestedRadius=${requestedRadius}, maxRadius=${maxRadius}, final radius=${radius} for ${enrichmentId}`);
 
+    // Handle CO CPW Species Data layers (all 315 layers) before switch statement
+    if (enrichmentId.startsWith('co_spatial_portal_cpw_')) {
+      return await this.getCPWSpeciesData(enrichmentId, lat, lon, radius);
+    }
+    
     switch (enrichmentId) {
       case 'elev':
         const elevationMeters = await this.getElevation(lat, lon);
@@ -3652,6 +3660,14 @@ export class EnrichmentService {
       // NH Parcels (NH GRANIT) - Point-in-polygon and proximity query
       case 'nh_parcels':
         return await this.getNHParcels(lat, lon, radius);
+      
+      // CO Parcels (Colorado Spatial Portal) - Point-in-polygon and proximity query
+      case 'co_spatial_portal_parcels':
+        return await this.getCOParcels(lat, lon, radius);
+      
+      // CO Active Districts (Colorado Spatial Portal) - Point-in-polygon and proximity query
+      case 'co_spatial_portal_active_districts':
+        return await this.getCOActiveDistricts(lat, lon, radius);
       
       // NH Key Destinations (NH GRANIT) - Proximity query
       case 'nh_key_destinations':
@@ -14448,6 +14464,334 @@ export class EnrichmentService {
         nh_parcels_nearby_count: 0,
         nh_parcels_all: [],
         nh_parcels_error: 'Error fetching NH Parcels data'
+      };
+    }
+  }
+
+  private async getCOParcels(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏠 Fetching CO Parcels data for [${lat}, ${lon}] with radius ${radius} miles`);
+
+      // Use the provided radius, defaulting to 0.25 miles if not specified
+      const radiusMiles = radius || 0.25;
+
+      const parcelData = await getCOParcelData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (parcelData) {
+        // Collect all parcels (containing + nearby) into a single array for CSV export and map drawing
+        const allParcels: any[] = [];
+
+        // Add containing parcel (point-in-polygon) if found
+        if (parcelData.containingParcel && parcelData.containingParcel.parcelId) {
+          allParcels.push({
+            ...parcelData.containingParcel.attributes,
+            parcelId: parcelData.containingParcel.parcelId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: parcelData.containingParcel.geometry // Include geometry for map drawing
+          });
+          result.co_spatial_portal_parcels_containing = parcelData.containingParcel.parcelId;
+          result.co_spatial_portal_parcels_containing_count = 1; // Count for summary stats
+          result.co_spatial_portal_parcels_containing_summary = `Point is within parcel: ${parcelData.containingParcel.parcelId}`;
+        } else {
+          result.co_spatial_portal_parcels_containing = null;
+          result.co_spatial_portal_parcels_containing_count = 0; // Count for summary stats
+          result.co_spatial_portal_parcels_containing_summary = 'No parcel found containing this location';
+        }
+
+        // Add nearby parcels (proximity search)
+        if (parcelData.nearbyParcels && parcelData.nearbyParcels.length > 0) {
+          parcelData.nearbyParcels.forEach(parcel => {
+            // Only add if it's not already in the array (avoid duplicates)
+            if (!allParcels.some(p => p.parcelId === parcel.parcelId)) {
+              allParcels.push({
+                ...parcel.attributes,
+                parcelId: parcel.parcelId,
+                isContaining: false,
+                distance_miles: null, // Distance not calculated in proximity query
+                geometry: parcel.geometry // Include geometry for map drawing
+              });
+            }
+          });
+          result.co_spatial_portal_parcels_nearby_count = parcelData.nearbyParcels.length;
+        } else {
+          result.co_spatial_portal_parcels_nearby_count = 0;
+        }
+
+        // Store all parcels as an array for CSV export (similar to _all_pois pattern)
+        result.co_spatial_portal_parcels_all = allParcels;
+        result.co_spatial_portal_parcels_search_radius_miles = radiusMiles;
+      } else {
+        result.co_spatial_portal_parcels_containing = null;
+        result.co_spatial_portal_parcels_containing_count = 0;
+        result.co_spatial_portal_parcels_nearby_count = 0;
+        result.co_spatial_portal_parcels_all = [];
+      }
+
+      console.log(`✅ CO Parcels data processed:`, {
+        containing: result.co_spatial_portal_parcels_containing || 'N/A',
+        containingCount: result.co_spatial_portal_parcels_containing_count || 0,
+        nearbyCount: result.co_spatial_portal_parcels_nearby_count || 0
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CO Parcels:', error);
+      return {
+        co_spatial_portal_parcels_containing: null,
+        co_spatial_portal_parcels_containing_count: 0,
+        co_spatial_portal_parcels_nearby_count: 0,
+        co_spatial_portal_parcels_all: [],
+        co_spatial_portal_parcels_error: 'Error fetching CO Parcels data'
+      };
+    }
+  }
+
+  private async getCOActiveDistricts(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏛️ Fetching CO Active Districts data for [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Use the provided radius, defaulting to 5 miles if not specified
+      const radiusMiles = radius || 5;
+      
+      const districtData = await getCOActiveDistrictData(lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      if (districtData) {
+        // Collect all districts (containing + nearby) into a single array for CSV export
+        const allDistricts: any[] = [];
+        
+        // Add containing district (point-in-polygon) if found
+        // Check if containingDistrict exists (even if districtId is null, the object should exist if query returned a feature)
+        if (districtData.containingDistrict) {
+          console.log(`🔍 CO Active Districts: Processing containing district, has attributes:`, !!districtData.containingDistrict.attributes, 'has geometry:', !!districtData.containingDistrict.geometry);
+          
+          // Extract district identifier - use OBJECTID as fallback if districtId is null
+          const districtId = districtData.containingDistrict.districtId || 
+                           (districtData.containingDistrict.attributes && districtData.containingDistrict.attributes.OBJECTID) ||
+                           (districtData.containingDistrict.attributes && districtData.containingDistrict.attributes.objectid) ||
+                           (districtData.containingDistrict.attributes && districtData.containingDistrict.attributes.OBJECTID_1) ||
+                           `OBJECTID_${(districtData.containingDistrict.attributes && districtData.containingDistrict.attributes.OBJECTID) || (districtData.containingDistrict.attributes && districtData.containingDistrict.attributes.objectid) || (districtData.containingDistrict.attributes && districtData.containingDistrict.attributes.OBJECTID_1) || 'Unknown'}`;
+          
+          // Add containing district to array FIRST (before nearby districts)
+          // Create object without geometry in attributes, then add geometry separately to ensure it's preserved
+          const attributes = districtData.containingDistrict.attributes || {};
+          const attributesWithoutGeometry = { ...attributes };
+          delete attributesWithoutGeometry.geometry; // Remove geometry from attributes if it exists there
+          
+          // Get geometry directly from containingDistrict (not from attributes)
+          const containingGeometry = districtData.containingDistrict.geometry;
+          console.log(`🔍 CO Active Districts: Containing geometry check:`, {
+            hasGeometry: !!containingGeometry,
+            geometryType: containingGeometry ? typeof containingGeometry : 'none',
+            hasRings: !!(containingGeometry && containingGeometry.rings),
+            ringsCount: containingGeometry && containingGeometry.rings ? containingGeometry.rings.length : 0
+          });
+          
+          // Build the containing district object, ensuring geometry is set last to avoid being overwritten
+          const containingDistrictObj: any = {
+            ...attributesWithoutGeometry,
+            districtId: districtId,
+            isContaining: true,
+            distance_miles: 0
+          };
+          // Set geometry last to ensure it's not overwritten by any attribute
+          containingDistrictObj.geometry = containingGeometry;
+          allDistricts.push(containingDistrictObj);
+          console.log(`✅ CO Active Districts: Added containing district to array - ${districtId}`);
+          console.log(`   Final object geometry check:`, {
+            hasGeometry: !!containingDistrictObj.geometry,
+            geometryType: containingDistrictObj.geometry ? typeof containingDistrictObj.geometry : 'none',
+            hasRings: !!(containingDistrictObj.geometry && containingDistrictObj.geometry.rings),
+            ringsCount: containingDistrictObj.geometry && containingDistrictObj.geometry.rings ? containingDistrictObj.geometry.rings.length : 0,
+            geometryKeys: containingDistrictObj.geometry ? Object.keys(containingDistrictObj.geometry) : []
+          });
+          
+          const districtName = districtData.containingDistrict.attributes.lgname || 
+                               districtData.containingDistrict.attributes.LGNAME || 
+                               districtId;
+          result.co_spatial_portal_active_districts_containing = districtId;
+          result.co_spatial_portal_active_districts_containing_count = 1; // Count for summary stats
+          result.co_spatial_portal_active_districts_containing_name = districtName;
+          result.co_spatial_portal_active_districts_containing_summary = `Point is within district: ${districtName} (ID: ${districtId})`;
+          console.log(`✅ CO Active Districts: Found containing district - ${districtName} (${districtId})`);
+        } else {
+          result.co_spatial_portal_active_districts_containing = null;
+          result.co_spatial_portal_active_districts_containing_count = 0; // Count for summary stats - always set so it shows in summary
+          result.co_spatial_portal_active_districts_containing_summary = 'No district found containing this location';
+          console.log(`ℹ️ CO Active Districts: No containing district found`);
+        }
+        
+        // Add nearby districts (proximity search)
+        if (districtData.nearbyDistricts && districtData.nearbyDistricts.length > 0) {
+          let nearbyAdded = 0;
+          districtData.nearbyDistricts.forEach(district => {
+            // Extract district ID for comparison (same logic as containing district)
+            const nearbyDistrictId = district.districtId || 
+                                    district.attributes.OBJECTID ||
+                                    district.attributes.objectid ||
+                                    district.attributes.OBJECTID_1 ||
+                                    `OBJECTID_${district.attributes.OBJECTID || district.attributes.objectid || district.attributes.OBJECTID_1 || 'Unknown'}`;
+            
+            // Only add if it's not already in the array (avoid duplicates with containing district)
+            // Check both districtId and OBJECTID to catch duplicates
+            const isDuplicate = allDistricts.some(d => {
+              const dId = d.districtId || d.OBJECTID || d.objectid || d.OBJECTID_1;
+              const nId = nearbyDistrictId || district.attributes.OBJECTID || district.attributes.objectid || district.attributes.OBJECTID_1;
+              return dId === nId || (d.OBJECTID && d.OBJECTID === district.attributes.OBJECTID);
+            });
+            
+            if (!isDuplicate) {
+              // Create object without geometry in attributes, then add geometry separately to ensure it's preserved
+              const nearbyAttributesWithoutGeometry = { ...district.attributes };
+              delete nearbyAttributesWithoutGeometry.geometry; // Remove geometry from attributes if it exists there
+              
+              allDistricts.push({
+                ...nearbyAttributesWithoutGeometry,
+                districtId: nearbyDistrictId,
+                isContaining: false,
+                distance_miles: null, // Distance not calculated in proximity query
+                geometry: district.geometry // Include geometry for map drawing (from feature, not attributes)
+              });
+              nearbyAdded++;
+            } else {
+              console.log(`ℹ️ CO Active Districts: Skipping duplicate nearby district: ${nearbyDistrictId}`);
+            }
+          });
+          result.co_spatial_portal_active_districts_nearby_count = nearbyAdded;
+          console.log(`✅ CO Active Districts: Added ${nearbyAdded} nearby districts (skipped ${districtData.nearbyDistricts.length - nearbyAdded} duplicates)`);
+        } else {
+          result.co_spatial_portal_active_districts_nearby_count = 0;
+        }
+        
+        // Store all districts as an array for CSV export (similar to _all_pois pattern)
+        result.co_spatial_portal_active_districts_all = allDistricts;
+        console.log(`✅ CO Active Districts: Total districts in array: ${allDistricts.length} (containing: ${allDistricts.filter(d => d.isContaining).length}, nearby: ${allDistricts.filter(d => !d.isContaining).length})`);
+        result.co_spatial_portal_active_districts_search_radius_miles = radiusMiles;
+      } else {
+        result.co_spatial_portal_active_districts_containing = null;
+        result.co_spatial_portal_active_districts_containing_count = 0; // Always set so it shows in summary
+        result.co_spatial_portal_active_districts_containing_summary = 'No district found containing this location';
+        result.co_spatial_portal_active_districts_nearby_count = 0;
+        result.co_spatial_portal_active_districts_all = [];
+      }
+      
+      console.log(`✅ CO Active Districts data processed:`, {
+        containing: result.co_spatial_portal_active_districts_containing || 'N/A',
+        containingCount: result.co_spatial_portal_active_districts_containing_count || 0,
+        nearbyCount: result.co_spatial_portal_active_districts_nearby_count || 0
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Error fetching CO Active Districts:', error);
+      return {
+        co_spatial_portal_active_districts_containing: null,
+        co_spatial_portal_active_districts_containing_count: 0, // Always set so it shows in summary
+        co_spatial_portal_active_districts_containing_summary: 'No district found containing this location',
+        co_spatial_portal_active_districts_nearby_count: 0,
+        co_spatial_portal_active_districts_all: [],
+        co_spatial_portal_active_districts_error: 'Error fetching CO Active Districts data'
+      };
+    }
+  }
+
+  private async getCPWSpeciesData(enrichmentId: string, lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🦌 Fetching CPW Species Data for ${enrichmentId} at [${lat}, ${lon}] with radius ${radius} miles`);
+      
+      // Extract layer name from enrichment ID
+      // Format: co_spatial_portal_cpw_[sanitized_layer_name]
+      const layerNamePart = enrichmentId.replace('co_spatial_portal_cpw_', '');
+      
+      // Find the layer ID by matching the sanitized name to the actual layer name
+      let layerId: number | null = null;
+      let layerName: string | null = null;
+      
+      for (const [id, name] of Object.entries(CPW_LAYER_NAMES)) {
+        const sanitizedName = layerNameToId(name);
+        if (sanitizedName === layerNamePart) {
+          layerId = parseInt(id, 10);
+          layerName = name;
+          break;
+        }
+      }
+      
+      if (layerId === null || layerName === null) {
+        console.error(`❌ Could not find layer ID for enrichment ID: ${enrichmentId}`);
+        return {
+          [`${enrichmentId}_error`]: `Layer not found for ${enrichmentId}`
+        };
+      }
+      
+      const radiusMiles = radius || 5;
+      const features = await getCPWSpeciesLayerData(layerId, layerName, lat, lon, radiusMiles);
+      
+      const result: Record<string, any> = {};
+      
+      // Collect all features (containing + nearby) into a single array
+      const allFeatures: any[] = [];
+      
+      // Separate containing and nearby features
+      const containingFeatures = features.filter(f => f.isContaining);
+      const nearbyFeatures = features.filter(f => !f.isContaining);
+      
+      // Add containing features
+      containingFeatures.forEach(feature => {
+        allFeatures.push({
+          ...feature.attributes,
+          objectId: feature.objectId,
+          isContaining: true,
+          distance_miles: 0,
+          geometry: feature.geometry,
+          layerId: feature.layerId,
+          layerName: feature.layerName
+        });
+      });
+      
+      // Add nearby features
+      nearbyFeatures.forEach(feature => {
+        allFeatures.push({
+          ...feature.attributes,
+          objectId: feature.objectId,
+          isContaining: false,
+          distance_miles: feature.distance_miles,
+          geometry: feature.geometry,
+          layerId: feature.layerId,
+          layerName: feature.layerName
+        });
+      });
+      
+      // Set result fields
+      const baseKey = enrichmentId;
+      result[`${baseKey}_containing_count`] = containingFeatures.length;
+      result[`${baseKey}_nearby_count`] = nearbyFeatures.length;
+      result[`${baseKey}_total_count`] = features.length;
+      result[`${baseKey}_all`] = allFeatures;
+      result[`${baseKey}_search_radius_miles`] = radiusMiles;
+      
+      if (containingFeatures.length > 0) {
+        result[`${baseKey}_containing`] = containingFeatures.map(f => f.objectId).join(', ');
+      } else {
+        result[`${baseKey}_containing`] = null;
+        result[`${baseKey}_containing_message`] = 'No features found containing this location';
+      }
+      
+      console.log(`✅ CPW Species Data (${layerName}) processed:`, {
+        containing: containingFeatures.length,
+        nearby: nearbyFeatures.length,
+        total: features.length
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching CPW Species Data for ${enrichmentId}:`, error);
+      return {
+        [`${enrichmentId}_error`]: `Error fetching CPW Species Data: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }

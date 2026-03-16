@@ -768,6 +768,9 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'ma_trails_all' || // Skip _all arrays (handled separately)
         key === 'ma_parcels_all' || // Skip _all arrays (handled separately)
         key === 'ct_parcels_all' || // Skip _all arrays (handled separately)
+        key === 'co_spatial_portal_parcels_all' || // Skip CO parcels array (handled separately)
+        key === 'co_spatial_portal_active_districts_all' || // Skip CO Active Districts array (handled separately)
+        (key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all')) || // Skip CPW Species Data arrays (handled separately)
         key === 'de_parcels_all' || // Skip _all arrays (handled separately)
         key === 'de_lulc_2007_all' || // Skip _all arrays (handled separately)
         key === 'de_lulc_2007_revised_all' || // Skip _all arrays (handled separately)
@@ -2154,6 +2157,165 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           '', // Phone (not applicable for parcels)
           attributesJson, // Full attributes in Website field for easy access
           'MassGIS'
+        ]);
+      });
+    } else if (key === 'co_spatial_portal_parcels_all' && Array.isArray(value)) {
+      // Handle CO Parcels - each parcel gets its own row with all attributes
+      value.forEach((parcel: any) => {
+        const parcelId =
+          parcel.parcelId ||
+          parcel.PARCELID ||
+          parcel.parcelid ||
+          parcel.OBJECTID ||
+          parcel.objectid ||
+          parcel.APIN ||
+          parcel.apin ||
+          'Unknown';
+        const parcelType = parcel.isContaining ? 'Containing Parcel' : 'Nearby Parcel';
+
+        const ownerName =
+          parcel.OWNER ||
+          parcel.owner ||
+          parcel.OWNER_NAME ||
+          parcel.owner_name ||
+          '';
+        const address =
+          parcel.SITE_ADDR ||
+          parcel.site_addr ||
+          parcel.ADDRESS ||
+          parcel.address ||
+          '';
+        const city = parcel.CITY || parcel.city || '';
+        const state = parcel.STATE || parcel.state || 'CO';
+        const zip = parcel.ZIP || parcel.zip || parcel.ZIP_CODE || parcel.zip_code || '';
+        const fullAddress = [address, city, state, zip].filter(Boolean).join(', ');
+
+        const allAttributes = { ...parcel };
+        delete allAttributes.parcelId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_PARCEL',
+          `${parcelType} - ${parcelId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          parcel.distance_miles !== null && parcel.distance_miles !== undefined
+            ? parcel.distance_miles.toFixed(2)
+            : parcel.isContaining
+            ? '0.00'
+            : '',
+          parcelType,
+          fullAddress || attributesJson,
+          ownerName || '',
+          '',
+          attributesJson,
+          'Colorado Spatial Portal'
+        ]);
+      });
+    } else if (key === 'co_spatial_portal_active_districts_all' && Array.isArray(value)) {
+      // Handle CO Active Districts - each district gets its own row with all attributes
+      value.forEach((district: any) => {
+        const districtId =
+          district.districtId ||
+          district.lgid ||
+          district.LGID ||
+          district.OBJECTID ||
+          district.objectid ||
+          district.OBJECTID_1 ||
+          'Unknown';
+        const districtType = district.isContaining ? 'Containing District' : 'Nearby District';
+
+        const districtName =
+          district.lgname ||
+          district.LGNAME ||
+          district.name ||
+          district.NAME ||
+          districtId;
+        const districtTypeId =
+          district.lgtypeid ||
+          district.LGTYPEID ||
+          district.type ||
+          district.TYPE ||
+          '';
+
+        // Collect all attributes as JSON string
+        const allAttributes = { ...district };
+        delete allAttributes.districtId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_ACTIVE_DISTRICT',
+          `${districtType} - ${districtId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          district.distance_miles !== null && district.distance_miles !== undefined
+            ? district.distance_miles.toFixed(2)
+            : district.isContaining
+            ? '0.00'
+            : '',
+          districtType,
+          districtName || attributesJson,
+          districtTypeId || '',
+          '',
+          attributesJson,
+          'Colorado Spatial Portal'
+        ]);
+      });
+    } else if (key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') && Array.isArray(value)) {
+      // Handle CO CPW Species Data - each feature gets its own row with all attributes
+      const layerName = key.replace('co_spatial_portal_cpw_', '').replace('_all', '').replace(/_/g, ' ');
+      value.forEach((feature: any) => {
+        const featureId = feature.objectId || feature.OBJECTID || feature.objectid || feature.FID || feature.fid || 'Unknown';
+        const featureType = feature.isContaining ? 'Containing Feature' : 'Nearby Feature';
+        
+        // Collect all attributes as JSON string
+        const allAttributes = { ...feature };
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        delete allAttributes.layerId;
+        delete allAttributes.layerName;
+        const attributesJson = JSON.stringify(allAttributes);
+        
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal - CPW Species Data',
+          (location.confidence || 'N/A').toString(),
+          `CO_CPW_${layerName.toUpperCase().replace(/\s+/g, '_')}`,
+          `${featureType} - ${featureId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          feature.distance_miles !== null && feature.distance_miles !== undefined
+            ? feature.distance_miles.toFixed(2)
+            : feature.isContaining
+            ? '0.00'
+            : '',
+          featureType,
+          feature.layerName || layerName,
+          '', // Owner (not applicable)
+          '', // Phone (not applicable)
+          attributesJson,
+          'Colorado Spatial Portal - CPW Species Data'
         ]);
       });
     } else if (key === 'de_parcels_all' && Array.isArray(value)) {

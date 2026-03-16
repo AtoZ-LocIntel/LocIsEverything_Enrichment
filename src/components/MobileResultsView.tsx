@@ -555,6 +555,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'NOAA';
     }
     
+    // Colorado Spatial Portal - check BEFORE AT/PCT to avoid false matches
+    if (key.includes('co_spatial_portal')) {
+      return 'Colorado Spatial Portal';
+    }
+    
     // Check BLM, PADUS, and USFS before AT/PCT to avoid false matches
     if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
