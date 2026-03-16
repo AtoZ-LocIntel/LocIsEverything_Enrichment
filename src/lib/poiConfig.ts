@@ -1323,6 +1323,17 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
     section: 'co'
   },
   {
+    id: 'co_spatial_portal_parks_recreation_districts',
+    label: 'CO Parks & Recreation Districts',
+    description:
+      'Colorado Spatial Portal - Colorado DOLA Parks & Recreation Districts for point-in-polygon and proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
     id: 'co_spatial_portal_cdot_bridges_and_major_culverts',
     label: 'Bridges and Major Culverts',
     description: 'Colorado Spatial Portal - CDOT: Bridges and Major Culverts for proximity queries (up to 25 miles)',

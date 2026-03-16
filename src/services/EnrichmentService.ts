@@ -11,6 +11,7 @@ import { getNHGeographicNamesNearbyData } from '../adapters/nhGeographicNames';
 import { getNHParcelData } from '../adapters/nhParcels';
 import { getCOParcelData } from '../adapters/coParcels';
 import { getCOActiveDistrictData } from '../adapters/coActiveDistricts';
+import { getCOParksRecDistrictData } from '../adapters/coParksRecDistricts';
 import { getCPWSpeciesLayerData, CPW_LAYER_NAMES, layerNameToId } from '../adapters/coCPWSpeciesData';
 import { getCDOTLayerData, CDOT_LAYER_NAMES, layerNameToId as cdotLayerNameToId } from '../adapters/coCDOT';
 import { getNHKeyDestinationsData } from '../adapters/nhKeyDestinations';
@@ -3673,6 +3674,8 @@ export class EnrichmentService {
       // CO Active Districts (Colorado Spatial Portal) - Point-in-polygon and proximity query
       case 'co_spatial_portal_active_districts':
         return await this.getCOActiveDistricts(lat, lon, radius);
+      case 'co_spatial_portal_parks_recreation_districts':
+        return await this.getCOParksRecDistricts(lat, lon, radius);
       
       // NH Key Destinations (NH GRANIT) - Proximity query
       case 'nh_key_destinations':
@@ -14701,6 +14704,127 @@ export class EnrichmentService {
         co_spatial_portal_active_districts_nearby_count: 0,
         co_spatial_portal_active_districts_all: [],
         co_spatial_portal_active_districts_error: 'Error fetching CO Active Districts data'
+      };
+    }
+  }
+
+  private async getCOParksRecDistricts(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏞️ Fetching CO Parks & Recreation Districts data for [${lat}, ${lon}] with radius ${radius} miles`);
+
+      const radiusMiles = radius || 5;
+      const districtData = await getCOParksRecDistrictData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (districtData) {
+        const allDistricts: any[] = [];
+
+        // Containing district
+        if (districtData.containingDistrict) {
+          const attrs = districtData.containingDistrict.attributes || {};
+          const districtId =
+            districtData.containingDistrict.districtId ||
+            attrs.lgid ||
+            attrs.LGID ||
+            attrs.lgname ||
+            attrs.LGNAME ||
+            attrs.OBJECTID ||
+            attrs.objectid ||
+            `OBJECTID_${attrs.OBJECTID || attrs.objectid || 'Unknown'}`;
+
+          const attrsNoGeom = { ...attrs };
+          delete attrsNoGeom.geometry;
+
+          const obj: any = {
+            ...attrsNoGeom,
+            districtId,
+            isContaining: true,
+            distance_miles: 0,
+            geometry: districtData.containingDistrict.geometry,
+          };
+
+          allDistricts.push(obj);
+
+          const name = attrs.lgname || attrs.LGNAME || attrs.abbrev_name || attrs.ABBREV_NAME || districtId;
+          result.co_spatial_portal_parks_recreation_districts_containing = districtId;
+          result.co_spatial_portal_parks_recreation_districts_containing_count = 1;
+          result.co_spatial_portal_parks_recreation_districts_containing_name = name;
+          result.co_spatial_portal_parks_recreation_districts_containing_summary = `Point is within Parks & Recreation District: ${name} (ID: ${districtId})`;
+        } else {
+          result.co_spatial_portal_parks_recreation_districts_containing = null;
+          result.co_spatial_portal_parks_recreation_districts_containing_count = 0;
+          result.co_spatial_portal_parks_recreation_districts_containing_summary =
+            'No Parks & Recreation District found containing this location';
+        }
+
+        // Nearby
+        if (districtData.nearbyDistricts && districtData.nearbyDistricts.length > 0) {
+          let nearbyAdded = 0;
+
+          districtData.nearbyDistricts.forEach(district => {
+            const attrs = district.attributes || {};
+            const nearbyDistrictId =
+              district.districtId ||
+              attrs.lgid ||
+              attrs.LGID ||
+              attrs.lgname ||
+              attrs.LGNAME ||
+              attrs.OBJECTID ||
+              attrs.objectid ||
+              `OBJECTID_${attrs.OBJECTID || attrs.objectid || 'Unknown'}`;
+
+            const isDuplicate = allDistricts.some(d => {
+              const dId = d.districtId || d.OBJECTID || d.objectid;
+              const nId = nearbyDistrictId || attrs.OBJECTID || attrs.objectid;
+              return dId === nId;
+            });
+
+            if (!isDuplicate) {
+              const attrsNoGeom = { ...attrs };
+              delete attrsNoGeom.geometry;
+
+              allDistricts.push({
+                ...attrsNoGeom,
+                districtId: nearbyDistrictId,
+                isContaining: false,
+                distance_miles: null,
+                geometry: district.geometry,
+              });
+              nearbyAdded++;
+            }
+          });
+
+          result.co_spatial_portal_parks_recreation_districts_nearby_count = nearbyAdded;
+        } else {
+          result.co_spatial_portal_parks_recreation_districts_nearby_count = 0;
+        }
+
+        result.co_spatial_portal_parks_recreation_districts_all = allDistricts;
+        result.co_spatial_portal_parks_recreation_districts_search_radius_miles = radiusMiles;
+      } else {
+        result.co_spatial_portal_parks_recreation_districts_containing = null;
+        result.co_spatial_portal_parks_recreation_districts_containing_count = 0;
+        result.co_spatial_portal_parks_recreation_districts_nearby_count = 0;
+        result.co_spatial_portal_parks_recreation_districts_all = [];
+      }
+
+      console.log('✅ CO Parks & Recreation Districts data processed:', {
+        containing: result.co_spatial_portal_parks_recreation_districts_containing || 'N/A',
+        containingCount: result.co_spatial_portal_parks_recreation_districts_containing_count || 0,
+        nearbyCount: result.co_spatial_portal_parks_recreation_districts_nearby_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CO Parks & Recreation Districts:', error);
+      return {
+        co_spatial_portal_parks_recreation_districts_containing: null,
+        co_spatial_portal_parks_recreation_districts_containing_count: 0,
+        co_spatial_portal_parks_recreation_districts_nearby_count: 0,
+        co_spatial_portal_parks_recreation_districts_all: [],
+        co_spatial_portal_parks_recreation_districts_error:
+          'Error fetching CO Parks & Recreation Districts data',
       };
     }
   }

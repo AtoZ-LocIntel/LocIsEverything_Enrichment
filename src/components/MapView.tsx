@@ -5811,6 +5811,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ma_parcels_all' || // Skip MA parcels array (handled separately for map drawing)
     key === 'co_spatial_portal_parcels_all' || // Skip CO parcels array (handled separately for map drawing)
     key === 'co_spatial_portal_active_districts_all' || // Skip CO Active Districts array (handled separately for map drawing)
+    key === 'co_spatial_portal_parks_recreation_districts_all' || // Skip CO Parks & Recreation Districts array (handled separately)
     key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') || // Skip CPW Species Data arrays (handled separately for map drawing)
     key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') || // Skip CDOT arrays (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
@@ -21605,6 +21606,113 @@ const MapView: React.FC<MapViewProps> = ({
             });
           }
         });
+      }
+
+      // Draw CO Parks & Recreation Districts (Colorado Spatial Portal) as polygons on the map
+      if (
+        enrichments.co_spatial_portal_parks_recreation_districts_all &&
+        Array.isArray(enrichments.co_spatial_portal_parks_recreation_districts_all)
+      ) {
+        console.log(
+          `🗺️ Drawing CO Parks & Recreation Districts: ${
+            enrichments.co_spatial_portal_parks_recreation_districts_all.length
+          } districts in array`
+        );
+
+        enrichments.co_spatial_portal_parks_recreation_districts_all.forEach((district: any) => {
+          if (district.geometry && district.geometry.rings) {
+            try {
+              const rings = district.geometry.rings;
+              if (rings && rings.length > 0) {
+                const outerRing = rings[0];
+                const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+
+                if (latlngs.length < 3) {
+                  return;
+                }
+
+                const isContaining = district.isContaining;
+                const color = isContaining ? '#dc2626' : '#16a34a'; // Red for containing, green for nearby
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.8 : 0.5;
+
+                const polygon = L.polygon(latlngs, {
+                  color,
+                  weight,
+                  opacity,
+                  fillColor: color,
+                  fillOpacity: 0.2,
+                });
+
+                const districtName =
+                  district.lgname ||
+                  district.LGNAME ||
+                  district.abbrev_name ||
+                  district.ABBREV_NAME ||
+                  district.districtId ||
+                  'Unknown';
+                const districtId =
+                  district.districtId ||
+                  district.lgid ||
+                  district.LGID ||
+                  district.OBJECTID ||
+                  district.objectid ||
+                  'Unknown';
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                      ${isContaining ? '📍 Containing Parks & Recreation District' : '🏞️ Nearby Parks & Recreation District'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280;">
+                      <div style="margin-bottom: 4px;"><strong>District Name:</strong> ${districtName}</div>
+                      <div style="margin-bottom: 4px;"><strong>District ID:</strong> ${districtId}</div>
+                `;
+
+                const excludeFields = ['districtId', 'lgid', 'LGID', 'isContaining', 'distance_miles', 'geometry'];
+                Object.entries(district).forEach(([key, value]) => {
+                  if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                    const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    let displayValue = '';
+
+                    if (typeof value === 'object') {
+                      displayValue = JSON.stringify(value);
+                    } else if (typeof value === 'number') {
+                      displayValue = value.toLocaleString();
+                    } else {
+                      displayValue = String(value);
+                    }
+
+                    popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                polygon.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+              }
+            } catch (error) {
+              console.error('Error drawing CO Parks & Recreation District polygon:', error);
+            }
+          }
+        });
+
+        // Legend entry
+        const radius = getRadiusForLegendKey('co_spatial_portal_parks_recreation_districts');
+        const radiusDisplay = formatRadiusDisplay('co_spatial_portal_parks_recreation_districts', radius);
+        legendAccumulator['co_spatial_portal_parks_recreation_districts'] = {
+          icon: '🏞️',
+          color: '#16a34a',
+          title: 'CO Parks & Recreation Districts',
+          count: enrichments.co_spatial_portal_parks_recreation_districts_all.length,
+          radius,
+          radiusDisplay,
+        };
       }
 
       // Add CO Active Districts to legend accumulator

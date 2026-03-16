@@ -2277,6 +2277,57 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'Colorado Spatial Portal'
         ]);
       });
+    } else if (key === 'co_spatial_portal_parks_recreation_districts_all' && Array.isArray(value)) {
+      // Handle CO Parks & Recreation Districts - each district gets its own row with all attributes
+      value.forEach((district: any) => {
+        const districtId =
+          district.districtId ||
+          district.lgid ||
+          district.LGID ||
+          district.OBJECTID ||
+          district.objectid ||
+          'Unknown';
+        const districtType = district.isContaining ? 'Containing District' : 'Nearby District';
+
+        const districtName =
+          district.lgname ||
+          district.LGNAME ||
+          district.abbrev_name ||
+          district.ABBREV_NAME ||
+          district.name ||
+          district.NAME ||
+          districtId;
+
+        const allAttributes = { ...district };
+        delete allAttributes.districtId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_PARKS_REC_DISTRICT',
+          `${districtType} - ${districtId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          district.distance_miles !== null && district.distance_miles !== undefined
+            ? district.distance_miles.toFixed(2)
+            : district.isContaining
+            ? '0.00'
+            : '',
+          districtType,
+          districtName || attributesJson,
+          '',
+          '',
+          attributesJson,
+          'Colorado Spatial Portal',
+        ]);
+      });
     } else if (key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') && Array.isArray(value)) {
       // Handle CDOT layers - each feature gets its own row with all attributes
       const layerName = key.replace('co_spatial_portal_cdot_', '').replace('_all', '').replace(/_/g, ' ');

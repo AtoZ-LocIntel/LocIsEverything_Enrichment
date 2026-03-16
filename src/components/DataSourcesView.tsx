@@ -8214,6 +8214,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer"
+        },
+        {
+          name: "Colorado DOLA Parks & Recreation Districts",
+          description: "Colorado Spatial Portal - Colorado Department of Local Affairs (DOLA) Parks & Recreation Districts FeatureServer (DOLA_Districts) including all Parks & Recreation special districts statewide. Supports point-in-polygon queries and proximity queries up to 50 miles.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/DgjqnJA1rgO92Soi/ArcGIS/rest/services/Parks_and_Recreation_Districts/FeatureServer/0"
         }
       ]
     },
