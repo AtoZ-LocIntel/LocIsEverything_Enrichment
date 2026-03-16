@@ -21223,7 +21223,7 @@ const MapView: React.FC<MapViewProps> = ({
                   
                   // Check if coordinates are in UTM (large numbers) vs WGS84 (small numbers)
                   const firstCoord = outerRing[0];
-                  const sampleCoords = outerRing.slice(0, 3).map(c => `[${c[0]?.toFixed(2)}, ${c[1]?.toFixed(2)}]`).join(', ');
+                  const sampleCoords = outerRing.slice(0, 3).map((c: number[]) => `[${c[0]?.toFixed(2)}, ${c[1]?.toFixed(2)}]`).join(', ');
                   const isUTM = firstCoord && firstCoord.length >= 2 && (Math.abs(firstCoord[0]) > 180 || Math.abs(firstCoord[1]) > 90);
                   
                   console.log(`🔍 CDOT polygon (${layerName}) coordinate check:`, {
@@ -21231,8 +21231,8 @@ const MapView: React.FC<MapViewProps> = ({
                     sampleCoords,
                     isUTM,
                     coordCount: outerRing.length,
-                    xRange: outerRing.length > 0 ? `[${Math.min(...outerRing.map(c => c[0])).toFixed(2)}, ${Math.max(...outerRing.map(c => c[0])).toFixed(2)}]` : 'none',
-                    yRange: outerRing.length > 0 ? `[${Math.min(...outerRing.map(c => c[1])).toFixed(2)}, ${Math.max(...outerRing.map(c => c[1])).toFixed(2)}]` : 'none'
+                    xRange: outerRing.length > 0 ? `[${Math.min(...outerRing.map((c: number[]) => c[0])).toFixed(2)}, ${Math.max(...outerRing.map((c: number[]) => c[0])).toFixed(2)}]` : 'none',
+                    yRange: outerRing.length > 0 ? `[${Math.min(...outerRing.map((c: number[]) => c[1])).toFixed(2)}, ${Math.max(...outerRing.map((c: number[]) => c[1])).toFixed(2)}]` : 'none'
                   });
                   
                   let latlngs: [number, number][];

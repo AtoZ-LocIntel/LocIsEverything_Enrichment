@@ -27,7 +27,7 @@ export interface CDOTFeature {
   objectId: number;
   attributes: Record<string, any>;
   geometry?: any; // ESRI geometry for drawing on map
-  distance_miles?: number; // Distance from query point (0 if inside polygon)
+  distance_miles?: number | null; // Distance from query point (0 if inside polygon, null if not calculated)
   isContaining?: boolean; // True if point is within polygon
   layerId: number; // Which layer this feature came from
   layerName: string; // Human-readable layer name
@@ -62,73 +62,31 @@ const POLYGON_LAYER_IDS = [
   40  // Highways: Alias
 ];
 
-const LINE_LAYER_IDS = [
-  4,  // Frontage Roads
-  6,  // Highways (generalized)
-  7,  // Highways
-  14, // Local Roads
-  17, // Major Roads
-  24, // Projects (all types) - Line
-  28, // Ramps
-  29  // Scenic Byways
-];
+// Reserved for future use - line and point layer IDs
+// const LINE_LAYER_IDS = [
+//   4,  // Frontage Roads
+//   6,  // Highways (generalized)
+//   7,  // Highways
+//   14, // Local Roads
+//   17, // Major Roads
+//   24, // Projects (all types) - Line
+//   28, // Ramps
+//   29  // Scenic Byways
+// ];
 
-const POINT_LAYER_IDS = [
-  0,  // Bridges and Major Culverts
-  1,  // CDOT ROW Project Archive (could be polygon, but treating as point for now)
-  8,  // Highway Interchanges
-  19, // Milepoints
-  23, // Outdoor Advertising
-  25, // Projects (all types) - Point
-  30, // Seed Mixes
-  31, // Structures (all types)
-  33  // Tunnels
-];
+// const POINT_LAYER_IDS = [
+//   0,  // Bridges and Major Culverts
+//   1,  // CDOT ROW Project Archive (could be polygon, but treating as point for now)
+//   8,  // Highway Interchanges
+//   19, // Milepoints
+//   23, // Outdoor Advertising
+//   25, // Projects (all types) - Point
+//   30, // Seed Mixes
+//   31, // Structures (all types)
+//   33  // Tunnels
+// ];
 
-/**
- * Point-in-polygon check using ray casting algorithm
- */
-function pointInPolygon(lat: number, lon: number, rings: number[][][]): boolean {
-  if (!rings || rings.length === 0) return false;
-  
-  const outerRing = rings[0];
-  if (!outerRing || outerRing.length < 3) return false;
-  
-  let inside = false;
-  for (let i = 0, j = outerRing.length - 1; i < outerRing.length; j = i++) {
-    const xi = outerRing[i][0]; // lon
-    const yi = outerRing[i][1]; // lat
-    const xj = outerRing[j][0]; // lon
-    const yj = outerRing[j][1]; // lat
-    
-    const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  
-  // Check if point is in any holes
-  for (let h = 1; h < rings.length; h++) {
-    const hole = rings[h];
-    if (!hole || hole.length < 3) continue;
-    
-    let inHole = false;
-    for (let i = 0, j = hole.length - 1; i < hole.length; j = i++) {
-      const xi = hole[i][0];
-      const yi = hole[i][1];
-      const xj = hole[j][0];
-      const yj = hole[j][1];
-      
-      const intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
-      if (intersect) inHole = !inHole;
-    }
-    
-    if (inHole) {
-      inside = false; // Point is in a hole, so not inside polygon
-      break;
-    }
-  }
-  
-  return inside;
-}
+// Point-in-polygon function removed - we rely on server-side spatial queries from ArcGIS
 
 /**
  * Calculate haversine distance between two points in miles
@@ -217,8 +175,8 @@ export async function getCDOTLayerData(
     console.log(`🚧 Querying CDOT Layer ${layerId} (${layerName}) at [${lat}, ${lon}] with radius ${radiusMiles} miles`);
     
     const isPolygonLayer = POLYGON_LAYER_IDS.includes(layerId);
-    const isLineLayer = LINE_LAYER_IDS.includes(layerId);
-    const isPointLayer = POINT_LAYER_IDS.includes(layerId);
+    // const isLineLayer = LINE_LAYER_IDS.includes(layerId); // Reserved for future use
+    // const isPointLayer = POINT_LAYER_IDS.includes(layerId); // Reserved for future use
     
     const results: CDOTFeature[] = [];
     const processedFeatureIds = new Set<string>();
@@ -354,7 +312,7 @@ export async function getCDOTLayerData(
               objectId: objectId,
               attributes: feature.attributes || {},
               geometry: feature.geometry || null,
-              distance_miles: distance_miles,
+              distance_miles: distance_miles ?? undefined,
               isContaining: false,
               layerId: layerId,
               layerName: layerName

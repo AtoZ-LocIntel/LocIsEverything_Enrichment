@@ -14810,8 +14810,8 @@ export class EnrichmentService {
       const layerNamePart = enrichmentId.replace('co_spatial_portal_cdot_', '');
       
       // Find the layer ID by matching the sanitized name to the actual layer name
-      let layerId: number | null = null;
-      let layerName: string | null = null;
+      let layerId: number | undefined = undefined;
+      let layerName: string | undefined = undefined;
       
       for (const [id, name] of Object.entries(CDOT_LAYER_NAMES)) {
         const sanitizedName = cdotLayerNameToId(name);
@@ -14822,7 +14822,7 @@ export class EnrichmentService {
         }
       }
       
-      if (layerId === null || layerName === null) {
+      if (layerId === undefined || layerName === undefined) {
         console.error(`❌ Could not find layer ID for enrichment ID: ${enrichmentId}`);
         return {
           [`${enrichmentId}_error`]: `Layer not found for ${enrichmentId}`
