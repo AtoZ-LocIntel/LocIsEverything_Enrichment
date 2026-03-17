@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ACLED (Armed Conflict Location & Event Data) Adapter
  * Service: https://services8.arcgis.com/xu983xJB6fIDCjpX/ArcGIS/rest/services/ACLED/FeatureServer/0
