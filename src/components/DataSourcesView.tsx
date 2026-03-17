@@ -8254,6 +8254,38 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://dtdapps.codot.gov/server/rest/services/Webapps/open_data_sde/FeatureServer/23"
+        },
+        {
+          name: "Colorado Shelters and Warming Locations",
+          description: "Colorado Spatial Portal - Colorado Shelters and Warming Locations FeatureServer (shelters and warming centers statewide). Supports proximity queries up to 100 miles.",
+          coverage: "Colorado",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/DgjqnJA1rgO92Soi/arcgis/rest/services/Colorado_Shelters_and_Warming_Locations/FeatureServer/0"
+        },
+        {
+          name: "Colorado Drug Treatment Programs (CDPHE)",
+          description: "Colorado Spatial Portal - CDPHE Colorado Drug Treatment Program Resources (methadone clinics and narcotic addiction treatment programs). Supports proximity queries up to 100 miles.",
+          coverage: "Colorado",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://www.cohealthmaps.dphe.state.co.us/arcgis/rest/services/OPEN_DATA/cdphe_colorado_drug_treatment_program_resources/MapServer/0"
+        },
+        {
+          name: "Colorado Health Facilities (CDPHE)",
+          description: "Colorado Spatial Portal - CDPHE Health Facilities (hospitals, FQHCs, and other licensed health facilities statewide). Supports proximity queries up to 100 miles.",
+          coverage: "Colorado",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/66aUo8zsujfVXRIT/arcgis/rest/services/CDPHE_Health_Facilities/FeatureServer/0"
+        },
+        {
+          name: "Colorado SAMHSA Service Providers",
+          description: "Colorado Spatial Portal - SAMHSA Substance Abuse and Mental Health Service Providers (behavioral health treatment facilities statewide). Supports proximity queries up to 100 miles.",
+          coverage: "Colorado",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://www.cohealthmaps.dphe.state.co.us/arcgis/rest/services/OPEN_DATA/cdphe_samsha_colorado_substance_abuse_mental_health_service_providers/MapServer/0"
         }
       ]
     },

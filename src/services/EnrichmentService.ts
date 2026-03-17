@@ -12,6 +12,10 @@ import { getNHParcelData } from '../adapters/nhParcels';
 import { getCOParcelData } from '../adapters/coParcels';
 import { getCOActiveDistrictData } from '../adapters/coActiveDistricts';
 import { getCOTennisCourtData } from '../adapters/coTennisCourts';
+import { getCOSheltersWarmingData } from '../adapters/coSheltersWarmingLocations';
+import { getCODrugTreatmentProgramData } from '../adapters/coDrugTreatmentPrograms';
+import { getCOCDPHEHealthFacilityData } from '../adapters/coCDPHEHealthFacilities';
+import { getCOSAMHSAServiceProviderData } from '../adapters/coSAMHSAServiceProviders';
 import { getCOParksRecDistrictData } from '../adapters/coParksRecDistricts';
 import { getCPWSpeciesLayerData, CPW_LAYER_NAMES, layerNameToId } from '../adapters/coCPWSpeciesData';
 import { getCDOTLayerData, CDOT_LAYER_NAMES, layerNameToId as cdotLayerNameToId } from '../adapters/coCDOT';
@@ -3677,6 +3681,14 @@ export class EnrichmentService {
         return await this.getCOActiveDistricts(lat, lon, radius);
       case 'co_spatial_portal_tennis_courts':
         return await this.getCOTennisCourts(lat, lon, radius);
+      case 'co_spatial_portal_shelters_warming_locations':
+        return await this.getCOSheltersWarmingLocations(lat, lon, radius);
+      case 'co_spatial_portal_drug_treatment_programs':
+        return await this.getCODrugTreatmentPrograms(lat, lon, radius);
+      case 'co_spatial_portal_cdphe_health_facilities':
+        return await this.getCOCDPHEHealthFacilities(lat, lon, radius);
+      case 'co_spatial_portal_samhsa_service_providers':
+        return await this.getCOSAMHSAServiceProviders(lat, lon, radius);
       case 'co_spatial_portal_parks_recreation_districts':
         return await this.getCOParksRecDistricts(lat, lon, radius);
       
@@ -14751,6 +14763,195 @@ export class EnrichmentService {
         co_spatial_portal_tennis_courts_nearby_count: 0,
         co_spatial_portal_tennis_courts_all: [],
         co_spatial_portal_tennis_courts_error: 'Error fetching CO Tennis Courts data',
+      };
+    }
+  }
+
+  private async getCOSheltersWarmingLocations(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(
+        `🏠 Fetching CO Shelters & Warming Locations data for [${lat}, ${lon}] with radius ${radius} miles`
+      );
+
+      const radiusMiles = radius || 10;
+      const shelters = await getCOSheltersWarmingData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (shelters && shelters.length > 0) {
+        const allShelters = shelters.map(shelter => ({
+          ...shelter.attributes,
+          shelterId: shelter.shelterId,
+          isContaining: false,
+          distance_miles: shelter.distance_miles ?? null,
+          geometry: shelter.geometry,
+        }));
+
+        result.co_spatial_portal_shelters_warming_locations_nearby_count = shelters.length;
+        result.co_spatial_portal_shelters_warming_locations_all = allShelters;
+        result.co_spatial_portal_shelters_warming_locations_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_shelters_warming_locations_summary = `Found ${shelters.length} shelter/warming location point(s) within ${radiusMiles} miles.`;
+      } else {
+        result.co_spatial_portal_shelters_warming_locations_nearby_count = 0;
+        result.co_spatial_portal_shelters_warming_locations_all = [];
+        result.co_spatial_portal_shelters_warming_locations_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_shelters_warming_locations_summary = `No shelters or warming locations found within ${radiusMiles} miles.`;
+      }
+
+      console.log('✅ CO Shelters & Warming Locations data processed:', {
+        nearbyCount: result.co_spatial_portal_shelters_warming_locations_nearby_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CO Shelters & Warming Locations:', error);
+      return {
+        co_spatial_portal_shelters_warming_locations_nearby_count: 0,
+        co_spatial_portal_shelters_warming_locations_all: [],
+        co_spatial_portal_shelters_warming_locations_error:
+          'Error fetching CO Shelters & Warming Locations data',
+      };
+    }
+  }
+
+  private async getCODrugTreatmentPrograms(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(
+        `💊 Fetching CO Drug Treatment Programs data for [${lat}, ${lon}] with radius ${radius} miles`
+      );
+
+      const radiusMiles = radius || 10;
+      const programs = await getCODrugTreatmentProgramData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (programs && programs.length > 0) {
+        const allPrograms = programs.map(program => ({
+          ...program.attributes,
+          programId: program.programId,
+          isContaining: false,
+          distance_miles: program.distance_miles ?? null,
+          geometry: program.geometry,
+        }));
+
+        result.co_spatial_portal_drug_treatment_programs_nearby_count = programs.length;
+        result.co_spatial_portal_drug_treatment_programs_all = allPrograms;
+        result.co_spatial_portal_drug_treatment_programs_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_drug_treatment_programs_summary = `Found ${programs.length} drug treatment program resource(s) within ${radiusMiles} miles.`;
+      } else {
+        result.co_spatial_portal_drug_treatment_programs_nearby_count = 0;
+        result.co_spatial_portal_drug_treatment_programs_all = [];
+        result.co_spatial_portal_drug_treatment_programs_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_drug_treatment_programs_summary = `No drug treatment program resources found within ${radiusMiles} miles.`;
+      }
+
+      console.log('✅ CO Drug Treatment Programs data processed:', {
+        nearbyCount: result.co_spatial_portal_drug_treatment_programs_nearby_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CO Drug Treatment Programs:', error);
+      return {
+        co_spatial_portal_drug_treatment_programs_nearby_count: 0,
+        co_spatial_portal_drug_treatment_programs_all: [],
+        co_spatial_portal_drug_treatment_programs_error:
+          'Error fetching CO Drug Treatment Program Resources data',
+      };
+    }
+  }
+
+  private async getCOCDPHEHealthFacilities(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(
+        `🏥 Fetching CDPHE Health Facilities data for [${lat}, ${lon}] with radius ${radius} miles`
+      );
+
+      const radiusMiles = radius || 10;
+      const facilities = await getCOCDPHEHealthFacilityData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (facilities && facilities.length > 0) {
+        const allFacilities = facilities.map(facility => ({
+          ...facility.attributes,
+          facilityId: facility.facilityId,
+          isContaining: false,
+          distance_miles: facility.distance_miles ?? null,
+          geometry: facility.geometry,
+        }));
+
+        result.co_spatial_portal_cdphe_health_facilities_nearby_count = facilities.length;
+        result.co_spatial_portal_cdphe_health_facilities_all = allFacilities;
+        result.co_spatial_portal_cdphe_health_facilities_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_cdphe_health_facilities_summary = `Found ${facilities.length} health facility(ies) within ${radiusMiles} miles.`;
+      } else {
+        result.co_spatial_portal_cdphe_health_facilities_nearby_count = 0;
+        result.co_spatial_portal_cdphe_health_facilities_all = [];
+        result.co_spatial_portal_cdphe_health_facilities_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_cdphe_health_facilities_summary = `No health facilities found within ${radiusMiles} miles.`;
+      }
+
+      console.log('✅ CDPHE Health Facilities data processed:', {
+        nearbyCount: result.co_spatial_portal_cdphe_health_facilities_nearby_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CDPHE Health Facilities:', error);
+      return {
+        co_spatial_portal_cdphe_health_facilities_nearby_count: 0,
+        co_spatial_portal_cdphe_health_facilities_all: [],
+        co_spatial_portal_cdphe_health_facilities_error:
+          'Error fetching CDPHE Health Facilities data',
+      };
+    }
+  }
+
+  private async getCOSAMHSAServiceProviders(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(
+        `🧠 Fetching SAMHSA Service Providers data for [${lat}, ${lon}] with radius ${radius} miles`
+      );
+
+      const radiusMiles = radius || 10;
+      const providers = await getCOSAMHSAServiceProviderData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (providers && providers.length > 0) {
+        const allProviders = providers.map(provider => ({
+          ...provider.attributes,
+          facilityId: provider.providerId,
+          providerId: provider.providerId,
+          isContaining: false,
+          distance_miles: provider.distance_miles ?? null,
+          geometry: provider.geometry,
+        }));
+
+        result.co_spatial_portal_samhsa_service_providers_nearby_count = providers.length;
+        result.co_spatial_portal_samhsa_service_providers_all = allProviders;
+        result.co_spatial_portal_samhsa_service_providers_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_samhsa_service_providers_summary = `Found ${providers.length} SAMHSA service provider(s) within ${radiusMiles} miles.`;
+      } else {
+        result.co_spatial_portal_samhsa_service_providers_nearby_count = 0;
+        result.co_spatial_portal_samhsa_service_providers_all = [];
+        result.co_spatial_portal_samhsa_service_providers_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_samhsa_service_providers_summary = `No SAMHSA service providers found within ${radiusMiles} miles.`;
+      }
+
+      console.log('✅ SAMHSA Service Providers data processed:', {
+        nearbyCount: result.co_spatial_portal_samhsa_service_providers_nearby_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching SAMHSA Service Providers:', error);
+      return {
+        co_spatial_portal_samhsa_service_providers_nearby_count: 0,
+        co_spatial_portal_samhsa_service_providers_all: [],
+        co_spatial_portal_samhsa_service_providers_error:
+          'Error fetching SAMHSA Service Providers data',
       };
     }
   }

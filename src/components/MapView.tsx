@@ -5815,6 +5815,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'co_spatial_portal_tennis_courts_all' || // Skip CO Tennis Courts array (handled separately)
     key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') || // Skip CPW Species Data arrays (handled separately for map drawing)
     key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') || // Skip CDOT arrays (handled separately for map drawing)
+    key === 'co_spatial_portal_shelters_warming_locations_all' || // Skip CO Shelters & Warming Locations array (handled separately for map drawing)
+    key === 'co_spatial_portal_drug_treatment_programs_all' || // Skip CO Drug Treatment Programs array (handled separately for map drawing)
+    key === 'co_spatial_portal_cdphe_health_facilities_all' || // Skip CDPHE Health Facilities array (handled separately for map drawing)
+    key === 'co_spatial_portal_samhsa_service_providers_all' || // Skip SAMHSA Service Providers array (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
     key === 'de_parcels_all' || // Skip DE parcels array (handled separately for map drawing)
     key === 'de_lulc_2007_all' || // Skip DE LULC arrays (handled separately for map drawing)
@@ -21844,6 +21848,512 @@ const MapView: React.FC<MapViewProps> = ({
           color: '#f97316',
           title: 'CO Tennis Courts',
           count: courts.length,
+          radius,
+          radiusDisplay,
+        };
+      }
+
+      // Draw CO Shelters & Warming Locations (Colorado Spatial Portal) as points on the map
+      if (
+        enrichments.co_spatial_portal_shelters_warming_locations_all &&
+        Array.isArray(enrichments.co_spatial_portal_shelters_warming_locations_all)
+      ) {
+        const shelters = enrichments.co_spatial_portal_shelters_warming_locations_all as any[];
+        console.log(`🏠 Drawing CO Shelters & Warming Locations: ${shelters.length} features`);
+
+        shelters.forEach(shelter => {
+          try {
+            let lat: number | null = null;
+            let lon: number | null = null;
+
+            if (shelter.geometry && typeof shelter.geometry.y === 'number' && typeof shelter.geometry.x === 'number') {
+              lat = shelter.geometry.y;
+              lon = shelter.geometry.x;
+            } else if (
+              typeof shelter.LAT === 'number' &&
+              typeof shelter.LON === 'number'
+            ) {
+              lat = shelter.LAT;
+              lon = shelter.LON;
+            }
+
+            if (lat === null || lon === null) {
+              return;
+            }
+
+            const isOpen = (shelter.Status || shelter.STATUS || '').toString().toLowerCase().includes('open');
+            const color = isOpen ? '#16a34a' : '#f97316'; // green for open, orange otherwise
+            const iconSize = 14;
+
+            const icon = L.divIcon({
+              className: 'custom-marker-icon',
+              html: `<div style="background-color: ${color}; width: ${iconSize}px; height: ${iconSize}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+              iconSize: [iconSize, iconSize],
+              iconAnchor: [iconSize / 2, iconSize / 2],
+            });
+
+            const marker = L.marker([lat, lon], { icon });
+
+            const name = shelter.Name || shelter.NAME || 'Shelter / Warming Location';
+            const facilityType = shelter.Facility_Type || shelter.FACILITY_TYPE || '';
+            const fullAddress = shelter.FullAddress || shelter.FULLADDRESS || '';
+            const jurisdiction = shelter.Jurisdiction || shelter.JURISDICTION || '';
+            const status = shelter.Status || shelter.STATUS || '';
+            const managingEntity = shelter.Managing_Entity || shelter.MANAGING_ENTITY || '';
+
+            let popupContent = `
+              <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                  🏠 ${name}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+                  ${facilityType ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${facilityType}</div>` : ''}
+                  ${jurisdiction ? `<div style="margin-bottom: 4px;"><strong>Jurisdiction:</strong> ${jurisdiction}</div>` : ''}
+                  ${status ? `<div style="margin-bottom: 4px;"><strong>Status:</strong> ${status}</div>` : ''}
+                  ${fullAddress ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${fullAddress}</div>` : ''}
+                  ${managingEntity ? `<div style="margin-bottom: 4px;"><strong>Managing Entity:</strong> ${managingEntity}</div>` : ''}
+            `;
+
+            const exclude = ['geometry', 'isContaining', 'distance_miles', 'shelterId'];
+            Object.entries(shelter).forEach(([key, value]) => {
+              if (!exclude.includes(key) && value !== null && value !== undefined && value !== '') {
+                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let displayValue = '';
+
+                if (typeof value === 'object') {
+                  displayValue = JSON.stringify(value);
+                } else if (typeof value === 'number') {
+                  displayValue = value.toLocaleString();
+                } else {
+                  displayValue = String(value);
+                }
+
+                popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+              }
+            });
+
+            // Deep links to mapping apps
+            const label = name || 'Shelter / Warming Location';
+            const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(label)}`;
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+            const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
+            const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+
+            popupContent += `
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                      <a href="${appleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Apple Maps</a>
+                      <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Google Maps</a>
+                      <a href="${mapquestUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">MapQuest</a>
+                      <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Waze</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            marker.addTo(primary);
+            bounds.extend([lat, lon]);
+          } catch (e) {
+            console.error('Error drawing CO Shelter or Warming Location point:', e);
+          }
+        });
+
+        // Legend entry for shelters & warming locations
+        const radius = getRadiusForLegendKey('co_spatial_portal_shelters_warming_locations');
+        const radiusDisplay = formatRadiusDisplay('co_spatial_portal_shelters_warming_locations', radius);
+        legendAccumulator['co_spatial_portal_shelters_warming_locations'] = {
+          icon: '🏠',
+          color: '#16a34a',
+          title: 'Shelters & Warming Locations',
+          count: shelters.length,
+          radius,
+          radiusDisplay,
+        };
+      }
+
+      // Draw CO Drug Treatment Programs (Colorado Spatial Portal) as points on the map
+      if (
+        enrichments.co_spatial_portal_drug_treatment_programs_all &&
+        Array.isArray(enrichments.co_spatial_portal_drug_treatment_programs_all)
+      ) {
+        const programs = enrichments.co_spatial_portal_drug_treatment_programs_all as any[];
+        console.log(`💊 Drawing CO Drug Treatment Programs: ${programs.length} features`);
+
+        programs.forEach(program => {
+          try {
+            let lat: number | null = null;
+            let lon: number | null = null;
+
+            if (program.geometry && typeof program.geometry.y === 'number' && typeof program.geometry.x === 'number') {
+              lat = program.geometry.y;
+              lon = program.geometry.x;
+            } else if (
+              typeof program.LATITUDE === 'number' &&
+              typeof program.LONGITUDE === 'number'
+            ) {
+              lat = program.LATITUDE;
+              lon = program.LONGITUDE;
+            }
+
+            if (lat === null || lon === null) {
+              return;
+            }
+
+            const color = '#0ea5e9'; // blue for treatment programs
+            const iconSize = 14;
+
+            const icon = L.divIcon({
+              className: 'custom-marker-icon',
+              html: `<div style="background-color: ${color}; width: ${iconSize}px; height: ${iconSize}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+              iconSize: [iconSize, iconSize],
+              iconAnchor: [iconSize / 2, iconSize / 2],
+            });
+
+            const marker = L.marker([lat, lon], { icon });
+
+            const name = program.CLINIC_NAME || program.clinic_name || 'Drug Treatment Program';
+            const address = program.ADDRESS || program.address || '';
+            const city = program.CITY || program.city || '';
+            const state = program.STATE || program.state || '';
+            const zip = program.ZIP || program.zip || '';
+            const phone = program.PHONE || program.phone || '';
+            const dataLayer = program.DATA_LAYER || program.data_layer || '';
+            const county = program.COUNTY || program.county || '';
+
+            let popupContent = `
+              <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                  💊 ${name}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+                  ${dataLayer ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${dataLayer}</div>` : ''}
+                  ${county ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>` : ''}
+                  ${address || city || state || zip ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${[address, city, state, zip].filter(Boolean).join(', ')}</div>` : ''}
+                  ${phone ? `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phone}</div>` : ''}
+            `;
+
+            const exclude = ['geometry', 'isContaining', 'distance_miles', 'programId'];
+            Object.entries(program).forEach(([key, value]) => {
+              if (!exclude.includes(key) && value !== null && value !== undefined && value !== '') {
+                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let displayValue = '';
+
+                if (typeof value === 'object') {
+                  displayValue = JSON.stringify(value);
+                } else if (typeof value === 'number') {
+                  displayValue = value.toLocaleString();
+                } else {
+                  displayValue = String(value);
+                }
+
+                popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+              }
+            });
+
+            // Deep links to mapping apps
+            const label = name || 'Drug Treatment Program';
+            const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(label)}`;
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+            const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
+            const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+
+            popupContent += `
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                      <a href="${appleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Apple Maps</a>
+                      <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Google Maps</a>
+                      <a href="${mapquestUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">MapQuest</a>
+                      <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Waze</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            marker.addTo(primary);
+            bounds.extend([lat, lon]);
+          } catch (e) {
+            console.error('Error drawing CO Drug Treatment Program point:', e);
+          }
+        });
+
+        const radius = getRadiusForLegendKey('co_spatial_portal_drug_treatment_programs');
+        const radiusDisplay = formatRadiusDisplay('co_spatial_portal_drug_treatment_programs', radius);
+        legendAccumulator['co_spatial_portal_drug_treatment_programs'] = {
+          icon: '💊',
+          color: '#0ea5e9',
+          title: 'Drug Treatment Programs',
+          count: programs.length,
+          radius,
+          radiusDisplay,
+        };
+      }
+
+      // Draw CDPHE Health Facilities (Colorado Spatial Portal) as points on the map
+      if (
+        enrichments.co_spatial_portal_cdphe_health_facilities_all &&
+        Array.isArray(enrichments.co_spatial_portal_cdphe_health_facilities_all)
+      ) {
+        const facilities = enrichments.co_spatial_portal_cdphe_health_facilities_all as any[];
+        console.log(`🏥 Drawing CDPHE Health Facilities: ${facilities.length} features`);
+
+        facilities.forEach(facility => {
+          try {
+            let lat: number | null = null;
+            let lon: number | null = null;
+
+            // Prefer Latitude/Longitude from attributes when geometry is in projected coords (UTM)
+            const geom = facility.geometry;
+            const attrLat = facility.Latitude ?? facility.latitude;
+            const attrLon = facility.Longitude ?? facility.longitude;
+            const hasProjectedGeom =
+              geom &&
+              (Math.abs(geom.x) > 180 || Math.abs(geom.y) > 90);
+
+            if (hasProjectedGeom && typeof attrLat === 'number' && typeof attrLon === 'number') {
+              lat = attrLat;
+              lon = attrLon;
+            } else if (geom && typeof geom.y === 'number' && typeof geom.x === 'number') {
+              lat = geom.y;
+              lon = geom.x;
+            } else if (typeof attrLat === 'number' && typeof attrLon === 'number') {
+              lat = attrLat;
+              lon = attrLon;
+            }
+
+            if (lat === null || lon === null) {
+              return;
+            }
+
+            const color = '#dc2626'; // red for health facilities
+            const iconSize = 14;
+
+            const icon = L.divIcon({
+              className: 'custom-marker-icon',
+              html: `<div style="background-color: ${color}; width: ${iconSize}px; height: ${iconSize}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+              iconSize: [iconSize, iconSize],
+              iconAnchor: [iconSize / 2, iconSize / 2],
+            });
+
+            const marker = L.marker([lat, lon], { icon });
+
+            const name =
+              facility.Facility_Name ||
+              facility.facility_name ||
+              facility.Facility_Name ||
+              'Health Facility';
+            const facilityType = facility.Facility_Type || facility.facility_type || '';
+            const address = facility.Address_Full || facility.address_full || '';
+            const county = facility.County || facility.county || '';
+            const phone = facility.Telephone || facility.telephone || '';
+
+            let popupContent = `
+              <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                  🏥 ${name}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+                  ${facilityType ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${facilityType}</div>` : ''}
+                  ${county ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>` : ''}
+                  ${address ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${address}</div>` : ''}
+                  ${phone ? `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phone}</div>` : ''}
+            `;
+
+            const exclude = ['geometry', 'isContaining', 'distance_miles', 'facilityId'];
+            Object.entries(facility).forEach(([key, value]) => {
+              if (!exclude.includes(key) && value !== null && value !== undefined && value !== '') {
+                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let displayValue = '';
+
+                if (typeof value === 'object') {
+                  displayValue = JSON.stringify(value);
+                } else if (typeof value === 'number') {
+                  displayValue = value.toLocaleString();
+                } else {
+                  displayValue = String(value);
+                }
+
+                popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+              }
+            });
+
+            const label = name || 'Health Facility';
+            const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(label)}`;
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+            const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
+            const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+
+            popupContent += `
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                      <a href="${appleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Apple Maps</a>
+                      <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Google Maps</a>
+                      <a href="${mapquestUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">MapQuest</a>
+                      <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Waze</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            marker.addTo(primary);
+            bounds.extend([lat, lon]);
+          } catch (e) {
+            console.error('Error drawing CDPHE Health Facility point:', e);
+          }
+        });
+
+        const radius = getRadiusForLegendKey('co_spatial_portal_cdphe_health_facilities');
+        const radiusDisplay = formatRadiusDisplay('co_spatial_portal_cdphe_health_facilities', radius);
+        legendAccumulator['co_spatial_portal_cdphe_health_facilities'] = {
+          icon: '🏥',
+          color: '#dc2626',
+          title: 'Health Facilities',
+          count: facilities.length,
+          radius,
+          radiusDisplay,
+        };
+      }
+
+      // Draw SAMHSA Service Providers (Colorado Spatial Portal) as points on the map
+      if (
+        enrichments.co_spatial_portal_samhsa_service_providers_all &&
+        Array.isArray(enrichments.co_spatial_portal_samhsa_service_providers_all)
+      ) {
+        const providers = enrichments.co_spatial_portal_samhsa_service_providers_all as any[];
+        console.log(`🧠 Drawing SAMHSA Service Providers: ${providers.length} features`);
+
+        providers.forEach(provider => {
+          try {
+            let lat: number | null = null;
+            let lon: number | null = null;
+
+            // Prefer LATITUDE/LONGITUDE from attributes when geometry is in projected coords (UTM)
+            const geom = provider.geometry;
+            const attrLat = provider.LATITUDE ?? provider.Latitude ?? provider.latitude;
+            const attrLon = provider.LONGITUDE ?? provider.Longitude ?? provider.longitude;
+            const hasProjectedGeom =
+              geom &&
+              (Math.abs(geom.x) > 180 || Math.abs(geom.y) > 90);
+
+            if (hasProjectedGeom && typeof attrLat === 'number' && typeof attrLon === 'number') {
+              lat = attrLat;
+              lon = attrLon;
+            } else if (geom && typeof geom.y === 'number' && typeof geom.x === 'number') {
+              lat = geom.y;
+              lon = geom.x;
+            } else if (typeof attrLat === 'number' && typeof attrLon === 'number') {
+              lat = attrLat;
+              lon = attrLon;
+            }
+
+            if (lat === null || lon === null) {
+              return;
+            }
+
+            const color = '#7c3aed'; // purple for behavioral health
+            const iconSize = 14;
+
+            const icon = L.divIcon({
+              className: 'custom-marker-icon',
+              html: `<div style="background-color: ${color}; width: ${iconSize}px; height: ${iconSize}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+              iconSize: [iconSize, iconSize],
+              iconAnchor: [iconSize / 2, iconSize / 2],
+            });
+
+            const marker = L.marker([lat, lon], { icon });
+
+            const name =
+              provider.Provider_Name ||
+              provider.provider_name ||
+              provider.Provider_Name2 ||
+              'SAMHSA Provider';
+            const facilityType = provider.Facility_Type ?? provider.facility_type ?? provider.Type_ ?? '';
+            const address = provider.Address ?? provider.address ?? '';
+            const city = provider.City ?? provider.city ?? '';
+            const state = provider.State ?? provider.state ?? '';
+            const zip = provider.Zip ?? provider.zip ?? '';
+            const county = provider.County ?? provider.county ?? '';
+            const phone = provider.Phone ?? provider.phone ?? provider.Telephone ?? '';
+            const mentalHealth = provider.Mental_Health ?? provider.mental_health ?? '';
+            const substanceAbuse = provider.Substance_Abuse ?? provider.substance_abuse ?? '';
+
+            const addressLine = [address, city, state, zip].filter(Boolean).join(', ');
+
+            let popupContent = `
+              <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                  🧠 ${name}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+                  ${facilityType ? `<div style="margin-bottom: 4px;"><strong>Type:</strong> ${facilityType}</div>` : ''}
+                  ${mentalHealth ? `<div style="margin-bottom: 4px;"><strong>Mental Health:</strong> ${mentalHealth}</div>` : ''}
+                  ${substanceAbuse ? `<div style="margin-bottom: 4px;"><strong>Substance Abuse:</strong> ${substanceAbuse}</div>` : ''}
+                  ${county ? `<div style="margin-bottom: 4px;"><strong>County:</strong> ${county}</div>` : ''}
+                  ${addressLine ? `<div style="margin-bottom: 4px;"><strong>Address:</strong> ${addressLine}</div>` : ''}
+                  ${phone ? `<div style="margin-bottom: 4px;"><strong>Phone:</strong> ${phone}</div>` : ''}
+            `;
+
+            const exclude = ['geometry', 'isContaining', 'distance_miles', 'facilityId', 'providerId', 'LATITUDE', 'LONGITUDE', 'X', 'Y'];
+            Object.entries(provider).forEach(([key, value]) => {
+              if (!exclude.includes(key) && value !== null && value !== undefined && value !== '') {
+                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let displayValue = '';
+
+                if (typeof value === 'object') {
+                  displayValue = JSON.stringify(value);
+                } else if (typeof value === 'number') {
+                  displayValue = value.toLocaleString();
+                } else {
+                  displayValue = String(value);
+                }
+
+                popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+              }
+            });
+
+            const label = name || 'SAMHSA Provider';
+            const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(label)}`;
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+            const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
+            const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+
+            popupContent += `
+                  <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                      <a href="${appleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Apple Maps</a>
+                      <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Google Maps</a>
+                      <a href="${mapquestUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">MapQuest</a>
+                      <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Waze</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            marker.addTo(primary);
+            bounds.extend([lat, lon]);
+          } catch (e) {
+            console.error('Error drawing SAMHSA Service Provider point:', e);
+          }
+        });
+
+        const radius = getRadiusForLegendKey('co_spatial_portal_samhsa_service_providers');
+        const radiusDisplay = formatRadiusDisplay('co_spatial_portal_samhsa_service_providers', radius);
+        legendAccumulator['co_spatial_portal_samhsa_service_providers'] = {
+          icon: '🧠',
+          color: '#7c3aed',
+          title: 'SAMHSA Service Providers',
+          count: providers.length,
           radius,
           radiusDisplay,
         };

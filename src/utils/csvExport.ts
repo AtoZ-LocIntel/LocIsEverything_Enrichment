@@ -2369,6 +2369,172 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'Colorado Spatial Portal',
         ]);
       });
+    } else if (key === 'co_spatial_portal_shelters_warming_locations_all' && Array.isArray(value)) {
+      // Handle CO Shelters & Warming Locations - each feature gets its own row with all attributes
+      value.forEach((shelter: any) => {
+        const shelterId =
+          shelter.shelterId ||
+          shelter.OBJECTID ||
+          shelter.objectid ||
+          shelter.GlobalID ||
+          shelter.GlobalId ||
+          'Unknown';
+
+        const featureType = 'Nearby Feature';
+
+        const allAttributes = { ...shelter };
+        delete allAttributes.shelterId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_SHELTER_WARMING_LOCATION',
+          `${featureType} - ${shelterId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          shelter.distance_miles !== null && shelter.distance_miles !== undefined
+            ? shelter.distance_miles.toFixed(2)
+            : '',
+          'Shelter / Warming Location',
+          attributesJson,
+          '',
+          attributesJson,
+          'Colorado Spatial Portal',
+        ]);
+      });
+    } else if (key === 'co_spatial_portal_cdphe_health_facilities_all' && Array.isArray(value)) {
+      // Handle CDPHE Health Facilities - each feature gets its own row with all attributes
+      value.forEach((facility: any) => {
+        const facilityId =
+          facility.facilityId ||
+          facility.Facility_ID ||
+          facility.facility_id ||
+          facility.OBJECTID ||
+          facility.objectid ||
+          facility.GlobalID ||
+          facility.GlobalId ||
+          'Unknown';
+
+        const featureType = 'Nearby Feature';
+
+        const allAttributes = { ...facility };
+        delete allAttributes.facilityId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_HEALTH_FACILITY',
+          `${featureType} - ${facilityId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          facility.distance_miles !== null && facility.distance_miles !== undefined
+            ? facility.distance_miles.toFixed(2)
+            : '',
+          'Health Facility',
+          attributesJson,
+          '',
+          attributesJson,
+          'Colorado Spatial Portal',
+        ]);
+      });
+    } else if (key === 'co_spatial_portal_samhsa_service_providers_all' && Array.isArray(value)) {
+      // Handle SAMHSA Service Providers - each feature gets its own row with all attributes
+      value.forEach((provider: any) => {
+        const providerId =
+          provider.facilityId ||
+          provider.providerId ||
+          provider.Provider_Name ||
+          provider.provider_name ||
+          provider.OBJECTID ||
+          provider.objectid ||
+          provider.GlobalID ||
+          provider.GlobalId ||
+          'Unknown';
+
+        const featureType = 'Nearby Feature';
+
+        const allAttributes = { ...provider };
+        delete allAttributes.facilityId;
+        delete allAttributes.providerId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_SAMHSA_SERVICE_PROVIDER',
+          `${featureType} - ${providerId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          provider.distance_miles !== null && provider.distance_miles !== undefined
+            ? provider.distance_miles.toFixed(2)
+            : '',
+          'SAMHSA Service Provider',
+          attributesJson,
+          '',
+          attributesJson,
+          'Colorado Spatial Portal',
+        ]);
+      });
+    } else if (key === 'co_spatial_portal_drug_treatment_programs_all' && Array.isArray(value)) {
+      // Handle CO Drug Treatment Programs - each feature gets its own row with all attributes
+      value.forEach((program: any) => {
+        const programId =
+          program.programId ||
+          program.OBJECTID ||
+          program.objectid ||
+          program.GlobalID ||
+          program.GlobalId ||
+          'Unknown';
+
+        const featureType = 'Nearby Feature';
+
+        const allAttributes = { ...program };
+        delete allAttributes.programId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_DRUG_TREATMENT_PROGRAM',
+          `${featureType} - ${programId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          program.distance_miles !== null && program.distance_miles !== undefined
+            ? program.distance_miles.toFixed(2)
+            : '',
+          'Drug Treatment Program',
+          attributesJson,
+          '',
+          attributesJson,
+          'Colorado Spatial Portal',
+        ]);
+      });
     } else if (key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') && Array.isArray(value)) {
       // Handle CDOT layers - each feature gets its own row with all attributes
       const layerName = key.replace('co_spatial_portal_cdot_', '').replace('_all', '').replace(/_/g, ' ');

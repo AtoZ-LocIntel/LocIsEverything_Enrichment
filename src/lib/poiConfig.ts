@@ -1565,6 +1565,49 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
     section: 'co'
   },
   {
+    id: 'co_spatial_portal_shelters_warming_locations',
+    label: 'Shelters and Warming Locations',
+    description: 'Colorado Spatial Portal - Shelters and Warming Locations (shelters and warming centers) for proximity queries (up to 100 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 100,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_drug_treatment_programs',
+    label: 'Drug Treatment Programs',
+    description:
+      'Colorado Spatial Portal - CDPHE Colorado Drug Treatment Program Resources (methadone clinics and narcotic addiction treatment programs) for proximity queries (up to 100 miles)',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdphe_health_facilities',
+    label: 'Health Facilities',
+    description:
+      'Colorado Spatial Portal - CDPHE Health Facilities (hospitals, FQHCs, and other licensed health facilities statewide). Supports proximity queries up to 100 miles.',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_samhsa_service_providers',
+    label: 'SAMHSA Service Providers',
+    description:
+      'Colorado Spatial Portal - SAMHSA Substance Abuse and Mental Health Service Providers (behavioral health treatment facilities statewide). Supports proximity queries up to 100 miles.',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
     id: 'co_spatial_portal_cdot_projects_all_types_line',
     label: 'Projects (all types) - Line',
     description: 'Colorado Spatial Portal - CDOT: Projects (all types) - Line for proximity queries (up to 25 miles)',
@@ -1657,10 +1700,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   {
     id: 'co_spatial_portal_cdot_tunnels',
     label: 'Tunnels',
-    description: 'Colorado Spatial Portal - CDOT: Tunnels for proximity queries (up to 25 miles)',
+    description: 'Colorado Spatial Portal - CDOT: Tunnels for proximity queries (up to 50 miles)',
     isPOI: true,
     defaultRadius: 2,
-    maxRadius: 25,
+    maxRadius: 50,
     category: 'co_spatial_portal',
     section: 'co'
   },
