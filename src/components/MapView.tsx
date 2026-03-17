@@ -21354,9 +21354,10 @@ const MapView: React.FC<MapViewProps> = ({
                     }
                   });
 
-                  // Add deep links to mapping apps for all CDOT point layers
-                  const lat = latlng[0];
-                  const lon = latlng[1];
+                  // Add deep links to mapping apps for all CDOT features (use polygon center here)
+                  const center = polygonBounds.getCenter();
+                  const lat = center.lat;
+                  const lon = center.lng;
                   const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(feature.layerName || layerName || 'Location')}`;
                   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
                   const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
