@@ -21355,7 +21355,7 @@ const MapView: React.FC<MapViewProps> = ({
                   });
 
                   // Add deep links to mapping apps for all CDOT features (use polygon center here)
-                  const center = polygonBounds.getCenter();
+                  const center = polygon.getBounds().getCenter();
                   const lat = center.lat;
                   const lon = center.lng;
                   const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(feature.layerName || layerName || 'Location')}`;
