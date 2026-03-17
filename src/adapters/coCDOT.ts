@@ -281,6 +281,48 @@ export async function getCDOTLayerData(
             
             processedFeatureIds.add(featureKey);
             
+            // Ensure we have usable point geometry in WGS84 when possible
+            // Many CDOT point layers (e.g., Tunnels) expose LONG_DD/LAT_DD attributes that are reliable
+            if (!feature.geometry || (feature.geometry.x === undefined || feature.geometry.y === undefined)) {
+              const attrs = feature.attributes || {};
+              const attrLat = attrs.LAT_DD ?? attrs.lat_dd ?? attrs.LAT ?? attrs.lat;
+              const attrLon = attrs.LONG_DD ?? attrs.long_dd ?? attrs.LONG ?? attrs.lon;
+              
+              if (attrLat !== null && attrLat !== undefined && attrLon !== null && attrLon !== undefined) {
+                const latNum = Number(attrLat);
+                const lonNum = Number(attrLon);
+                if (!isNaN(latNum) && !isNaN(lonNum)) {
+                  feature.geometry = {
+                    x: lonNum,
+                    y: latNum,
+                    spatialReference: { wkid: 4326 }
+                  };
+                }
+              }
+            } else {
+              // If geometry exists but appears to be in projected units (e.g., UTM meters),
+              // prefer LONG_DD/LAT_DD attributes when available
+              const attrs = feature.attributes || {};
+              const hasProjectedCoords =
+                Math.abs(feature.geometry.x) > 180 || Math.abs(feature.geometry.y) > 90;
+              
+              if (hasProjectedCoords && (attrs.LAT_DD !== undefined || attrs.lat_dd !== undefined)) {
+                const attrLat = attrs.LAT_DD ?? attrs.lat_dd ?? attrs.LAT ?? attrs.lat;
+                const attrLon = attrs.LONG_DD ?? attrs.long_dd ?? attrs.LONG ?? attrs.lon;
+                if (attrLat !== null && attrLat !== undefined && attrLon !== null && attrLon !== undefined) {
+                  const latNum = Number(attrLat);
+                  const lonNum = Number(attrLon);
+                  if (!isNaN(latNum) && !isNaN(lonNum)) {
+                    feature.geometry = {
+                      x: lonNum,
+                      y: latNum,
+                      spatialReference: { wkid: 4326 }
+                    };
+                  }
+                }
+              }
+            }
+            
             // Calculate distance based on geometry type
             let distance_miles: number | null = null;
             

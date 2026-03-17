@@ -11,6 +11,7 @@ import { getNHGeographicNamesNearbyData } from '../adapters/nhGeographicNames';
 import { getNHParcelData } from '../adapters/nhParcels';
 import { getCOParcelData } from '../adapters/coParcels';
 import { getCOActiveDistrictData } from '../adapters/coActiveDistricts';
+import { getCOTennisCourtData } from '../adapters/coTennisCourts';
 import { getCOParksRecDistrictData } from '../adapters/coParksRecDistricts';
 import { getCPWSpeciesLayerData, CPW_LAYER_NAMES, layerNameToId } from '../adapters/coCPWSpeciesData';
 import { getCDOTLayerData, CDOT_LAYER_NAMES, layerNameToId as cdotLayerNameToId } from '../adapters/coCDOT';
@@ -3674,6 +3675,8 @@ export class EnrichmentService {
       // CO Active Districts (Colorado Spatial Portal) - Point-in-polygon and proximity query
       case 'co_spatial_portal_active_districts':
         return await this.getCOActiveDistricts(lat, lon, radius);
+      case 'co_spatial_portal_tennis_courts':
+        return await this.getCOTennisCourts(lat, lon, radius);
       case 'co_spatial_portal_parks_recreation_districts':
         return await this.getCOParksRecDistricts(lat, lon, radius);
       
@@ -14704,6 +14707,50 @@ export class EnrichmentService {
         co_spatial_portal_active_districts_nearby_count: 0,
         co_spatial_portal_active_districts_all: [],
         co_spatial_portal_active_districts_error: 'Error fetching CO Active Districts data'
+      };
+    }
+  }
+
+  private async getCOTennisCourts(lat: number, lon: number, radius: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🎾 Fetching CO Tennis Courts data for [${lat}, ${lon}] with radius ${radius} miles`);
+
+      const radiusMiles = radius || 5;
+      const courts = await getCOTennisCourtData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (courts && courts.length > 0) {
+        const allCourts = courts.map(court => ({
+          ...court.attributes,
+          courtId: court.courtId,
+          isContaining: false,
+          distance_miles: court.distance_miles ?? null,
+          geometry: court.geometry,
+        }));
+
+        result.co_spatial_portal_tennis_courts_nearby_count = courts.length;
+        result.co_spatial_portal_tennis_courts_all = allCourts;
+        result.co_spatial_portal_tennis_courts_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_tennis_courts_summary = `Found ${courts.length} tennis court polygon(s) within ${radiusMiles} miles.`;
+      } else {
+        result.co_spatial_portal_tennis_courts_nearby_count = 0;
+        result.co_spatial_portal_tennis_courts_all = [];
+        result.co_spatial_portal_tennis_courts_search_radius_miles = radiusMiles;
+        result.co_spatial_portal_tennis_courts_summary = `No tennis courts found within ${radiusMiles} miles.`;
+      }
+
+      console.log('✅ CO Tennis Courts data processed:', {
+        nearbyCount: result.co_spatial_portal_tennis_courts_nearby_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching CO Tennis Courts:', error);
+      return {
+        co_spatial_portal_tennis_courts_nearby_count: 0,
+        co_spatial_portal_tennis_courts_all: [],
+        co_spatial_portal_tennis_courts_error: 'Error fetching CO Tennis Courts data',
       };
     }
   }

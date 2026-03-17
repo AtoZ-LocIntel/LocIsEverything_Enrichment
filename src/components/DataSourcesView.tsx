@@ -8222,6 +8222,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services3.arcgis.com/DgjqnJA1rgO92Soi/ArcGIS/rest/services/Parks_and_Recreation_Districts/FeatureServer/0"
+        },
+        {
+          name: "Colorado Statewide Tennis Courts",
+          description: "Colorado Spatial Portal - Statewide tennis courts polygons (Colorado Tennis Courts layer) including attributes such as surface, number of courts, access, fee, lighting, and operator. Supports proximity queries up to 50 miles.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services3.arcgis.com/DgjqnJA1rgO92Soi/arcgis/rest/services/_State_of_Colorado_Tennis_Courts/FeatureServer/2"
+        },
+        {
+          name: "Colorado Bridges and Major Culverts (CDOT)",
+          description: "Colorado Spatial Portal - CDOT Bridges and Major Culverts point layer (layer 0) including bridge IDs, locations, and related attributes. Supports proximity queries up to 50 miles via the CDOT Open Data Feature Service.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer/0"
+        },
+        {
+          name: "Colorado Tunnels (CDOT)",
+          description: "Colorado Spatial Portal - CDOT Tunnels point layer (layer 33) including tunnel IDs, locations, and related attributes. Supports proximity queries up to 50 miles via the CDOT Open Data Feature Service.",
+          coverage: "Colorado",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer/33"
         }
       ]
     },

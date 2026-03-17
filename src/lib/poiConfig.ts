@@ -1334,12 +1334,33 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
     section: 'co'
   },
   {
+    id: 'co_spatial_portal_tennis_courts',
+    label: 'CO Tennis Courts',
+    description:
+      'Colorado Spatial Portal - Statewide tennis courts polygons for proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 5,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
     id: 'co_spatial_portal_cdot_bridges_and_major_culverts',
     label: 'Bridges and Major Culverts',
-    description: 'Colorado Spatial Portal - CDOT: Bridges and Major Culverts for proximity queries (up to 25 miles)',
+    description: 'Colorado Spatial Portal - CDOT: Bridges and Major Culverts for proximity queries (up to 50 miles)',
     isPOI: true,
     defaultRadius: 2,
-    maxRadius: 25,
+    maxRadius: 50,
+    category: 'co_spatial_portal',
+    section: 'co'
+  },
+  {
+    id: 'co_spatial_portal_cdot_tunnels',
+    label: 'Tunnels',
+    description: 'Colorado Spatial Portal - CDOT: Tunnels for proximity queries (up to 50 miles)',
+    isPOI: true,
+    defaultRadius: 2,
+    maxRadius: 50,
     category: 'co_spatial_portal',
     section: 'co'
   },

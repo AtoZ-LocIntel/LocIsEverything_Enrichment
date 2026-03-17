@@ -5812,6 +5812,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'co_spatial_portal_parcels_all' || // Skip CO parcels array (handled separately for map drawing)
     key === 'co_spatial_portal_active_districts_all' || // Skip CO Active Districts array (handled separately for map drawing)
     key === 'co_spatial_portal_parks_recreation_districts_all' || // Skip CO Parks & Recreation Districts array (handled separately)
+    key === 'co_spatial_portal_tennis_courts_all' || // Skip CO Tennis Courts array (handled separately)
     key.startsWith('co_spatial_portal_cpw_') && key.endsWith('_all') || // Skip CPW Species Data arrays (handled separately for map drawing)
     key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') || // Skip CDOT arrays (handled separately for map drawing)
     key === 'ct_parcels_all' || // Skip CT parcels array (handled separately for map drawing)
@@ -21435,8 +21436,13 @@ const MapView: React.FC<MapViewProps> = ({
                   const latlng: [number, number] = [feature.geometry.y, feature.geometry.x];
                   
                   const isContaining = feature.isContaining;
-                  const color = isContaining ? '#dc2626' : '#f59e0b';
-                  const iconSize = isContaining ? 12 : 10;
+                  const isTunnelLayer =
+                    (feature.layerName && typeof feature.layerName === 'string' && feature.layerName.toLowerCase() === 'tunnels') ||
+                    (typeof layerName === 'string' && layerName.toLowerCase() === 'tunnels');
+                  
+                  // Make tunnel symbols larger and red for better visibility
+                  const color = isTunnelLayer ? '#ef4444' : (isContaining ? '#dc2626' : '#f59e0b');
+                  const iconSize = isTunnelLayer ? (isContaining ? 16 : 14) : (isContaining ? 12 : 10);
                   
                   const icon = L.divIcon({
                     className: 'custom-marker-icon',
@@ -21710,6 +21716,92 @@ const MapView: React.FC<MapViewProps> = ({
           color: '#16a34a',
           title: 'CO Parks & Recreation Districts',
           count: enrichments.co_spatial_portal_parks_recreation_districts_all.length,
+          radius,
+          radiusDisplay,
+        };
+      }
+
+      // Draw CO Tennis Courts (Colorado Spatial Portal) as polygons on the map
+      if (
+        enrichments.co_spatial_portal_tennis_courts_all &&
+        Array.isArray(enrichments.co_spatial_portal_tennis_courts_all)
+      ) {
+        const courts = enrichments.co_spatial_portal_tennis_courts_all as any[];
+        console.log(`🎾 Drawing CO Tennis Courts: ${courts.length} courts`);
+
+        courts.forEach(court => {
+          if (court.geometry && court.geometry.rings) {
+            try {
+              const rings = court.geometry.rings;
+              if (!rings || rings.length === 0) return;
+              const outerRing = rings[0];
+
+              const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+              if (latlngs.length < 3) return;
+
+              const color = '#f97316'; // orange
+              const polygon = L.polygon(latlngs, {
+                color,
+                weight: 2,
+                opacity: 0.7,
+                fillColor: color,
+                fillOpacity: 0.25,
+              });
+
+              const name = court.name || court.NAME || '';
+              const surface = court.surface || court.SURFACE || '';
+              const courtsCount = court.courts || court.COURTS || '';
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px; max-height: 500px; overflow-y: auto;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;">
+                    🎾 Tennis Courts
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280;">
+                    ${name ? `<div style="margin-bottom: 4px;"><strong>Name:</strong> ${name}</div>` : ''}
+                    ${surface ? `<div style="margin-bottom: 4px;"><strong>Surface:</strong> ${surface}</div>` : ''}
+                    ${courtsCount ? `<div style="margin-bottom: 4px;"><strong>Courts:</strong> ${courtsCount}</div>` : ''}
+              `;
+
+              const exclude = ['geometry', 'isContaining', 'distance_miles', 'courtId'];
+              Object.entries(court).forEach(([key, value]) => {
+                if (!exclude.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  let displayValue = '';
+
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              polygon.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+              polygon.addTo(primary);
+              bounds.extend(polygon.getBounds());
+            } catch (e) {
+              console.error('Error drawing CO Tennis Court polygon:', e);
+            }
+          }
+        });
+
+        const radius = getRadiusForLegendKey('co_spatial_portal_tennis_courts');
+        const radiusDisplay = formatRadiusDisplay('co_spatial_portal_tennis_courts', radius);
+        legendAccumulator['co_spatial_portal_tennis_courts'] = {
+          icon: '🎾',
+          color: '#f97316',
+          title: 'CO Tennis Courts',
+          count: courts.length,
           radius,
           radiusDisplay,
         };

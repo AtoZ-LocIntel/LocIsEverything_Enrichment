@@ -2328,6 +2328,47 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'Colorado Spatial Portal',
         ]);
       });
+    } else if (key === 'co_spatial_portal_tennis_courts_all' && Array.isArray(value)) {
+      // Handle CO Tennis Courts - each court gets its own row with all attributes
+      value.forEach((court: any) => {
+        const courtId =
+          court.courtId ||
+          court.OBJECTID ||
+          court.objectid ||
+          court.GlobalID ||
+          court.GlobalId ||
+          'Unknown';
+
+        const featureType = 'Nearby Feature';
+
+        const allAttributes = { ...court };
+        delete allAttributes.courtId;
+        delete allAttributes.isContaining;
+        delete allAttributes.distance_miles;
+        delete allAttributes.geometry;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Colorado Spatial Portal',
+          (location.confidence || 'N/A').toString(),
+          'CO_TENNIS_COURT',
+          `${featureType} - ${courtId}`,
+          location.lat.toString(),
+          location.lon.toString(),
+          court.distance_miles !== null && court.distance_miles !== undefined
+            ? court.distance_miles.toFixed(2)
+            : '',
+          featureType,
+          court.name || court.NAME || attributesJson,
+          '',
+          court.phone || court.PHONE || '',
+          attributesJson,
+          'Colorado Spatial Portal',
+        ]);
+      });
     } else if (key.startsWith('co_spatial_portal_cdot_') && key.endsWith('_all') && Array.isArray(value)) {
       // Handle CDOT layers - each feature gets its own row with all attributes
       const layerName = key.replace('co_spatial_portal_cdot_', '').replace('_all', '').replace(/_/g, ' ');
