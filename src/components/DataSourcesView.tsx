@@ -8246,6 +8246,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer/33"
+        },
+        {
+          name: "Colorado Outdoor Advertising Locations (CDOT)",
+          description: "Colorado Spatial Portal - CDOT Outdoor Advertising Locations point layer (layer 23) including billboard/advertising site attributes and coordinates. Supports proximity queries up to 100 miles.",
+          coverage: "Colorado",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://dtdapps.codot.gov/server/rest/services/Webapps/open_data_sde/FeatureServer/23"
         }
       ]
     },

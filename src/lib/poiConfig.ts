@@ -1556,11 +1556,11 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   },
   {
     id: 'co_spatial_portal_cdot_outdoor_advertising',
-    label: 'Outdoor Advertising',
-    description: 'Colorado Spatial Portal - CDOT: Outdoor Advertising for proximity queries (up to 25 miles)',
+    label: 'Outdoor Advertising Locations',
+    description: 'Colorado Spatial Portal - CDOT: Outdoor Advertising Locations for proximity queries (up to 100 miles)',
     isPOI: true,
-    defaultRadius: 2,
-    maxRadius: 25,
+    defaultRadius: 5,
+    maxRadius: 100,
     category: 'co_spatial_portal',
     section: 'co'
   },

@@ -21,7 +21,7 @@ export function layerNameToId(layerName: string): string {
     .replace(/&/g, 'and');
 }
 
-const BASE_SERVICE_URL = 'https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer';
+const DEFAULT_BASE_SERVICE_URL = 'https://dtdapps.coloradodot.info/arcgis/rest/services/CPLAN/open_data_sde/FeatureServer';
 
 export interface CDOTFeature {
   objectId: number;
@@ -169,9 +169,11 @@ export async function getCDOTLayerData(
   layerName: string,
   lat: number,
   lon: number,
-  radiusMiles: number
+  radiusMiles: number,
+  baseServiceUrl?: string
 ): Promise<CDOTFeature[]> {
   try {
+    const serviceBaseUrl = baseServiceUrl || DEFAULT_BASE_SERVICE_URL;
     console.log(`🚧 Querying CDOT Layer ${layerId} (${layerName}) at [${lat}, ${lon}] with radius ${radiusMiles} miles`);
     
     const isPolygonLayer = POLYGON_LAYER_IDS.includes(layerId);
@@ -185,7 +187,7 @@ export async function getCDOTLayerData(
     if (isPolygonLayer) {
       console.log(`🗺️ Querying CDOT Layer ${layerId} for point-in-polygon`);
       
-      const pointInPolyUrl = new URL(`${BASE_SERVICE_URL}/${layerId}/query`);
+      const pointInPolyUrl = new URL(`${serviceBaseUrl}/${layerId}/query`);
       pointInPolyUrl.searchParams.set('f', 'json');
       pointInPolyUrl.searchParams.set('where', '1=1');
       pointInPolyUrl.searchParams.set('outFields', '*');
@@ -242,7 +244,7 @@ export async function getCDOTLayerData(
       // Convert radius from miles to meters (service uses meters)
       const radiusMeters = radiusMiles * 1609.34;
       
-      const proximityUrl = new URL(`${BASE_SERVICE_URL}/${layerId}/query`);
+      const proximityUrl = new URL(`${serviceBaseUrl}/${layerId}/query`);
       proximityUrl.searchParams.set('f', 'json');
       proximityUrl.searchParams.set('where', '1=1');
       proximityUrl.searchParams.set('outFields', '*');

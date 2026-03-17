@@ -21354,6 +21354,26 @@ const MapView: React.FC<MapViewProps> = ({
                     }
                   });
 
+                  // Add deep links to mapping apps for all CDOT point layers
+                  const lat = latlng[0];
+                  const lon = latlng[1];
+                  const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(feature.layerName || layerName || 'Location')}`;
+                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                  const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
+                  const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+
+                  popupContent += `
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                        <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                          <a href="${appleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Apple Maps</a>
+                          <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Google Maps</a>
+                          <a href="${mapquestUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">MapQuest</a>
+                          <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Waze</a>
+                        </div>
+                      </div>
+                  `;
+
                   popupContent += `
                       </div>
                     </div>
@@ -21480,6 +21500,27 @@ const MapView: React.FC<MapViewProps> = ({
                       popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
                     }
                   });
+
+                  // Add deep links to mapping apps for all CDOT point layers (including tunnels)
+                  const lat = latlng[0];
+                  const lon = latlng[1];
+                  const label = feature.layerName || layerName || 'Location';
+                  const appleMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${encodeURIComponent(label)}`;
+                  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                  const mapquestUrl = `https://www.mapquest.com/latlng/${lat},${lon}`;
+                  const wazeUrl = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+
+                  popupContent += `
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                        <div style="margin-bottom: 4px; font-weight: 600; color: #374151;">Open in Maps:</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px;">
+                          <a href="${appleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Apple Maps</a>
+                          <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Google Maps</a>
+                          <a href="${mapquestUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">MapQuest</a>
+                          <a href="${wazeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Waze</a>
+                        </div>
+                      </div>
+                  `;
 
                   popupContent += `
                       </div>

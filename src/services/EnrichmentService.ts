@@ -15001,7 +15001,14 @@ export class EnrichmentService {
       }
       
       const radiusMiles = radius || (layerId >= 2 && layerId <= 40 && [2, 3, 9, 10, 11, 12, 13, 15, 16, 18, 20, 26, 27, 32, 34, 36, 37, 38, 39, 40].includes(layerId) ? 5 : 2);
-      const features = await getCDOTLayerData(layerId, layerName, lat, lon, radiusMiles);
+      
+      // Some CDOT layers are hosted on a different FeatureServer base URL (e.g., Outdoor Advertising Locations)
+      const baseServiceUrl =
+        layerId === 23
+          ? 'https://dtdapps.codot.gov/server/rest/services/Webapps/open_data_sde/FeatureServer'
+          : undefined;
+      
+      const features = await getCDOTLayerData(layerId, layerName, lat, lon, radiusMiles, baseServiceUrl);
       
       const result: Record<string, any> = {};
       
