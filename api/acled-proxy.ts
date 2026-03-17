@@ -50,6 +50,9 @@ async function getAccessToken(): Promise<string> {
   }
 }
 
+// Explicitly reference getAccessToken so TypeScript treats it as a used value
+void getAccessToken;
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
