@@ -24,6 +24,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key === 'lake_county_building_footprints_count') {
       return 'Lake County Buildings Nearby';
     }
+    // Special case for Cook County Building Footprints count
+    if (key === 'cook_county_building_footprints_count') {
+      return 'Cook County Buildings Nearby';
+    }
     
     // Special case for tornado tracks intersects field
     if (key.includes('tornado_tracks') && key.includes('_intersects')) {

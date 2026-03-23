@@ -1270,6 +1270,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
           const chicagoEnrichments = sectionEnrichments.filter(e => e.id.startsWith('chicago_'));
           // Get Lake County enrichments
           const lakeCountyEnrichments = sectionEnrichments.filter(e => e.id.startsWith('lake_county_'));
+          // Get Cook County enrichments
+          const cookCountyEnrichments = sectionEnrichments.filter(e => e.id.startsWith('cook_county_'));
           
           const ilSubCategories: EnrichmentCategory[] = [
             {
@@ -1285,6 +1287,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/LakeCountyIL.webp" alt="Lake County" className="w-full h-full object-cover rounded-full" />,
               description: 'Lake County data layers',
               enrichments: lakeCountyEnrichments
+            },
+            {
+              id: 'cook_county',
+              title: 'Cook County',
+              icon: <img src="/assets/Cook_County.webp" alt="Cook County" className="w-full h-full object-cover rounded-full" />,
+              description: 'Cook County data layers',
+              enrichments: cookCountyEnrichments
             }
           ];
           

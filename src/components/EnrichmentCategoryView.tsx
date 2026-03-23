@@ -295,7 +295,7 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               radiusOptions = [0.5, 1, 2.5, 5, 10];
             } else if (enrichment.id === 'ma_lakes_and_ponds') {
               radiusOptions = [0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0];
-            } else if (enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints' || enrichment.id === 'houston_site_addresses') {
+            } else if (enrichment.id === 'chicago_311' || enrichment.id === 'chicago_building_footprints' || enrichment.id === 'houston_site_addresses' || enrichment.id === 'lake_county_building_footprints' || enrichment.id === 'cook_county_building_footprints') {
               radiusOptions = [0.25, 0.50, 0.75, 1.0];
             } else if (enrichment.id === 'boston_parcels_2023') {
               radiusOptions = [0.25];

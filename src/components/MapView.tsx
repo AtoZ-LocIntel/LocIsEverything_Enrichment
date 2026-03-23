@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { poiConfigManager } from '../lib/poiConfig';
-import { Info } from 'lucide-react';
+import { Info, RotateCcw, Ruler, X } from 'lucide-react';
 
 interface MapViewProps {
   results: EnrichmentResult[];
@@ -5895,6 +5895,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'chicago_311_all' || // Skip Chicago 311 array (handled separately for map drawing)
     key === 'chicago_building_footprints_all' || // Skip Chicago Building Footprints array (handled separately for map drawing)
     key === 'lake_county_building_footprints_all' || // Skip Lake County Building Footprints array (handled separately for map drawing)
+    key === 'cook_county_building_footprints_all' || // Skip Cook County Building Footprints array (handled separately for map drawing)
     key === 'lake_county_pavement_boundaries_all' || // Skip Lake County Pavement Boundaries array (handled separately for map drawing)
     key === 'lake_county_parcel_points_all' || // Skip Lake County Parcel Points array (handled separately for map drawing)
     key === 'lake_county_parcels_all' || // Skip Lake County Parcels array (handled separately for map drawing)
@@ -6571,7 +6572,6 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedThematicBasemap, setSelectedThematicBasemap] = useState<string | null>(null); // Thematic basemap from other sections (WMS, tile, etc.) - optional overlay
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
   const [showZoomWarningPopup, setShowZoomWarningPopup] = useState<boolean>(false); // Show warning when thematic basemap is selected at low zoom
-  const [showEventLayerZoomWarning, setShowEventLayerZoomWarning] = useState<boolean>(false); // Show warning when event layers are active at low zoom
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
   const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
@@ -6888,6 +6888,30 @@ const MapView: React.FC<MapViewProps> = ({
   };
   const [showBasemapInfo, setShowBasemapInfo] = useState<boolean>(false); // Info tooltip state
   const basemapInfoRef = useRef<HTMLDivElement>(null);
+  // Measure tool state (desktop only)
+  const [measureToolMode, setMeasureToolMode] = useState<'off' | 'distance' | 'area' | 'line'>('off');
+  const [measureToolExpanded, setMeasureToolExpanded] = useState(false);
+  const [measureResult, setMeasureResult] = useState<string | null>(null);
+  const [measureSegments, setMeasureSegments] = useState<string[]>([]);
+  const [measureArea, setMeasureArea] = useState<string | null>(null);
+  const [showMeasurePathInstruction, setShowMeasurePathInstruction] = useState(false);
+  const measureLayerRef = useRef<L.LayerGroup | null>(null);
+  const measurePointsRef = useRef<[number, number][]>([]);
+  const measureDropdownRef = useRef<HTMLDivElement>(null);
+  const measureAddPointRef = useRef<((latlng: L.LatLng) => void) | null>(null);
+  const measureDblClickRef = useRef<(() => void) | null>(null);
+  // Right-click context menu state
+  const [contextMenu, setContextMenu] = useState<{ lat: number; lon: number; x: number; y: number } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+  const pendingRightClickMeasureRef = useRef<[number, number] | null>(null);
+  const clearMeasure = () => {
+    measureLayerRef.current?.clearLayers();
+    measurePointsRef.current = [];
+    setMeasureResult(null);
+    setMeasureSegments([]);
+    setMeasureArea(null);
+    setShowMeasurePathInstruction(false);
+  };
   // Collapsible basemap sections state
   const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
     'Basemaps': true, // Default to expanded
@@ -7115,6 +7139,32 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
     return false;
+  };
+
+  // Haversine distance in miles between two [lat,lon] points
+  const haversineMiles = (p1: [number, number], p2: [number, number]): number => {
+    const R = 3959; // Earth radius miles
+    const [lat1, lon1] = p1;
+    const [lat2, lon2] = p2;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+  // Geodesic polygon area in sq meters (using spherical approximation)
+  const polygonAreaSqMeters = (points: [number, number][]): number => {
+    if (points.length < 3) return 0;
+    const R = 6371000; // Earth radius in meters
+    let area = 0;
+    for (let i = 0; i < points.length; i++) {
+      const j = (i + 1) % points.length;
+      const latI = points[i][0] * Math.PI / 180;
+      const latJ = points[j][0] * Math.PI / 180;
+      const dLon = (points[j][1] - points[i][1]) * Math.PI / 180;
+      area += dLon * (2 + Math.sin(latI) + Math.sin(latJ));
+    }
+    return Math.abs(area * R * R / 2);
   };
 
   const mapInitTimeoutRef = useRef<number | null>(null);
@@ -7712,6 +7762,212 @@ const MapView: React.FC<MapViewProps> = ({
       setIsInitialized(false);
     };
   }, [isMobile]);
+
+  // Close measure dropdown when clicking outside
+  useEffect(() => {
+    if (!measureToolExpanded) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (measureDropdownRef.current && !measureDropdownRef.current.contains(e.target as Node)) {
+        setMeasureToolExpanded(false);
+      }
+    };
+    document.addEventListener('click', onDocClick, true);
+    return () => document.removeEventListener('click', onDocClick, true);
+  }, [measureToolExpanded]);
+
+  // Close context menu when clicking outside
+  useEffect(() => {
+    if (!contextMenu) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+        setContextMenu(null);
+      }
+    };
+    document.addEventListener('click', onDocClick, true);
+    return () => document.removeEventListener('click', onDocClick, true);
+  }, [contextMenu]);
+
+  // Right-click context menu on map (desktop only, when not in measure mode)
+  useEffect(() => {
+    if (isMobile || !mapInstanceRef.current || !isInitialized) return;
+    const map = mapInstanceRef.current;
+
+    const onContextMenu = (e: L.LeafletMouseEvent) => {
+      if (measureToolMode !== 'off') return;
+      e.originalEvent.preventDefault();
+      const { lat, lng } = e.latlng;
+      const ev = e.originalEvent;
+      setContextMenu({ lat, lon: lng, x: ev.clientX, y: ev.clientY });
+    };
+
+    map.on('contextmenu', onContextMenu);
+    return () => {
+      map.off('contextmenu', onContextMenu);
+      setContextMenu(null);
+    };
+  }, [isInitialized, isMobile, measureToolMode]);
+
+
+  // Measure tool: attach click handlers when mode is active (desktop only)
+  useEffect(() => {
+    if (isMobile || !mapInstanceRef.current || !isInitialized || measureToolMode === 'off') {
+      measureAddPointRef.current = null;
+      measureDblClickRef.current = null;
+      return;
+    }
+    const map = mapInstanceRef.current;
+    const primary = layerGroupsRef.current?.primary;
+    if (!primary) return;
+
+    const pending = pendingRightClickMeasureRef.current;
+    pendingRightClickMeasureRef.current = null;
+    if (pending) {
+      measurePointsRef.current = [pending];
+    } else {
+      measurePointsRef.current = [];
+    }
+    const layerGroup = new L.LayerGroup();
+    measureLayerRef.current = layerGroup;
+    layerGroup.addTo(primary);
+
+    // If started from right-click, add the first point and draw marker
+    if (pending && measureToolMode === 'line') {
+      const latlng = L.latLng(pending[0], pending[1]);
+      L.marker(latlng, { icon: L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] }) }).addTo(layerGroup);
+    }
+
+    const addMeasurePoint = (latlng: L.LatLng) => {
+      const pt: [number, number] = [latlng.lat, latlng.lng];
+      const prev = measurePointsRef.current;
+      if (measureToolMode === 'distance' && prev.length >= 2) return;
+      const next = [...prev, pt];
+      measurePointsRef.current = next;
+
+      if (measureToolMode === 'distance' && next.length >= 2) {
+        const d = haversineMiles(next[0], next[1]);
+        setMeasureResult(`${d.toFixed(3)} mi (${(d * 1.60934).toFixed(3)} km)`);
+        setMeasureSegments([]);
+        setMeasureArea(null);
+      } else if (measureToolMode === 'line' && next.length >= 2) {
+        let total = 0;
+        const segs: string[] = [];
+        for (let i = 1; i < next.length; i++) {
+          const d = haversineMiles(next[i - 1], next[i]);
+          total += d;
+          segs.push(`Segment ${i}: ${d.toFixed(3)} mi`);
+        }
+        setMeasureSegments(segs);
+        setMeasureResult(`Total: ${total.toFixed(3)} mi (${(total * 1.60934).toFixed(3)} km)`);
+        setMeasureArea(null);
+      } else if (measureToolMode === 'area' && next.length >= 3) {
+        const areaM2 = polygonAreaSqMeters(next);
+        const acres = areaM2 / 4046.86;
+        const sqMi = areaM2 / 2589988.11;
+        setMeasureResult(`${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi)`);
+        setMeasureSegments([]);
+        setMeasureArea(null);
+      } else {
+        setMeasureResult(null);
+        setMeasureSegments([]);
+        setMeasureArea(null);
+      }
+
+      L.marker(latlng, { icon: L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] }) }).addTo(layerGroup);
+      if (prev.length >= 1) {
+        const latlngs = next.map(p => L.latLng(p[0], p[1]));
+        L.polyline(latlngs, { color: '#3388ff', weight: 2, opacity: 0.8 }).addTo(layerGroup);
+      }
+    };
+
+    const onDblClick = () => {
+      const pts = measurePointsRef.current;
+      if (measureToolMode === 'area' && pts.length >= 3) {
+        const latlngs = pts.map(p => L.latLng(p[0], p[1]));
+        L.polygon(latlngs, { color: '#3388ff', weight: 2, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        const areaM2 = polygonAreaSqMeters(pts);
+        const acres = areaM2 / 4046.86;
+        const sqMi = areaM2 / 2589988.11;
+        setMeasureResult(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi)`);
+      } else if (measureToolMode === 'line' && pts.length >= 3) {
+        // Close path to form polygon - draw and show area
+        const latlngs = pts.map(p => L.latLng(p[0], p[1]));
+        L.polygon(latlngs, { color: '#3388ff', weight: 2, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        const areaM2 = polygonAreaSqMeters(pts);
+        const acres = areaM2 / 4046.86;
+        const sqMi = areaM2 / 2589988.11;
+        setMeasureArea(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi)`);
+        let total = 0;
+        for (let i = 1; i < pts.length; i++) total += haversineMiles(pts[i - 1], pts[i]);
+        total += haversineMiles(pts[pts.length - 1], pts[0]); // closing segment
+        setMeasureResult(`Total: ${total.toFixed(3)} mi (${(total * 1.60934).toFixed(3)} km)`);
+      }
+      map.off('dblclick', onDblClick);
+    };
+
+    measureAddPointRef.current = addMeasurePoint;
+    measureDblClickRef.current = onDblClick;
+
+    const onMapClick = (e: L.LeafletMouseEvent) => addMeasurePoint(e.latlng);
+
+    map.on('click', onMapClick);
+    if (measureToolMode === 'area' || measureToolMode === 'line') map.on('dblclick', onDblClick);
+
+    return () => {
+      measureAddPointRef.current = null;
+      measureDblClickRef.current = null;
+      map.off('click', onMapClick);
+      map.off('dblclick', onDblClick);
+      if (measureLayerRef.current && map.hasLayer(measureLayerRef.current)) {
+        map.removeLayer(measureLayerRef.current);
+      }
+      measureLayerRef.current = null;
+      measurePointsRef.current = [];
+      setMeasureResult(null);
+    };
+  }, [measureToolMode, isMobile, isInitialized]);
+
+  // When measure tool is active: add a transparent overlay on top of the map to capture clicks
+  // before they reach feature layers (building footprints, etc). This ensures measure points
+  // are added without triggering feature popups.
+  useEffect(() => {
+    if (isMobile || !mapInstanceRef.current || !isInitialized || measureToolMode === 'off') return;
+    const map = mapInstanceRef.current;
+    const container = map.getContainer();
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-measure-overlay', 'true');
+    overlay.style.cssText = 'position:absolute;inset:0;z-index:9999;cursor:crosshair;';
+    overlay.style.pointerEvents = 'auto';
+
+    const onClick = (e: MouseEvent) => {
+      if (!measureAddPointRef.current || !container) return;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const latlng = map.containerPointToLatLng(L.point(x, y));
+      measureAddPointRef.current(latlng);
+    };
+
+    const onDblClick = () => {
+      if ((measureToolMode === 'area' || measureToolMode === 'line') && measureDblClickRef.current) {
+        measureDblClickRef.current();
+      }
+    };
+
+    const onContextMenu = (e: MouseEvent) => e.preventDefault();
+    overlay.addEventListener('click', onClick);
+    overlay.addEventListener('dblclick', onDblClick);
+    overlay.addEventListener('contextmenu', onContextMenu);
+    container.style.position = 'relative';
+    container.appendChild(overlay);
+    map.closePopup();
+
+    return () => {
+      overlay.removeEventListener('click', onClick);
+      overlay.removeEventListener('dblclick', onDblClick);
+      overlay.removeEventListener('contextmenu', onContextMenu);
+      overlay.remove();
+    };
+  }, [measureToolMode, isMobile, isInitialized]);
 
   // Handle weather radar overlay toggle
   useEffect(() => {
@@ -9594,31 +9850,6 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [selectedThematicBasemap, isInitialized]);
 
-  // Show zoom warning popup when event layers are active at low zoom levels
-  useEffect(() => {
-    if (!mapInstanceRef.current || !isInitialized) {
-      return;
-    }
-
-    // Check if any event layers are active (ACLED, NASA FIRMS, etc.)
-    const hasActiveEventLayers = showACLED || showNASAFIRMS || showWFIGSWildfires || showEarthquakes || showFlights;
-    
-    if (hasActiveEventLayers) {
-      const currentZoom = mapInstanceRef.current.getZoom();
-      // Show warning if zoom level is 7 or below (regional/state level)
-      // Event layers perform better when zoomed in more
-      if (currentZoom <= 7) {
-        setShowEventLayerZoomWarning(true);
-      } else {
-        // If user zooms in, hide the warning
-        setShowEventLayerZoomWarning(false);
-      }
-    } else {
-      // No event layers active, hide warning
-      setShowEventLayerZoomWarning(false);
-    }
-  }, [showACLED, showNASAFIRMS, showWFIGSWildfires, showEarthquakes, showFlights, isInitialized]);
-
   // Listen to zoom changes to hide warning when user zooms in
   useEffect(() => {
     if (!mapInstanceRef.current || !isInitialized || !selectedThematicBasemap) {
@@ -9644,38 +9875,6 @@ const MapView: React.FC<MapViewProps> = ({
       }
     };
   }, [selectedThematicBasemap, isInitialized]);
-
-  // Listen to zoom changes for event layer warning
-  useEffect(() => {
-    if (!mapInstanceRef.current || !isInitialized) {
-      return;
-    }
-
-    const hasActiveEventLayers = showACLED || showNASAFIRMS || showWFIGSWildfires || showEarthquakes || showFlights;
-    
-    if (!hasActiveEventLayers) {
-      return;
-    }
-
-    const handleZoomEnd = () => {
-      if (mapInstanceRef.current) {
-        const currentZoom = mapInstanceRef.current.getZoom();
-        if (currentZoom > 7) {
-          setShowEventLayerZoomWarning(false);
-        } else if (currentZoom <= 7) {
-          setShowEventLayerZoomWarning(true);
-        }
-      }
-    };
-
-    mapInstanceRef.current.on('zoomend', handleZoomEnd);
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.off('zoomend', handleZoomEnd);
-      }
-    };
-  }, [showACLED, showNASAFIRMS, showWFIGSWildfires, showEarthquakes, showFlights, isInitialized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -27459,6 +27658,84 @@ const MapView: React.FC<MapViewProps> = ({
         }
       } catch (error) {
         console.error('Error processing Lake County Building Footprints:', error);
+      }
+
+      // Draw Cook County Building Footprints as polygons
+      try {
+        if (enrichments.cook_county_building_footprints_all && Array.isArray(enrichments.cook_county_building_footprints_all)) {
+          let cookCountyBuildingFootprintsCount = 0;
+
+          enrichments.cook_county_building_footprints_all.forEach((footprint: any) => {
+            if (footprint.geometry && footprint.geometry.rings) {
+              try {
+                const rings = footprint.geometry.rings;
+                if (rings && rings.length > 0 && rings[0] && rings[0].length > 0) {
+                  const latlngs = rings[0].map((ring: number[]) => {
+                    if (Array.isArray(ring) && ring.length >= 2) {
+                      return [ring[1], ring[0]] as [number, number];
+                    }
+                    return null;
+                  }).filter((coord: any): coord is [number, number] => coord !== null);
+
+                  if (latlngs.length > 0) {
+                    const polygon = L.polygon(latlngs, {
+                      color: '#0ea5e9',
+                      weight: 2,
+                      opacity: 0.7,
+                      fillColor: '#0ea5e9',
+                      fillOpacity: 0.3
+                    }).addTo(primary);
+
+                    const areaSqft = footprint.areaSqft || 0;
+                    const year = footprint.year || '';
+                    const height = footprint.height || 0;
+                    const shapeArea = footprint.shapeArea || 0;
+                    const shapeLength = footprint.shapeLength || 0;
+                    const distance = footprint.distance || 0;
+                    const containing = footprint.containing || false;
+
+                    const popupContent = `
+                      <div style="max-width: 300px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #1f2937;">${containing ? 'Containing' : 'Nearby'}: Cook County Building Footprint</h3>
+                        <div style="font-size: 12px; color: #4b5563; line-height: 1.6;">
+                          ${year ? `<p style="margin: 4px 0;"><strong>Year:</strong> ${year}</p>` : ''}
+                          <p style="margin: 4px 0;"><strong>Area:</strong> ${areaSqft.toLocaleString()} sq ft</p>
+                          ${height > 0 ? `<p style="margin: 4px 0;"><strong>Height:</strong> ${height.toLocaleString()} ft</p>` : ''}
+                          <p style="margin: 4px 0;"><strong>Shape Area:</strong> ${shapeArea.toLocaleString()} sq units</p>
+                          <p style="margin: 4px 0;"><strong>Perimeter:</strong> ${shapeLength.toLocaleString()} units</p>
+                          ${!containing && distance > 0 ? `<p style="margin: 4px 0;"><strong>Distance:</strong> ${distance.toFixed(3)} miles</p>` : ''}
+                        </div>
+                      </div>
+                    `;
+
+                    polygon.bindPopup(popupContent);
+
+                    const polygonBounds = L.latLngBounds(latlngs);
+                    bounds.extend(polygonBounds);
+
+                    cookCountyBuildingFootprintsCount++;
+                  }
+                }
+              } catch (error) {
+                console.error('Error drawing Cook County Building Footprint:', error);
+              }
+            }
+          });
+
+          if (cookCountyBuildingFootprintsCount > 0) {
+            if (!legendAccumulator['cook_county_building_footprints']) {
+              legendAccumulator['cook_county_building_footprints'] = {
+                icon: '🏢',
+                color: '#0ea5e9',
+                title: 'Cook County Building Footprints',
+                count: 0
+              };
+            }
+            legendAccumulator['cook_county_building_footprints'].count += cookCountyBuildingFootprintsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing Cook County Building Footprints:', error);
       }
 
       // Draw Lake County Pavement Boundaries as polygons
@@ -48544,6 +48821,50 @@ const MapView: React.FC<MapViewProps> = ({
             transition: 'opacity 0.3s ease-in-out'
           }}
         />
+
+        {/* Right-click context menu - Desktop only */}
+        {!isMobile && contextMenu && (
+          <div
+            ref={contextMenuRef}
+            className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-1 min-w-[200px] z-[10000] text-gray-900"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+          >
+            <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+              {contextMenu.lat.toFixed(6)}, {contextMenu.lon.toFixed(6)}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                pendingRightClickMeasureRef.current = [contextMenu.lat, contextMenu.lon];
+                setMeasureToolMode('line');
+                setMeasureToolExpanded(false);
+                setContextMenu(null);
+                setShowMeasurePathInstruction(true);
+              }}
+              className="w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-gray-100 flex items-center gap-2"
+            >
+              <Ruler className="w-4 h-4 text-blue-600" />
+              Measure Distance
+            </button>
+          </div>
+        )}
+
+        {/* Measure path instruction - shown when measuring from right-click */}
+        {!isMobile && showMeasurePathInstruction && measureToolMode === 'line' && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border border-gray-200 px-4 py-3 z-[10001] max-w-sm flex items-start gap-3">
+            <p className="text-sm text-gray-700 flex-1">
+              Click on map to trace a path you want to measure. Double-click to close and show area.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowMeasurePathInstruction(false)}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        )}
         
         {/* Global Risk TOC Pane - Desktop only */}
         {!isMobile && isGlobalRiskMode && (
@@ -48655,9 +48976,10 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         )}
         
-        {/* Basemap Dropdown and Weather Radar Toggle - Desktop only */}
+        {/* Basemap Dropdown and Weather Radar Toggle + Measure Tool - Desktop only */}
         {!isMobile && (
-          <div className={`absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} bg-white rounded-lg shadow-lg p-3 z-10 space-y-3`} style={{ minWidth: '280px', maxWidth: '320px' }}>
+          <div className={`absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} flex gap-3 z-10 items-start`}>
+            <div className="bg-white rounded-lg shadow-lg p-3 space-y-3 flex-shrink-0" style={{ minWidth: '280px', maxWidth: '320px' }}>
             <div>
               <div className="flex items-center justify-between mb-2 relative">
                 <label className="block text-sm font-semibold text-black">
@@ -49186,7 +49508,7 @@ const MapView: React.FC<MapViewProps> = ({
                 </span>
               </button>
               {showEventThemes && (
-                <div className="bg-gray-50 mt-2 space-y-3 pt-2">
+                <div className="bg-gray-50 mt-2 space-y-3 pt-2 max-h-[280px] overflow-y-auto overflow-x-hidden">
                   {/* Weather Radar Toggle */}
                   <div className="px-3">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -49372,10 +49694,88 @@ const MapView: React.FC<MapViewProps> = ({
                 </div>
               )}
             </div>
-            
+            </div>
+
+            {/* Measure Tool - to the right of Available Basemap Themes */}
+            <div ref={measureDropdownRef} className="flex flex-col gap-2 flex-shrink-0">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMeasureToolExpanded(prev => !prev);
+                    if (measureToolExpanded) setMeasureToolMode('off');
+                  }}
+                  className="bg-white rounded-lg shadow-lg p-2.5 hover:bg-gray-50 border border-gray-200 transition-colors"
+                  title="Measure distance, area, or line"
+                  aria-label="Measure tool"
+                >
+                  <Ruler className="w-5 h-5 text-gray-700" />
+                </button>
+                {measureToolExpanded && (
+                  <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px] text-gray-900">
+                    <button
+                      type="button"
+                      onClick={() => { setMeasureToolMode('distance'); setMeasureToolExpanded(false); setMeasureResult(null); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                    >
+                      Distance (2 points)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMeasureToolMode('line'); setMeasureToolExpanded(false); setMeasureResult(null); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                    >
+                      Line (polyline)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMeasureToolMode('area'); setMeasureToolExpanded(false); setMeasureResult(null); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
+                    >
+                      Area (polygon)
+                    </button>
+                    <hr className="my-1 border-gray-200" />
+                    <button
+                      type="button"
+                      onClick={() => { setMeasureToolMode('off'); setMeasureToolExpanded(false); setMeasureResult(null); }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" /> Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+              {measureToolMode !== 'off' && (
+                <div className="bg-white rounded-lg shadow-lg px-3 py-2 text-sm max-w-[220px] text-gray-900">
+                  <p className="text-gray-700 text-xs">
+                    {measureToolMode === 'distance' && 'Click 2 points'}
+                    {measureToolMode === 'line' && 'Click points for line'}
+                    {measureToolMode === 'area' && 'Click polygon, dbl-click to close'}
+                  </p>
+                  {measureResult && <p className="font-semibold text-gray-900 mt-1">{measureResult}</p>}
+                  {measureToolMode === 'line' && measureSegments.length > 0 && (
+                    <div className="mt-1 space-y-0.5 text-xs text-gray-600">
+                      {measureSegments.map((s, i) => <div key={i}>{s}</div>)}
+                    </div>
+                  )}
+                  {measureToolMode === 'line' && measureArea && (
+                    <p className="text-sm font-medium text-gray-800 mt-1">{measureArea}</p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={clearMeasure}
+                    className="mt-2 flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    title="Clear measurement and start over"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Clear & restart
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
-        
+
         {/* Global Risk TOC Pane - Mobile */}
         {isMobile && isGlobalRiskMode && (
           <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10" style={{ maxWidth: '280px', maxHeight: '60vh', overflowY: 'auto' }}>
@@ -49448,7 +49848,7 @@ const MapView: React.FC<MapViewProps> = ({
               </span>
             </button>
             {showEventThemes && (
-              <div className="bg-gray-50 rounded space-y-2 pt-2">
+              <div className="bg-gray-50 rounded space-y-2 pt-2 max-h-[260px] overflow-y-auto overflow-x-hidden">
                 <label className="flex items-center space-x-2 cursor-pointer px-3">
                   <input
                     type="checkbox"
@@ -49557,12 +49957,14 @@ const MapView: React.FC<MapViewProps> = ({
                 </div>
               </div>
             )}
-          </div>
+            </div>
         )}
 
-        {/* Dynamic Legend - Always show when there are legend items (Desktop only) */}
-        {legendItems.length > 0 && (
-          <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-6 max-w-md z-10">
+        {/* Top-right panel: Legend (Desktop only) */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-3 items-end">
+          {/* Dynamic Legend */}
+          {legendItems.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md">
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Map Legend</h4>
             <div className="space-y-3">
               {legendItems.map((item, index) => {
@@ -49661,7 +50063,8 @@ const MapView: React.FC<MapViewProps> = ({
               })}
             </div>
           </div>
-        )}
+          )}
+        </div>
         
         {/* Batch Success Message */}
         {showBatchSuccess && (
@@ -49701,33 +50104,6 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         )}
 
-        {/* Zoom Warning Popup for Event Layers */}
-        {showEventLayerZoomWarning && (showACLED || showNASAFIRMS || showWFIGSWildfires || showEarthquakes || showFlights) && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-50 border-2 border-yellow-400 rounded-lg shadow-xl z-[1000] max-w-md mx-4">
-            <div className="flex items-start justify-between p-4">
-              <div className="flex items-start space-x-3 flex-1">
-                <div className="flex-shrink-0 mt-0.5">
-                  <span className="text-2xl">⚠️</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-yellow-900 mb-1">
-                    Zoom In For Better Event Layer Performance!
-                  </h3>
-                  <p className="text-xs text-yellow-800">
-                    Performance is affected for Event layers when zoomed out too much. Please zoom in for optimal performance.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowEventLayerZoomWarning(false)}
-                className="flex-shrink-0 ml-3 text-yellow-700 hover:text-yellow-900 transition-colors"
-                aria-label="Close warning"
-              >
-                <span className="text-xl font-bold">×</span>
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

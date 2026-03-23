@@ -8797,6 +8797,56 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           shapeLength.toString()
         ]);
       });
+    } else if (key === 'cook_county_building_footprints_all' && Array.isArray(value)) {
+      value.forEach((footprint: any) => {
+        const objectId = footprint.objectId || '';
+        const areaSqft = footprint.areaSqft || '';
+        const year = footprint.year || '';
+        const shapeArea = footprint.shapeArea || '';
+        const shapeLength = footprint.shapeLength || '';
+        const distance = footprint.distance !== null && footprint.distance !== undefined ? footprint.distance.toFixed(3) : (footprint.containing ? '0' : '');
+        // Calculate centroid from geometry if needed for CSV
+        let lat = '';
+        let lon = '';
+        if (footprint.geometry && footprint.geometry.rings && footprint.geometry.rings[0] && footprint.geometry.rings[0].length > 0) {
+          const rings = footprint.geometry.rings[0];
+          let sumLat = 0;
+          let sumLon = 0;
+          let count = 0;
+          rings.forEach((coord: number[]) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              sumLon += coord[0];
+              sumLat += coord[1];
+              count++;
+            }
+          });
+          if (count > 0) {
+            lat = (sumLat / count).toString();
+            lon = (sumLon / count).toString();
+          }
+        }
+        const containing = footprint.containing ? 'Yes' : 'No';
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'Cook County, Illinois',
+          (location.confidence || 'N/A').toString(),
+          'COOK_COUNTY_BUILDING_FOOTPRINT',
+          `${year ? `Year ${year}` : 'Building Footprint'}${areaSqft ? ` (${Number(areaSqft).toLocaleString()} sq ft)` : ''}`,
+          lat,
+          lon,
+          distance,
+          'Building Footprint',
+          containing,
+          objectId.toString(),
+          year.toString(),
+          areaSqft.toString(),
+          shapeArea.toString(),
+          shapeLength.toString()
+        ]);
+      });
     } else if (key === 'lake_county_building_footprints_all' && Array.isArray(value)) {
       value.forEach((footprint: any) => {
         const objectId = footprint.objectId || '';

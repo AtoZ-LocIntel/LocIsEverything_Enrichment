@@ -5923,6 +5923,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://services3.arcgis.com/HESxeTbDliKKvec2/arcgis/rest/services/LakeCounty_Planimetrics/FeatureServer/1"
         },
         {
+          name: "Cook County Building Footprints",
+          description: "Building footprints (2022) from Cook County GIS - point-in-polygon and proximity queries from 0.25 to 1 mile",
+          coverage: "Cook County, Illinois",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.cookcountyil.gov/traditional/rest/services/buildingFootprint_2022/MapServer/0"
+        },
+        {
           name: "Lake County Pavement Boundaries",
           description: "Pavement boundaries (roads, parking) traced from aerial photography (March-April 2018) - point-in-polygon and proximity queries from 0.25 to 1 mile",
           coverage: "Lake County, Illinois",

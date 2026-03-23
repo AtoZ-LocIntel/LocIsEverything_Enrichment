@@ -349,6 +349,7 @@ import { getLACountyFireHydrantsData } from '../adapters/laCountyFireHydrants';
 import { getChicago311Data } from '../adapters/chicago311';
 import { getChicagoBuildingFootprintsData } from '../adapters/chicagoBuildingFootprints';
 import { getLakeCountyBuildingFootprintsData } from '../adapters/lakeCountyBuildingFootprints';
+import { getCookCountyBuildingFootprintsData } from '../adapters/cookCountyBuildingFootprints';
 import { getLakeCountyPavementBoundariesData } from '../adapters/lakeCountyPavementBoundaries';
 import { getLakeCountyParcelPointsData } from '../adapters/lakeCountyParcelPoints';
 import { getLakeCountyParcelsData } from '../adapters/lakeCountyParcels';
@@ -5772,6 +5773,10 @@ export class EnrichmentService {
       // Lake County Building Footprints - Point-in-polygon and proximity query (max 1 mile)
       case 'lake_county_building_footprints':
         return await this.getLakeCountyBuildingFootprints(lat, lon, radius);
+
+      // Cook County Building Footprints - Point-in-polygon and proximity query (max 1 mile)
+      case 'cook_county_building_footprints':
+        return await this.getCookCountyBuildingFootprints(lat, lon, radius);
       
       // Lake County Pavement Boundaries - Point-in-polygon and proximity query (max 1 mile)
       case 'lake_county_pavement_boundaries':
@@ -20152,6 +20157,71 @@ out center tags;`;
         }));
     } catch (error) {
       console.error('Error fetching Lake County Building Footprints:', error);
+    }
+
+    return result;
+  }
+
+  private async getCookCountyBuildingFootprints(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const result: Record<string, any> = {
+      cook_county_building_footprints_containing: [],
+      cook_county_building_footprints_nearby: [],
+      cook_county_building_footprints_all: [],
+      cook_county_building_footprints_count: 0,
+    };
+
+    try {
+      const footprints = await getCookCountyBuildingFootprintsData(lat, lon, radius);
+
+      result.cook_county_building_footprints_count = footprints.length;
+      result.cook_county_building_footprints_all = footprints.map(footprint => ({
+        objectId: footprint.objectId,
+        areaSqft: footprint.areaSqft,
+        year: footprint.year,
+        groundZ: footprint.groundZ,
+        maxPoint: footprint.maxPoint,
+        height: footprint.height,
+        shapeArea: footprint.shapeArea,
+        shapeLength: footprint.shapeLength,
+        distance: footprint.distance,
+        containing: footprint.containing,
+        geometry: footprint.geometry
+      }));
+
+      result.cook_county_building_footprints_containing = footprints
+        .filter(f => f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          areaSqft: f.areaSqft,
+          year: f.year,
+          groundZ: f.groundZ,
+          maxPoint: f.maxPoint,
+          height: f.height,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          lat: f.lat,
+          lon: f.lon,
+          geometry: f.geometry
+        }));
+
+      result.cook_county_building_footprints_nearby = footprints
+        .filter(f => !f.containing)
+        .map(f => ({
+          objectId: f.objectId,
+          areaSqft: f.areaSqft,
+          year: f.year,
+          groundZ: f.groundZ,
+          maxPoint: f.maxPoint,
+          height: f.height,
+          shapeArea: f.shapeArea,
+          shapeLength: f.shapeLength,
+          lat: f.lat,
+          lon: f.lon,
+          distance: f.distance,
+          geometry: f.geometry
+        }));
+    } catch (error) {
+      console.error('Error fetching Cook County Building Footprints:', error);
     }
 
     return result;
