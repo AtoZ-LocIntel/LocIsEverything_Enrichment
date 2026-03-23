@@ -7849,7 +7849,8 @@ const MapView: React.FC<MapViewProps> = ({
         const areaM2 = polygonAreaSqMeters(next);
         const acres = areaM2 / 4046.86;
         const sqMi = areaM2 / 2589988.11;
-        setMeasureResult(`${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi)`);
+        const sqFt = areaM2 * 10.7639;
+        setMeasureResult(`${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`);
         setMeasureSegments([]);
         setMeasureArea(null);
       } else {
@@ -7858,33 +7859,100 @@ const MapView: React.FC<MapViewProps> = ({
         setMeasureArea(null);
       }
 
-      L.marker(latlng, { icon: L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] }) }).addTo(layerGroup);
-      if (prev.length >= 1) {
+      // Clear and redraw all measure visuals (markers, lines, segment labels)
+      layerGroup.clearLayers();
+      const vertexIcon = L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] });
+      next.forEach((p) => {
+        L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
+      });
+      if (next.length >= 2) {
         const latlngs = next.map(p => L.latLng(p[0], p[1]));
-        L.polyline(latlngs, { color: '#3388ff', weight: 2, opacity: 0.8 }).addTo(layerGroup);
+        L.polyline(latlngs, { color: '#3388ff', weight: 3, opacity: 0.9 }).addTo(layerGroup);
+        // Add distance label at midpoint of each segment (Google Maps style)
+        for (let i = 1; i < next.length; i++) {
+          const d = haversineMiles(next[i - 1], next[i]);
+          const midLat = (next[i - 1][0] + next[i][0]) / 2;
+          const midLon = (next[i - 1][1] + next[i][1]) / 2;
+          const labelText = d >= 0.1 ? `${d.toFixed(2)} mi` : d >= 0.01 ? `${d.toFixed(3)} mi` : `${(d * 5280).toFixed(0)} ft`;
+          const labelIcon = L.divIcon({
+            className: 'measure-segment-label',
+            html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
+            iconSize: [60, 20],
+            iconAnchor: [30, 10],
+          });
+          L.marker(L.latLng(midLat, midLon), { icon: labelIcon }).addTo(layerGroup);
+        }
       }
     };
 
     const onDblClick = () => {
       const pts = measurePointsRef.current;
       if (measureToolMode === 'area' && pts.length >= 3) {
+        // Redraw with polygon, markers, and segment labels (including closing)
+        layerGroup.clearLayers();
+        const vertexIcon = L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] });
+        pts.forEach((p) => {
+          L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
+        });
         const latlngs = pts.map(p => L.latLng(p[0], p[1]));
-        L.polygon(latlngs, { color: '#3388ff', weight: 2, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        L.polygon(latlngs, { color: '#3388ff', weight: 3, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        const labelIconOpts = (d: number) => {
+          const labelText = d >= 0.1 ? `${d.toFixed(2)} mi` : d >= 0.01 ? `${d.toFixed(3)} mi` : `${(d * 5280).toFixed(0)} ft`;
+          return L.divIcon({
+            className: 'measure-segment-label',
+            html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
+            iconSize: [60, 20],
+            iconAnchor: [30, 10],
+          });
+        };
+        for (let i = 1; i < pts.length; i++) {
+          const d = haversineMiles(pts[i - 1], pts[i]);
+          L.marker(L.latLng((pts[i - 1][0] + pts[i][0]) / 2, (pts[i - 1][1] + pts[i][1]) / 2), { icon: labelIconOpts(d) }).addTo(layerGroup);
+        }
+        const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
+        L.marker(L.latLng((pts[pts.length - 1][0] + pts[0][0]) / 2, (pts[pts.length - 1][1] + pts[0][1]) / 2), { icon: labelIconOpts(closeD) }).addTo(layerGroup);
         const areaM2 = polygonAreaSqMeters(pts);
         const acres = areaM2 / 4046.86;
         const sqMi = areaM2 / 2589988.11;
-        setMeasureResult(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi)`);
+        const sqFt = areaM2 * 10.7639;
+        setMeasureResult(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`);
       } else if (measureToolMode === 'line' && pts.length >= 3) {
-        // Close path to form polygon - draw and show area
+        // Close path to form polygon - redraw with polygon, markers, and all segment labels (including closing)
+        layerGroup.clearLayers();
+        const vertexIcon = L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] });
+        pts.forEach((p) => {
+          L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
+        });
         const latlngs = pts.map(p => L.latLng(p[0], p[1]));
-        L.polygon(latlngs, { color: '#3388ff', weight: 2, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        L.polygon(latlngs, { color: '#3388ff', weight: 3, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        // Segment labels including closing segment
+        const labelIconOpts = (d: number) => {
+          const labelText = d >= 0.1 ? `${d.toFixed(2)} mi` : d >= 0.01 ? `${d.toFixed(3)} mi` : `${(d * 5280).toFixed(0)} ft`;
+          return L.divIcon({
+            className: 'measure-segment-label',
+            html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
+            iconSize: [60, 20],
+            iconAnchor: [30, 10],
+          });
+        };
+        for (let i = 1; i < pts.length; i++) {
+          const d = haversineMiles(pts[i - 1], pts[i]);
+          const midLat = (pts[i - 1][0] + pts[i][0]) / 2;
+          const midLon = (pts[i - 1][1] + pts[i][1]) / 2;
+          L.marker(L.latLng(midLat, midLon), { icon: labelIconOpts(d) }).addTo(layerGroup);
+        }
+        const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
+        const closeMidLat = (pts[pts.length - 1][0] + pts[0][0]) / 2;
+        const closeMidLon = (pts[pts.length - 1][1] + pts[0][1]) / 2;
+        L.marker(L.latLng(closeMidLat, closeMidLon), { icon: labelIconOpts(closeD) }).addTo(layerGroup);
         const areaM2 = polygonAreaSqMeters(pts);
         const acres = areaM2 / 4046.86;
         const sqMi = areaM2 / 2589988.11;
-        setMeasureArea(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi)`);
+        const sqFt = areaM2 * 10.7639;
+        setMeasureArea(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`);
         let total = 0;
         for (let i = 1; i < pts.length; i++) total += haversineMiles(pts[i - 1], pts[i]);
-        total += haversineMiles(pts[pts.length - 1], pts[0]); // closing segment
+        total += haversineMiles(pts[pts.length - 1], pts[0]);
         setMeasureResult(`Total: ${total.toFixed(3)} mi (${(total * 1.60934).toFixed(3)} km)`);
       }
       map.off('dblclick', onDblClick);
@@ -8993,24 +9061,24 @@ const MapView: React.FC<MapViewProps> = ({
             }
             
             const iconHtml = `<div style="
-              width: 12px;
-              height: 12px;
+              width: 24px;
+              height: 24px;
               background-color: ${eventColor};
-              border: 1px solid white;
+              border: 2px solid white;
               border-radius: 50%;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
               display: flex;
               align-items: center;
               justify-content: center;
-              font-size: 8px;
+              font-size: 14px;
             ">${eventIcon}</div>`;
             
             const marker = L.marker([lat, lon], {
               icon: L.divIcon({
                 className: 'custom-marker',
                 html: iconHtml,
-                iconSize: [12, 12],
-                iconAnchor: [6, 6]
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
               })
             });
             
@@ -16505,8 +16573,8 @@ const MapView: React.FC<MapViewProps> = ({
               }
               
               const iconHtml = `<div style="
-                width: 16px;
-                height: 16px;
+                width: 24px;
+                height: 24px;
                 background-color: ${eventColor};
                 border: 2px solid white;
                 border-radius: 50%;
@@ -16514,15 +16582,15 @@ const MapView: React.FC<MapViewProps> = ({
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 10px;
+                font-size: 14px;
               ">${eventIcon}</div>`;
               
               const marker = L.marker([lat, lon], {
                 icon: L.divIcon({
                   className: 'custom-marker',
                   html: iconHtml,
-                  iconSize: [16, 16],
-                  iconAnchor: [8, 8]
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
                 })
               });
 
@@ -49656,24 +49724,8 @@ const MapView: React.FC<MapViewProps> = ({
                         🚢 Global Shipping Lanes
                       </span>
                     </label>
-                    <p className="text-xs text-gray-500 mt-1 ml-6 mb-3">
-                      Shows major, medium, and minor global shipping routes
-                    </p>
-                    
-                    {/* Maritime Boundaries Toggle */}
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showMaritimeBoundaries}
-                        onChange={(e) => setShowMaritimeBoundaries(e.target.checked)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <span className="text-sm font-semibold text-black">
-                        🌊 Maritime Boundaries
-                      </span>
-                    </label>
                     <p className="text-xs text-gray-500 mt-1 ml-6">
-                      Shows EEZ, Territorial Seas, Contiguous Zones, and other maritime boundaries
+                      Shows major, medium, and minor global shipping routes
                     </p>
                   </div>
                 </div>

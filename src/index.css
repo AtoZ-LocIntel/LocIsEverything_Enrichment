@@ -669,6 +669,12 @@ body.modal-open {
   color: #374151;
 }
 
+/* Measure tool: segment labels should not block clicks (overlay captures them) */
+.leaflet-marker-icon.measure-segment-label,
+.measure-segment-label.leaflet-marker-icon {
+  pointer-events: none !important;
+}
+
 /* Fix z-index conflicts between dropdowns and popups */
 .enrichment-config {
   @apply relative z-10;
