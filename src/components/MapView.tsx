@@ -20,6 +20,7 @@ interface MapViewProps {
 }
 
 interface LegendItem {
+  key?: string; // Unique ID for layer toggle (added when building final legend from accumulator)
   icon: string;
   color: string;
   title: string;
@@ -6548,6 +6549,8 @@ const MapView: React.FC<MapViewProps> = ({
   const basemapLayerRef = useRef<any>(null); // Base map (OpenFreeMap)
   const overlayLayerRef = useRef<any>(null); // Overlay layer (WMS/tile on top of base)
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
+  const [hiddenLegendKeys, setHiddenLegendKeys] = useState<Set<string>>(() => new Set());
+  const legendKeyToLayerGroupRef = useRef<Record<string, { group: L.LayerGroup; parent: L.LayerGroup }>>({});
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -9867,6 +9870,8 @@ const MapView: React.FC<MapViewProps> = ({
       primary.clearLayers();
       poi.clearLayers();
       setLegendItems([]);
+      setHiddenLegendKeys(new Set());
+      legendKeyToLayerGroupRef.current = {};
       setShowBatchSuccess(false);
       return;
     }
@@ -9874,6 +9879,8 @@ const MapView: React.FC<MapViewProps> = ({
     // Clear layers and add features - simple and direct
     primary.clearLayers();
     poi.clearLayers();
+    setHiddenLegendKeys(new Set());
+    legendKeyToLayerGroupRef.current = {};
     // Clear feature metadata for tabbed popup
     featuresMetadataRef.current = [];
     
@@ -10840,6 +10847,7 @@ const MapView: React.FC<MapViewProps> = ({
                   `;
                   
                   polyline.bindPopup(popupContent, { maxWidth: 400 });
+                  (polyline as any).__legendKey = 'nh_transmission_pipelines';
                   polyline.addTo(poi);
                   bounds.extend(polyline.getBounds());
                 });
@@ -21954,6 +21962,7 @@ const MapView: React.FC<MapViewProps> = ({
             `;
 
             marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            (marker as any).__legendKey = 'co_spatial_portal_shelters_warming_locations';
             marker.addTo(primary);
             bounds.extend([lat, lon]);
           } catch (e) {
@@ -22075,6 +22084,7 @@ const MapView: React.FC<MapViewProps> = ({
             `;
 
             marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            (marker as any).__legendKey = 'co_spatial_portal_drug_treatment_programs';
             marker.addTo(primary);
             bounds.extend([lat, lon]);
           } catch (e) {
@@ -22203,6 +22213,7 @@ const MapView: React.FC<MapViewProps> = ({
             `;
 
             marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            (marker as any).__legendKey = 'co_spatial_portal_cdphe_health_facilities';
             marker.addTo(primary);
             bounds.extend([lat, lon]);
           } catch (e) {
@@ -22340,6 +22351,7 @@ const MapView: React.FC<MapViewProps> = ({
             `;
 
             marker.bindPopup(popupContent, { maxWidth: 400, maxHeight: 500 });
+            (marker as any).__legendKey = 'co_spatial_portal_samhsa_service_providers';
             marker.addTo(primary);
             bounds.extend([lat, lon]);
           } catch (e) {
@@ -47386,6 +47398,25 @@ const MapView: React.FC<MapViewProps> = ({
           console.log('🗺️ poiRadii is empty - no proximity values available');
         }
         
+        // Reorganize layers into per-legend-key groups for toggle support
+        const legendKeyToGroup: Record<string, { group: L.LayerGroup; parent: L.LayerGroup }> = {};
+        const processLayer = (layer: L.Layer, parent: L.LayerGroup) => {
+          const key = (layer as any).__legendKey || (layer as any).__layerType;
+          if (!key || !legendAccumulator[key]) return;
+          if (!legendKeyToGroup[key]) {
+            const lg = L.layerGroup();
+            lg.addTo(parent);
+            legendKeyToGroup[key] = { group: lg, parent };
+          }
+          parent.removeLayer(layer);
+          legendKeyToGroup[key].group.addLayer(layer);
+        };
+        primary.getLayers().slice().forEach((l: L.Layer) => processLayer(l, primary));
+        poi.getLayers().slice().forEach((l: L.Layer) => processLayer(l, poi));
+        legendKeyToLayerGroupRef.current = Object.fromEntries(
+          Object.entries(legendKeyToGroup).map(([k, v]) => [k, { group: v.group, parent: v.parent }])
+        );
+
         // Ensure ALL legend items (points, polylines, AND polygons) have radius info if available
         // This is critical for showing proximity values in the legend for all layer types
         Object.keys(legendAccumulator).forEach(legendKey => {
@@ -47413,8 +47444,9 @@ const MapView: React.FC<MapViewProps> = ({
           }
         });
         
-        const finalLegendItems = Object.values(legendAccumulator)
-          .filter(item => item.count > 0) // Filter out items with zero count
+        const finalLegendItems = Object.entries(legendAccumulator)
+          .filter(([, item]) => item.count > 0) // Filter out items with zero count
+          .map(([key, item]) => ({ ...item, key }))
           .sort((a, b) => b.count - a.count);
         
         // Debug logging to help diagnose radius display issues
@@ -49541,28 +49573,65 @@ const MapView: React.FC<MapViewProps> = ({
                   item.title?.includes('Road') ||
                   item.title?.includes('Route') ||
                   item.title?.includes('Trail');
-                
+                const isHidden = item.key && hiddenLegendKeys.has(item.key);
+                const hasToggle = item.key && legendKeyToLayerGroupRef.current[item.key];
+                const toggleLayer = () => {
+                  if (!item.key || !hasToggle) return;
+                  const entry = legendKeyToLayerGroupRef.current[item.key];
+                  if (!entry) return;
+                  setHiddenLegendKeys(prev => {
+                    const next = new Set(prev);
+                    if (next.has(item.key!)) {
+                      next.delete(item.key!);
+                      entry.group.addTo(entry.parent);
+                    } else {
+                      next.add(item.key!);
+                      entry.parent.removeLayer(entry.group);
+                    }
+                    return next;
+                  });
+                };
                 return (
-                  <div key={index}>
+                  <div key={item.key || index}>
                     <div className="flex items-center space-x-3 text-base">
+                      {hasToggle ? (
+                        <button
+                          type="button"
+                          onClick={toggleLayer}
+                          className="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 hover:bg-gray-100 transition-colors"
+                          title={isHidden ? 'Show layer' : 'Hide layer'}
+                          aria-label={isHidden ? 'Show layer' : 'Hide layer'}
+                        >
+                          {isHidden ? (
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                          )}
+                        </button>
+                      ) : null}
                       {isPolyline ? (
                         // Show line symbol for polylines
                         <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                           <div 
-                            className="w-full h-1 rounded"
+                            className={`w-full h-1 rounded transition-opacity ${isHidden ? 'opacity-40' : ''}`}
                             style={{ backgroundColor: item.color }}
                           />
                         </div>
                       ) : (
                         // Show icon in circle for points
                         <div 
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0 transition-opacity ${isHidden ? 'opacity-40' : ''}`}
                           style={{ backgroundColor: item.color }}
                         >
                           {item.icon}
                         </div>
                       )}
-                      <span className="text-gray-700 font-medium flex-1">{item.title}</span>
+                      <span className={`text-gray-700 font-medium flex-1 ${isHidden ? 'opacity-60 line-through' : ''}`}>{item.title}</span>
                       <div className="flex items-center gap-2 ml-auto">
                         <span className="text-gray-600 font-semibold">{item.count || 0}</span>
                         {(item.radiusDisplay || (item.radius !== undefined && item.radius > 0)) && (

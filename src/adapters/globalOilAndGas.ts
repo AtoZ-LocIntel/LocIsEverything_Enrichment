@@ -218,37 +218,57 @@ export async function getGlobalOilAndGasLayerData(
     }
 
     // Proximity query (for all layers, or for polygon layers to get nearby features)
+    // Uses pagination to fetch ALL features within radius - ArcGIS returns max 2000 per request
+    // without distance ordering, so we must paginate to avoid truncation (e.g. US pipelines
+    // missing when Canadian pipelines fill the first 2000 results)
     if (radiusMiles > 0) {
       try {
         const radiusMeters = radiusMiles * 1609.34; // Convert miles to meters
-        
-        const proximityUrl = new URL(`${BASE_SERVICE_URL}/${layerId}/query`);
-        proximityUrl.searchParams.set('f', 'json');
-        proximityUrl.searchParams.set('where', '1=1');
-        proximityUrl.searchParams.set('outFields', '*');
-        proximityUrl.searchParams.set('geometry', JSON.stringify({
-          x: lon,
-          y: lat,
-          spatialReference: { wkid: 4326 }
-        }));
-        proximityUrl.searchParams.set('geometryType', 'esriGeometryPoint');
-        proximityUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
-        proximityUrl.searchParams.set('distance', radiusMeters.toString());
-        proximityUrl.searchParams.set('units', 'esriSRUnit_Meter');
-        proximityUrl.searchParams.set('inSR', '4326');
-        proximityUrl.searchParams.set('outSR', '4326');
-        proximityUrl.searchParams.set('returnGeometry', 'true');
-        proximityUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+        let resultOffset = 0;
+        let hasMore = true;
 
-        console.log(`🔗 Global Oil and Gas ${layerName} Proximity Query URL: ${proximityUrl.toString()}`);
+        while (hasMore) {
+          const proximityUrl = new URL(`${BASE_SERVICE_URL}/${layerId}/query`);
+          proximityUrl.searchParams.set('f', 'json');
+          proximityUrl.searchParams.set('where', '1=1');
+          proximityUrl.searchParams.set('outFields', '*');
+          proximityUrl.searchParams.set('geometry', JSON.stringify({
+            x: lon,
+            y: lat,
+            spatialReference: { wkid: 4326 }
+          }));
+          proximityUrl.searchParams.set('geometryType', 'esriGeometryPoint');
+          proximityUrl.searchParams.set('spatialRel', 'esriSpatialRelIntersects');
+          proximityUrl.searchParams.set('distance', radiusMeters.toString());
+          proximityUrl.searchParams.set('units', 'esriSRUnit_Meter');
+          proximityUrl.searchParams.set('inSR', '4326');
+          proximityUrl.searchParams.set('outSR', '4326');
+          proximityUrl.searchParams.set('returnGeometry', 'true');
+          proximityUrl.searchParams.set('resultRecordCount', maxRecordCount.toString());
+          proximityUrl.searchParams.set('resultOffset', resultOffset.toString());
 
-        const proximityResponse = await fetch(proximityUrl.toString());
-        
-        if (proximityResponse.ok) {
+          console.log(`🔗 Global Oil and Gas ${layerName} Proximity Query URL (offset ${resultOffset}): ${proximityUrl.toString()}`);
+
+          const proximityResponse = await fetch(proximityUrl.toString());
+
+          if (!proximityResponse.ok) {
+            break;
+          }
+
           const proximityData = await proximityResponse.json();
-          
-          if (!proximityData.error && proximityData.features && Array.isArray(proximityData.features)) {
-            proximityData.features.forEach((feature: any) => {
+
+          if (proximityData.error) {
+            console.error(`❌ Global Oil and Gas ${layerName} API Error:`, proximityData.error);
+            break;
+          }
+
+          const features = proximityData.features;
+          if (!features || !Array.isArray(features) || features.length === 0) {
+            hasMore = false;
+            break;
+          }
+
+          features.forEach((feature: any) => {
               const attributes = feature.attributes || {};
               const geometry = feature.geometry;
               const objectId = attributes.OBJECTID || attributes.objectid || attributes.FID || 0;
@@ -303,6 +323,19 @@ export async function getGlobalOilAndGasLayerData(
                 });
               }
             });
+
+          // Paginate: if we got a full page, there may be more
+          if (features.length < maxRecordCount) {
+            hasMore = false;
+          } else {
+            resultOffset += maxRecordCount;
+            // Safety limit: Wells/Wells_Vector_Grid are extremely dense (100k+ in oil regions)
+            // so use 40 pages (80k); other layers use 20 pages (40k)
+            const maxPages = layerId === 9 || layerId === 10 ? 40 : 20;
+            if (resultOffset >= maxPages * maxRecordCount) {
+              console.warn(`⚠️ Global Oil and Gas ${layerName}: hit pagination limit (${maxPages * maxRecordCount} features)`);
+              hasMore = false;
+            }
           }
         }
       } catch (error) {
