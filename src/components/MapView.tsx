@@ -6890,14 +6890,12 @@ const MapView: React.FC<MapViewProps> = ({
   const basemapInfoRef = useRef<HTMLDivElement>(null);
   // Measure tool state (desktop only)
   const [measureToolMode, setMeasureToolMode] = useState<'off' | 'distance' | 'area' | 'line'>('off');
-  const [measureToolExpanded, setMeasureToolExpanded] = useState(false);
   const [measureResult, setMeasureResult] = useState<string | null>(null);
   const [measureSegments, setMeasureSegments] = useState<string[]>([]);
   const [measureArea, setMeasureArea] = useState<string | null>(null);
   const [showMeasurePathInstruction, setShowMeasurePathInstruction] = useState(false);
   const measureLayerRef = useRef<L.LayerGroup | null>(null);
   const measurePointsRef = useRef<[number, number][]>([]);
-  const measureDropdownRef = useRef<HTMLDivElement>(null);
   const measureAddPointRef = useRef<((latlng: L.LatLng) => void) | null>(null);
   const measureDblClickRef = useRef<(() => void) | null>(null);
   // Right-click context menu state
@@ -7763,18 +7761,6 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, [isMobile]);
 
-  // Close measure dropdown when clicking outside
-  useEffect(() => {
-    if (!measureToolExpanded) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (measureDropdownRef.current && !measureDropdownRef.current.contains(e.target as Node)) {
-        setMeasureToolExpanded(false);
-      }
-    };
-    document.addEventListener('click', onDocClick, true);
-    return () => document.removeEventListener('click', onDocClick, true);
-  }, [measureToolExpanded]);
-
   // Close context menu when clicking outside
   useEffect(() => {
     if (!contextMenu) return;
@@ -7907,16 +7893,12 @@ const MapView: React.FC<MapViewProps> = ({
     measureAddPointRef.current = addMeasurePoint;
     measureDblClickRef.current = onDblClick;
 
-    const onMapClick = (e: L.LeafletMouseEvent) => addMeasurePoint(e.latlng);
-
-    map.on('click', onMapClick);
-    if (measureToolMode === 'area' || measureToolMode === 'line') map.on('dblclick', onDblClick);
+    // Do NOT attach map click/dblclick - the transparent overlay handles all pointer events.
+    // Attaching both causes double-point bug (overlay + map both fire, adding two nearly identical points).
 
     return () => {
       measureAddPointRef.current = null;
       measureDblClickRef.current = null;
-      map.off('click', onMapClick);
-      map.off('dblclick', onDblClick);
       if (measureLayerRef.current && map.hasLayer(measureLayerRef.current)) {
         map.removeLayer(measureLayerRef.current);
       }
@@ -7938,7 +7920,9 @@ const MapView: React.FC<MapViewProps> = ({
     overlay.style.cssText = 'position:absolute;inset:0;z-index:9999;cursor:crosshair;';
     overlay.style.pointerEvents = 'auto';
 
-    const onClick = (e: MouseEvent) => {
+    const onOverlayClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
       if (!measureAddPointRef.current || !container) return;
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -7947,14 +7931,16 @@ const MapView: React.FC<MapViewProps> = ({
       measureAddPointRef.current(latlng);
     };
 
-    const onDblClick = () => {
+    const onDblClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
       if ((measureToolMode === 'area' || measureToolMode === 'line') && measureDblClickRef.current) {
         measureDblClickRef.current();
       }
     };
 
     const onContextMenu = (e: MouseEvent) => e.preventDefault();
-    overlay.addEventListener('click', onClick);
+    overlay.addEventListener('click', onOverlayClick);
     overlay.addEventListener('dblclick', onDblClick);
     overlay.addEventListener('contextmenu', onContextMenu);
     container.style.position = 'relative';
@@ -7962,7 +7948,7 @@ const MapView: React.FC<MapViewProps> = ({
     map.closePopup();
 
     return () => {
-      overlay.removeEventListener('click', onClick);
+      overlay.removeEventListener('click', onOverlayClick);
       overlay.removeEventListener('dblclick', onDblClick);
       overlay.removeEventListener('contextmenu', onContextMenu);
       overlay.remove();
@@ -48837,7 +48823,6 @@ const MapView: React.FC<MapViewProps> = ({
               onClick={() => {
                 pendingRightClickMeasureRef.current = [contextMenu.lat, contextMenu.lon];
                 setMeasureToolMode('line');
-                setMeasureToolExpanded(false);
                 setContextMenu(null);
                 setShowMeasurePathInstruction(true);
               }}
@@ -49696,57 +49681,9 @@ const MapView: React.FC<MapViewProps> = ({
             </div>
             </div>
 
-            {/* Measure Tool - to the right of Available Basemap Themes */}
-            <div ref={measureDropdownRef} className="flex flex-col gap-2 flex-shrink-0">
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMeasureToolExpanded(prev => !prev);
-                    if (measureToolExpanded) setMeasureToolMode('off');
-                  }}
-                  className="bg-white rounded-lg shadow-lg p-2.5 hover:bg-gray-50 border border-gray-200 transition-colors"
-                  title="Measure distance, area, or line"
-                  aria-label="Measure tool"
-                >
-                  <Ruler className="w-5 h-5 text-gray-700" />
-                </button>
-                {measureToolExpanded && (
-                  <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px] text-gray-900">
-                    <button
-                      type="button"
-                      onClick={() => { setMeasureToolMode('distance'); setMeasureToolExpanded(false); setMeasureResult(null); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
-                    >
-                      Distance (2 points)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMeasureToolMode('line'); setMeasureToolExpanded(false); setMeasureResult(null); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
-                    >
-                      Line (polyline)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setMeasureToolMode('area'); setMeasureToolExpanded(false); setMeasureResult(null); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100"
-                    >
-                      Area (polygon)
-                    </button>
-                    <hr className="my-1 border-gray-200" />
-                    <button
-                      type="button"
-                      onClick={() => { setMeasureToolMode('off'); setMeasureToolExpanded(false); setMeasureResult(null); }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-100 flex items-center gap-2"
-                    >
-                      <X className="w-4 h-4" /> Cancel
-                    </button>
-                  </div>
-                )}
-              </div>
-              {measureToolMode !== 'off' && (
-                <div className="bg-white rounded-lg shadow-lg px-3 py-2 text-sm max-w-[220px] text-gray-900">
+            {/* Measure result panel - shown when measuring via right-click (Ruler icon removed) */}
+            {measureToolMode !== 'off' && (
+                <div className="flex-shrink-0 bg-white rounded-lg shadow-lg px-3 py-2 text-sm max-w-[220px] text-gray-900">
                   <p className="text-gray-700 text-xs">
                     {measureToolMode === 'distance' && 'Click 2 points'}
                     {measureToolMode === 'line' && 'Click points for line'}
@@ -49761,18 +49698,28 @@ const MapView: React.FC<MapViewProps> = ({
                   {measureToolMode === 'line' && measureArea && (
                     <p className="text-sm font-medium text-gray-800 mt-1">{measureArea}</p>
                   )}
-                  <button
-                    type="button"
-                    onClick={clearMeasure}
-                    className="mt-2 flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
-                    title="Clear measurement and start over"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Clear & restart
-                  </button>
+                  <div className="mt-2 flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={clearMeasure}
+                      className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      title="Clear measurement and start over"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Clear & restart
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMeasureToolMode('off'); clearMeasure(); }}
+                      className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-800 font-medium"
+                      title="Done measuring"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Done
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
           </div>
         )}
 
