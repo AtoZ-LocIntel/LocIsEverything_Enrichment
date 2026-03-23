@@ -84,13 +84,13 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
 
   return (
     <>
-      <header className="bg-black border-b border-gray-700 shadow-sm fixed top-0 left-0 right-0 w-full z-50" style={{ width: '100vw', maxWidth: '100vw' }}>
+      <header className="bg-white border-b border-gray-200 shadow-sm fixed top-0 left-0 right-0 w-full z-50" style={{ width: '100vw', maxWidth: '100vw' }}>
         <div className="w-full px-0 sm:px-6 lg:px-8" style={{ width: '100vw', maxWidth: '100vw' }}>
           <div className="flex justify-between items-center h-28 px-4 sm:px-0" style={{ width: '100%' }}>
             <div className="flex items-center">
               <div className="flex items-center space-x-4">
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-600 flex-shrink-0">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-300 flex-shrink-0">
                   <img 
                     src="/assets/lociseverything.webp"
                     alt="The Location Is Everything Co Logo" 
@@ -99,8 +99,8 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                 </div>
                 {/* Enrichment Platform Text */}
                 <div className="hidden sm:block">
-                  <h1 className="text-xl sm:text-2xl font-bold text-white">Location Enrichment Platform</h1>
-                  <p className="text-sm text-gray-300">Location Intelligence & Data Enrichment</p>
+                  <h1 className="text-xl sm:text-2xl font-bold text-black">Location Enrichment Platform</h1>
+                  <p className="text-sm text-gray-600">Location Intelligence & Data Enrichment</p>
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                   const element = document.querySelector('[data-section="single-search"]');
                   element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <MapPin className="w-4 h-4 inline mr-2" />
                 Single Search
@@ -121,28 +121,28 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                   const element = document.querySelector('[data-section="batch-processing"]');
                   element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <BarChart3 className="w-4 h-4 inline mr-2" />
                 Batch Processing
               </button>
               <button 
                 onClick={onViewDataSources}
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
                 <Globe className="w-4 h-4 inline mr-2" />
                 Data Sources
               </button>
               <button 
                 onClick={() => setShowAddSource(true)}
-                className="text-blue-300 hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-blue-600 hover:border-blue-500"
+                className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-blue-600 hover:border-blue-700"
               >
                 <span className="mr-2">➕</span>
                 ADD A SOURCE
               </button>
               <button 
                 onClick={() => setShowDonate(true)}
-                className="text-red-300 hover:text-red-200 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-red-600 hover:border-red-500 flex items-center"
+                className="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-red-600 hover:border-red-700 flex items-center"
               >
                 <Heart className="w-4 h-4 mr-2" />
                 Donate
@@ -152,14 +152,14 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
             <div className="flex items-center space-x-4 sm:space-x-6">
               <button 
                 onClick={() => setShowDocs(true)}
-                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-300 border-gray-600 hover:text-white hover:border-gray-500"
+                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
               >
                 <BookOpen className="w-4 h-4" />
                 <span>Documentation</span>
               </button>
               <button 
                 onClick={handleResetApp}
-                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-300 border-gray-600 hover:text-white hover:border-gray-500"
+                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Reset App</span>
