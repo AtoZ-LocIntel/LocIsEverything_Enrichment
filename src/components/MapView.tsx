@@ -6572,7 +6572,6 @@ const MapView: React.FC<MapViewProps> = ({
   const [selectedBaseBasemap, setSelectedBaseBasemap] = useState<string>(isMobile ? 'liberty' : 'liberty'); // Base basemap from "Basemaps" section
   const [selectedThematicBasemap, setSelectedThematicBasemap] = useState<string | null>(null); // Thematic basemap from other sections (WMS, tile, etc.) - optional overlay
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
-  const [showZoomWarningPopup, setShowZoomWarningPopup] = useState<boolean>(false); // Show warning when thematic basemap is selected at low zoom
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
   const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
@@ -9679,55 +9678,6 @@ const MapView: React.FC<MapViewProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showBasemapInfo]);
-
-  // Show zoom warning popup when thematic basemap is selected at low zoom levels
-  useEffect(() => {
-    if (!mapInstanceRef.current || !isInitialized) {
-      return;
-    }
-
-    // Check if a thematic basemap is selected and zoom level is too low (country/regional level)
-    if (selectedThematicBasemap) {
-      const currentZoom = mapInstanceRef.current.getZoom();
-      // Show warning if zoom level is 7 or below (regional/state level)
-      // Thematic basemaps perform better when zoomed in more
-      if (currentZoom <= 7) {
-        setShowZoomWarningPopup(true);
-      } else {
-        // If user zooms in, hide the warning
-        setShowZoomWarningPopup(false);
-      }
-    } else {
-      // No thematic basemap selected, hide warning
-      setShowZoomWarningPopup(false);
-    }
-  }, [selectedThematicBasemap, isInitialized]);
-
-  // Listen to zoom changes to hide warning when user zooms in
-  useEffect(() => {
-    if (!mapInstanceRef.current || !isInitialized || !selectedThematicBasemap) {
-      return;
-    }
-
-    const handleZoomEnd = () => {
-      if (mapInstanceRef.current) {
-        const currentZoom = mapInstanceRef.current.getZoom();
-        if (currentZoom > 7) {
-          setShowZoomWarningPopup(false);
-        } else if (currentZoom <= 7 && selectedThematicBasemap) {
-          setShowZoomWarningPopup(true);
-        }
-      }
-    };
-
-    mapInstanceRef.current.on('zoomend', handleZoomEnd);
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.off('zoomend', handleZoomEnd);
-      }
-    };
-  }, [selectedThematicBasemap, isInitialized]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -50015,34 +49965,6 @@ const MapView: React.FC<MapViewProps> = ({
             <div className="flex items-center space-x-2">
               <span>✅</span>
               <span className="text-sm font-medium">Batch processing completed successfully!</span>
-            </div>
-          </div>
-        )}
-
-        {/* Zoom Warning Popup for Thematic Basemaps */}
-        {showZoomWarningPopup && selectedThematicBasemap && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-50 border-2 border-yellow-400 rounded-lg shadow-xl z-[1000] max-w-md mx-4">
-            <div className="flex items-start justify-between p-4">
-              <div className="flex items-start space-x-3 flex-1">
-                <div className="flex-shrink-0 mt-0.5">
-                  <span className="text-2xl">⚠️</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-yellow-900 mb-1">
-                    Zoom In For Better Basemap Performance!
-                  </h3>
-                  <p className="text-xs text-yellow-800">
-                    Thematic basemaps perform better when zoomed in. Please zoom in for optimal visualization.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowZoomWarningPopup(false)}
-                className="flex-shrink-0 ml-3 text-yellow-700 hover:text-yellow-900 transition-colors"
-                aria-label="Close warning"
-              >
-                <span className="text-xl font-bold">×</span>
-              </button>
             </div>
           </div>
         )}
