@@ -808,9 +808,14 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
   const attempts = (USE_CORS_PROXY && !skipProxies) ? [url, proxied(url, 0), proxied(url, 1), proxied(url, 2)] : [url];
   let err: any;
   
-  // Request timeout - longer for Overpass API (30 seconds), shorter for others (5 seconds)
+  // Request timeout - longer for Overpass API (30 seconds); geocoding needs extra time on cold
+  // start (DNS/TLS/first byte) — 5s often caused first-click failures that succeeded on retry.
   const isOverpassAPI = url.includes('overpass-api.de') || url.includes('overpass-api');
-  const REQUEST_TIMEOUT_MS = isOverpassAPI ? 30000 : 5000;
+  const isGeocodingUrl =
+    url.includes('nominatim.openstreetmap.org') ||
+    url.includes('geocoding.geo.census.gov') ||
+    url.includes('api.postcodes.io');
+  const REQUEST_TIMEOUT_MS = isOverpassAPI ? 30000 : isGeocodingUrl ? 15000 : 5000;
   
   for (let i = 0; i < attempts.length; i++) {
     const proxyKey = getProxyKey(url, i);
@@ -2985,56 +2990,69 @@ export class EnrichmentService {
   }
 
   // Working geocoding functions from original geocoder.html with rate limiting
-  private async geocodeNominatim(q: string): Promise<GeocodeResult | null> {
-    try {
-      // Validate input
-      if (!q || typeof q !== 'string' || q.trim().length === 0) {
-        console.warn('Nominatim geocoding: Invalid query string');
-        return null;
+  private async geocodeNominatimOnce(q: string): Promise<GeocodeResult | null> {
+    const u = new URL("https://nominatim.openstreetmap.org/search");
+    u.searchParams.set("q", q.trim());
+    u.searchParams.set("format", "json");
+    u.searchParams.set("addressdetails", "1");
+    u.searchParams.set("limit", "1");
+    u.searchParams.set("email", "noreply@locationmart.com");
+
+    const d = await fetchJSONSmart(u.toString(), {
+      headers: {
+        'User-Agent': 'LocIsEverything-Enrichment/1.0 (https://locationmart.com; noreply@locationmart.com)'
       }
+    });
 
-      const u = new URL("https://nominatim.openstreetmap.org/search");
-      u.searchParams.set("q", q.trim());
-      u.searchParams.set("format", "json");
-      u.searchParams.set("addressdetails", "1");
-      u.searchParams.set("limit", "1");
-      // Email is required by Nominatim usage policy for identification
-      u.searchParams.set("email", "noreply@locationmart.com");
-      
-      // User-Agent header is required by Nominatim usage policy
-      const d = await fetchJSONSmart(u.toString(), {
-        headers: {
-          'User-Agent': 'LocIsEverything-Enrichment/1.0 (https://locationmart.com; noreply@locationmart.com)'
-        }
-      });
-
-      // Validate response
-      if (!d || !Array.isArray(d) || d.length === 0) {
-        return null;
-      }
-
-      const x = d[0];
-      const lat = parseFloat(x.lat);
-      const lon = parseFloat(x.lon);
-
-      // Validate coordinates
-      if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-        console.warn('Nominatim geocoding: Invalid coordinates received', { lat, lon });
-        return null;
-      }
-
-      return {
-        lat,
-        lon,
-        source: "Nominatim (OSM)",
-        confidence: x.importance ?? 0.9,
-        name: x.display_name || q.trim(),
-        raw: x
-      };
-    } catch (error) {
-      console.error('Nominatim geocoding failed:', error);
+    if (!d || !Array.isArray(d) || d.length === 0) {
       return null;
     }
+
+    const x = d[0];
+    const lat = parseFloat(x.lat);
+    const lon = parseFloat(x.lon);
+
+    if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+      console.warn('Nominatim geocoding: Invalid coordinates received', { lat, lon });
+      return null;
+    }
+
+    return {
+      lat,
+      lon,
+      source: "Nominatim (OSM)",
+      confidence: x.importance ?? 0.9,
+      name: x.display_name || q.trim(),
+      raw: x
+    };
+  }
+
+  /** Two attempts with short delay — fixes common first-click timeouts / empty responses. */
+  private async geocodeNominatim(q: string): Promise<GeocodeResult | null> {
+    if (!q || typeof q !== 'string' || q.trim().length === 0) {
+      console.warn('Nominatim geocoding: Invalid query string');
+      return null;
+    }
+
+    const trimmed = q.trim();
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt > 0) {
+        await sleep(500);
+        if (import.meta.env.DEV) {
+          console.log('🔄 Nominatim retry after first attempt had no result / error');
+        }
+      }
+      try {
+        const result = await this.geocodeNominatimOnce(trimmed);
+        if (result) return result;
+      } catch (error) {
+        console.warn('Nominatim geocoding attempt failed:', error);
+        if (attempt === 1) {
+          console.error('Nominatim geocoding failed after retry:', error);
+        }
+      }
+    }
+    return null;
   }
 
   private async geocodeUSCensus(q: string): Promise<GeocodeResult | null> {
@@ -3157,24 +3175,44 @@ export class EnrichmentService {
       return g;
     }
 
+    const ukPostcodeRegex = /\b[A-Z]{1,2}\d[A-Z0-9]?\s*\d[A-Z]{2}\b/i;
+    const looksLikeUK =
+      /\b(UK|United Kingdom|England|Scotland|Wales|Northern Ireland)\b/i.test(q) || ukPostcodeRegex.test(q);
+
     // Try UK-specific Postcodes.io for postcodes or UK addresses
-    if (/\b(UK|United Kingdom|England|Scotland|Wales|Northern Ireland)\b/i.test(q) || /\b[A-Z]{1,2}\d[A-Z0-9]?\s*\d[A-Z]{2}\b/i.test(q)) {
+    if (looksLikeUK) {
       g = await this.geocodePostcodesIO(q);
       if (g) {
         console.log(`✅ Geocoded via Postcodes.io: ${g.lat}, ${g.lon}`);
         return g;
       }
     }
-    
-    // Try US Census for US addresses
-    if (/\b(US|USA|United States|[A-Z]{2})\b/i.test(q) || /,\s*[A-Z]{2}\b/.test(q)) {
+
+    const usHintRegex = /\b(US|USA|United States)\b/i;
+    const usStateCommaRegex = /,\s*[A-Z]{2}\b/;
+    const shouldTryCensusFirstPass = usHintRegex.test(q) || usStateCommaRegex.test(q);
+
+    // Try US Census when query looks explicitly US
+    let triedCensus = false;
+    if (shouldTryCensusFirstPass) {
+      triedCensus = true;
       g = await this.geocodeUSCensus(q);
       if (g) {
         console.log(`✅ Geocoded via US Census: ${g.lat}, ${g.lon}`);
         return g;
       }
     }
-    
+
+    // Broad US fallback: many US addresses don't match the hints above; Nominatim often fails on
+    // first request (timeout). Census is fast and covers US well — skip if we already tried or if UK.
+    if (!triedCensus && !looksLikeUK) {
+      g = await this.geocodeUSCensus(q);
+      if (g) {
+        console.log(`✅ Geocoded via US Census (fallback): ${g.lat}, ${g.lon}`);
+        return g;
+      }
+    }
+
     console.log(`❌ Geocoding failed for: ${q}`);
     return null;
   }
