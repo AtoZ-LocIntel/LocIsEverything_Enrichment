@@ -480,6 +480,51 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // Global Data Centers (OSM / Overpass)
+  if (enrichments.global_data_centers_osm_all && Array.isArray(enrichments.global_data_centers_osm_all)) {
+    enrichments.global_data_centers_osm_all.forEach((dc: any) => {
+      const lat = dc.latitude ?? dc.geometry?.y ?? location.lat;
+      const lon = dc.longitude ?? dc.geometry?.x ?? location.lon;
+      const tag = dc.data_center_tag || 'unknown';
+      const title = dc.name || `OSM ${dc.osm_type} ${dc.osm_id}`;
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Global Data Centers (OSM)',
+        (location.confidence || 'N/A').toString(),
+        'GLOBAL_DATA_CENTERS_OSM',
+        `${title} (${tag})`,
+        lat.toString(),
+        lon.toString(),
+        (dc.distance_miles ?? enrichments.global_data_centers_osm_proximity_distance ?? 0).toFixed(2),
+        'OpenStreetMap via Overpass API',
+        `Tag: ${tag}${dc.operator ? `, Operator: ${dc.operator}` : ''}`,
+        enrichments.global_data_centers_osm_summary || '',
+        dc.geometry ? JSON.stringify(dc.geometry) : '',
+        'OpenStreetMap'
+      ]);
+    });
+  } else if (enrichments.global_data_centers_osm_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Global Data Centers (OSM)',
+      (location.confidence || 'N/A').toString(),
+      'GLOBAL_DATA_CENTERS_OSM',
+      'Global Data Centers (OSM)',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.global_data_centers_osm_proximity_distance || 0).toFixed(1),
+      'OpenStreetMap via Overpass API',
+      `${enrichments.global_data_centers_osm_count || 0} found`,
+      enrichments.global_data_centers_osm_summary || '',
+      '',
+      'OpenStreetMap'
+    ]);
+  }
+
   // Add Port Watch Ports data
   if (enrichments.portwatch_ports_all && Array.isArray(enrichments.portwatch_ports_all)) {
     enrichments.portwatch_ports_all.forEach((port: any) => {

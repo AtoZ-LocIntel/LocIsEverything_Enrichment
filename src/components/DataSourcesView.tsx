@@ -10416,6 +10416,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://earthquake.usgs.gov/fdsnws/event/1/query"
         },
         {
+          name: "OpenStreetMap — Global Data Centers (Overpass API)",
+          description: "Global Risk layer: data center facilities from OpenStreetMap using the public Overpass API. Queries features tagged man_made=data_center, building=data_center, or telecom=data_center around the search location. Coverage and completeness vary by region (stronger in the US and EU). Proximity is capped at 250 miles for reliability with the public Overpass service.",
+          coverage: "Global (OSM coverage)",
+          accuracy: "Variable (community map)",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        },
+        {
           name: "Global Fishing Watch API",
           description: "Global Fishing Watch - Comprehensive maritime data platform providing SAR (Synthetic-Aperture Radar) fixed infrastructure detections, fishing effort data, vessel encounters, port visits, and other maritime intelligence. SAR Fixed Infrastructure includes offshore oil platforms, wind farms, and unknown structures detected via satellite imagery from 2017 to present, classified with deep learning. Supports proximity queries up to 1000 miles. Note: SAR infrastructure data uses MVT (Mapbox Vector Tile) format requiring special parsing.",
           coverage: "Global",

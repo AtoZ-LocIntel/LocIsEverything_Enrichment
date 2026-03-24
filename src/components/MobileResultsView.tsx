@@ -293,7 +293,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // Global Risk - check before Natural Hazards
-    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries')) {
+    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries') || key.includes('global_data_centers_osm')) {
       return 'Global Risk';
     }
     

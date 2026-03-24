@@ -8,6 +8,22 @@ export default defineConfig({
     port: 3000,
     open: true,
     proxy: {
+      // Nominatim blocks browser CORS on localhost; proxy same as production /api/nominatim/search
+      '/api/nominatim': {
+        target: 'https://nominatim.openstreetmap.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/nominatim/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader(
+              'User-Agent',
+              'LocIsEverything-Enrichment/1.0 (https://knowyourlocation.com; noreply@locationmart.com)'
+            );
+            proxyReq.setHeader('Accept', 'application/json');
+          });
+        },
+      },
       '/api/acled-token': {
         target: 'https://acleddata.com',
         changeOrigin: true,
@@ -191,6 +207,23 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000
   },
   preview: {
-    port: 3000
-  }
+    port: 3000,
+    proxy: {
+      '/api/nominatim': {
+        target: 'https://nominatim.openstreetmap.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/nominatim/, ''),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader(
+              'User-Agent',
+              'LocIsEverything-Enrichment/1.0 (https://knowyourlocation.com; noreply@locationmart.com)'
+            );
+            proxyReq.setHeader('Accept', 'application/json');
+          });
+        },
+      },
+    },
+  },
 })

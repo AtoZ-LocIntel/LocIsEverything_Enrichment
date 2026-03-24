@@ -335,6 +335,7 @@ import {
   getGlobalOilAndGasPortsData
 } from '../adapters/globalOilAndGas';
 import { getMaritimeBoundariesData } from '../adapters/maritimeBoundaries';
+import { getGlobalDataCentersOSMData } from '../adapters/osmGlobalDataCenters';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -761,6 +762,7 @@ import { FWSSpeciesService } from '../adapters/fwsSpecies';
 import { AURORA_VIEWING_LOCATIONS } from '../data/auroraLocations';
 import { fetchEBirdHotspots, fetchEBirdRecentObservations } from '../utils/eBird';
 import { poiConfigManager } from '../lib/poiConfig';
+import { buildNominatimSearchUrl } from '../utils/nominatimUrl';
 
 // CORS proxy helpers from original geocoder.html
 const USE_CORS_PROXY = true;
@@ -777,11 +779,11 @@ const NOMINATIM_RATE_LIMIT_MS = 1100; // 1 request per second + buffer
 const failedProxies = new Set<string>();
 
 // APIs that typically work without CORS proxy (government APIs, etc.)
+// Note: nominatim.openstreetmap.org is NOT listed — browser CORS often blocks it; use /api/nominatim proxy instead.
 const DIRECT_API_PATTERNS = [
   /geocoding\.geo\.census\.gov/,
   /api\.open-meteo\.com/,
   /api\.weather\.gov/,
-  /nominatim\.openstreetmap\.org/,
   /overpass-api\.de/,
   /lz4\.overpass-api\.de/
 ];
@@ -799,6 +801,16 @@ function getProxyKey(_url: string, which: number): string {
 }
 
 function shouldSkipProxies(url: string): boolean {
+  try {
+    if (typeof window !== 'undefined') {
+      const u = new URL(url, window.location.href);
+      if (u.origin === window.location.origin) {
+        return true;
+      }
+    }
+  } catch {
+    /* ignore invalid URL */
+  }
   return DIRECT_API_PATTERNS.some(pattern => pattern.test(url));
 }
 
@@ -2395,6 +2407,71 @@ export class EnrichmentService {
       };
     }
   }
+
+  private async getGlobalDataCentersOSM(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      const facilities = await getGlobalDataCentersOSMData(lat, lon, radiusMiles);
+
+      if (!facilities || facilities.length === 0) {
+        return {
+          global_data_centers_osm_count: 0,
+          global_data_centers_osm_summary: `No OpenStreetMap data centers found within ${radiusMiles} miles`,
+          global_data_centers_osm_all: [],
+          global_data_centers_osm_proximity_distance: radiusMiles,
+          global_data_centers_osm_man_made_count: 0,
+          global_data_centers_osm_building_count: 0,
+          global_data_centers_osm_telecom_count: 0,
+        };
+      }
+
+      const byManMade = facilities.filter((f) => f.data_center_tag === 'man_made').length;
+      const byBuilding = facilities.filter((f) => f.data_center_tag === 'building').length;
+      const byTelecom = facilities.filter((f) => f.data_center_tag === 'telecom').length;
+      const nearest = facilities[0]?.distance_miles;
+      const farthest = facilities[facilities.length - 1]?.distance_miles;
+
+      const summary =
+        `Found ${facilities.length} OSM-tagged data center${facilities.length !== 1 ? 's' : ''} within ${radiusMiles} miles. ` +
+        `By tag: man_made=${byManMade}, building=${byBuilding}, telecom=${byTelecom}. ` +
+        (nearest != null && farthest != null
+          ? `Distance range: ${nearest.toFixed(1)}–${farthest.toFixed(1)} mi.`
+          : '');
+
+      return {
+        global_data_centers_osm_count: facilities.length,
+        global_data_centers_osm_summary: summary.trim(),
+        global_data_centers_osm_proximity_distance: radiusMiles,
+        global_data_centers_osm_man_made_count: byManMade,
+        global_data_centers_osm_building_count: byBuilding,
+        global_data_centers_osm_telecom_count: byTelecom,
+        global_data_centers_osm_nearest_miles: nearest ?? null,
+        global_data_centers_osm_farthest_miles: farthest ?? null,
+        global_data_centers_osm_all: facilities.map((f) => ({
+          osm_id: f.osm_id,
+          osm_type: f.osm_type,
+          name: f.name,
+          data_center_tag: f.data_center_tag,
+          latitude: f.latitude,
+          longitude: f.longitude,
+          distance_miles: f.distance_miles,
+          operator: f.operator,
+          geometry: f.geometry,
+          tags: f.tags,
+        })),
+      };
+    } catch (error) {
+      console.error('Error fetching OSM Global Data Centers:', error);
+      return {
+        global_data_centers_osm_count: 0,
+        global_data_centers_osm_summary: 'Error querying OpenStreetMap data centers',
+        global_data_centers_osm_all: [],
+        global_data_centers_osm_proximity_distance: radiusMiles,
+        global_data_centers_osm_man_made_count: 0,
+        global_data_centers_osm_building_count: 0,
+        global_data_centers_osm_telecom_count: 0,
+      };
+    }
+  }
   
   private async getPortWatchChokepoints(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
@@ -2991,14 +3068,16 @@ export class EnrichmentService {
 
   // Working geocoding functions from original geocoder.html with rate limiting
   private async geocodeNominatimOnce(q: string): Promise<GeocodeResult | null> {
-    const u = new URL("https://nominatim.openstreetmap.org/search");
-    u.searchParams.set("q", q.trim());
-    u.searchParams.set("format", "json");
-    u.searchParams.set("addressdetails", "1");
-    u.searchParams.set("limit", "1");
-    u.searchParams.set("email", "noreply@locationmart.com");
+    const params = new URLSearchParams();
+    params.set('q', q.trim());
+    params.set('format', 'json');
+    params.set('addressdetails', '1');
+    params.set('limit', '1');
+    params.set('email', 'noreply@locationmart.com');
 
-    const d = await fetchJSONSmart(u.toString(), {
+    const url = buildNominatimSearchUrl(params);
+
+    const d = await fetchJSONSmart(url, {
       headers: {
         'User-Agent': 'LocIsEverything-Enrichment/1.0 (https://locationmart.com; noreply@locationmart.com)'
       }
@@ -3583,6 +3662,9 @@ export class EnrichmentService {
         return await this.getGlobalOilAndGasPorts(lat, lon, radius);
       case 'maritime_boundaries':
         return await this.getMaritimeBoundaries(lat, lon, radius);
+
+      case 'global_data_centers_osm':
+        return await this.getGlobalDataCentersOSM(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

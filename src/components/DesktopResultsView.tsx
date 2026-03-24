@@ -216,6 +216,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (key.includes('portwatch_ports_all')) {
         return null; // Skip the _all array (handled separately)
       }
+
+      if (key.includes('global_data_centers_osm_all')) {
+        return null;
+      }
       
       // Special handling for OpenSky Flights - show count only for _all array
       if (key.includes('opensky_flights_all')) {
@@ -867,7 +871,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'NOAA';
       } else if (key.startsWith('nws_')) {
         category = 'Watching the Weather';
-      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('portwatch_ports') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries')) {
+      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('portwatch_ports') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries') || key.includes('global_data_centers_osm')) {
         category = 'Global Risk';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';

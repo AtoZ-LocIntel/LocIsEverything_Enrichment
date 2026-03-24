@@ -92,98 +92,133 @@ async function fetchWithRetry(
   throw lastError || new Error('Overpass API request failed after retries');
 }
 
+/** Run a full Overpass QL string (for specialized queries). Returns raw elements or [] on failure. */
+export async function fetchOverpassInterpreter(query: string): Promise<OverpassElement[]> {
+  try {
+    const response = await fetchWithRetry(OVERPASS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `data=${encodeURIComponent(query)}`,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data: OverpassResponse = await response.json();
+    return data.elements || [];
+  } catch (error) {
+    console.error('❌ Error querying Overpass API:', error);
+    return [];
+  }
+}
+
+function buildQueryWithInlineAround(
+  layerFilters: string,
+  radiusMeters: number,
+  lat: number,
+  lon: number,
+  timeoutSec: number
+): string {
+  const parts = layerFilters
+    .split(';')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  const lines: string[] = [];
+  for (const part of parts) {
+    if (part.includes('(around:')) {
+      lines.push(part.endsWith(';') ? part : `${part};`);
+    } else {
+      lines.push(`${part}(around:${radiusMeters},${lat},${lon});`);
+    }
+  }
+  return `[out:json][timeout:${timeoutSec}];
+(
+${lines.join('\n')}
+);
+out center tags;`;
+}
+
+/** Dedupe, compute distance from (lat,lon), keep within cappedRadiusMiles. */
+export function elementsToProximityResults(
+  elements: OverpassElement[],
+  lat: number,
+  lon: number,
+  cappedRadiusMiles: number
+): Array<OverpassElement & { distance_miles: number }> {
+  const results: Array<OverpassElement & { distance_miles: number }> = [];
+  const seenIds = new Set<string>();
+
+  for (const element of elements) {
+    let elementLat: number | null = null;
+    let elementLon: number | null = null;
+
+    if (element.type === 'node') {
+      elementLat = element.lat ?? null;
+      elementLon = element.lon ?? null;
+    } else if (element.center) {
+      elementLat = element.center.lat;
+      elementLon = element.center.lon;
+    }
+
+    if (elementLat === null || elementLon === null || !Number.isFinite(elementLat) || !Number.isFinite(elementLon)) {
+      continue;
+    }
+
+    const dedupKey = `${element.type}_${element.id}`;
+    if (seenIds.has(dedupKey)) continue;
+    seenIds.add(dedupKey);
+
+    const distanceMiles = haversineDistance(lat, lon, elementLat, elementLon);
+    if (distanceMiles <= cappedRadiusMiles) {
+      results.push({
+        ...element,
+        lat: elementLat,
+        lon: elementLon,
+        distance_miles: Number(distanceMiles.toFixed(2)),
+      });
+    }
+  }
+
+  results.sort((a, b) => a.distance_miles - b.distance_miles);
+  return results;
+}
+
+export interface OverpassQueryOptions {
+  /** Max allowed radius in miles (default 25 for typical POI layers) */
+  maxRadiusMiles?: number;
+  /** Overpass [timeout:N] seconds (default 25; use higher for large radii) */
+  timeoutSec?: number;
+}
+
 /**
  * Query Overpass API with tag filters and radius
  * @param layerFilters - Overpass QL filter block (e.g., 'nwr["amenity"="hospital"];')
  * @param lat - Latitude of center point
  * @param lon - Longitude of center point
- * @param radiusMiles - Radius in miles (default: 5, max: 25)
+ * @param radiusMiles - Radius in miles (default: 5)
+ * @param options - Optional cap and timeout (default cap 25 mi, timeout 25s)
  * @returns Array of OSM elements with distance calculated
  */
 export async function queryOverpass(
   layerFilters: string,
   lat: number,
   lon: number,
-  radiusMiles: number = 5
+  radiusMiles: number = 5,
+  options?: OverpassQueryOptions
 ): Promise<Array<OverpassElement & { distance_miles: number }>> {
   try {
-    // Cap radius at 25 miles
-    const cappedRadius = Math.min(radiusMiles, 25.0);
+    const maxCap = options?.maxRadiusMiles ?? 25;
+    const cappedRadius = Math.min(radiusMiles, maxCap);
+    const timeoutSec = options?.timeoutSec ?? 25;
     const radiusMeters = Math.round(cappedRadius * 1609.34); // Convert to meters
-    
-    // Build Overpass QL query
-    const query = `[out:json][timeout:25];
-(
-  ${layerFilters}
-)
-(around:${radiusMeters}, ${lat}, ${lon});
-out center tags;`;
-    
-    // Fetch from Overpass API with automatic retry for 504 errors
-    const response = await fetchWithRetry(OVERPASS_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: `data=${encodeURIComponent(query)}`
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
-    }
-    
-    const data: OverpassResponse = await response.json();
-    
-    if (!data.elements || data.elements.length === 0) {
-      return [];
-    }
-    
-    // Process elements and calculate distances
-    const results: Array<OverpassElement & { distance_miles: number }> = [];
-    const seenIds = new Set<string>(); // Deduplicate by type+id
-    
-    for (const element of data.elements) {
-      // Get coordinates
-      let elementLat: number | null = null;
-      let elementLon: number | null = null;
-      
-      if (element.type === 'node') {
-        elementLat = element.lat || null;
-        elementLon = element.lon || null;
-      } else if (element.center) {
-        elementLat = element.center.lat;
-        elementLon = element.center.lon;
-      }
-      
-      if (elementLat === null || elementLon === null || !Number.isFinite(elementLat) || !Number.isFinite(elementLon)) {
-        continue;
-      }
-      
-      // Deduplicate by type+id
-      const dedupKey = `${element.type}_${element.id}`;
-      if (seenIds.has(dedupKey)) {
-        continue;
-      }
-      seenIds.add(dedupKey);
-      
-      // Calculate distance
-      const distanceMiles = haversineDistance(lat, lon, elementLat, elementLon);
-      
-      // Only include if within radius
-      if (distanceMiles <= cappedRadius) {
-        results.push({
-          ...element,
-          lat: elementLat,
-          lon: elementLon,
-          distance_miles: Number(distanceMiles.toFixed(2))
-        });
-      }
-    }
-    
-    // Sort by distance
-    results.sort((a, b) => a.distance_miles - b.distance_miles);
-    
-    return results;
+
+    // Spatial filter must be on each statement — a global union + (around:) loads the planet and hits limits
+    const query = buildQueryWithInlineAround(layerFilters, radiusMeters, lat, lon, timeoutSec);
+    const elements = await fetchOverpassInterpreter(query);
+    return elementsToProximityResults(elements, lat, lon, cappedRadius);
   } catch (error) {
     console.error('❌ Error querying Overpass API:', error);
     return [];

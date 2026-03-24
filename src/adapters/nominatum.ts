@@ -1,24 +1,24 @@
 // src/adapters/nominatim.ts
 import { GeocodeQuery, GeocodingAdapter, GeocodeResult } from "../lib/types";
+import { buildNominatimSearchUrl } from "../utils/nominatimUrl";
 
 export const NominatimAdapter: GeocodingAdapter = {
   name: "OSM Nominatim",
   rateLimit: { rps: 1 },
   buildRequests(q: GeocodeQuery) {
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("format", "json");
-    url.searchParams.set("addressdetails", "1");
-    url.searchParams.set("limit", "5");
-    url.searchParams.set("q", q.text);
-    // Email is required by Nominatim usage policy for identification
-    url.searchParams.set("email", "noreply@locationmart.com");
-    if (q.countryCodes) url.searchParams.set("countrycodes", q.countryCodes.toLowerCase());
+    const params = new URLSearchParams();
+    params.set("format", "json");
+    params.set("addressdetails", "1");
+    params.set("limit", "5");
+    params.set("q", q.text);
+    params.set("email", "noreply@locationmart.com");
+    if (q.countryCodes) params.set("countrycodes", q.countryCodes.toLowerCase());
     if (q.bbox) {
-      const [s,w,n,e] = q.bbox;
-      url.searchParams.set("viewbox", `${w},${n},${e},${s}`);
-      url.searchParams.set("bounded", "1");
+      const [s, w, n, e] = q.bbox;
+      params.set("viewbox", `${w},${n},${e},${s}`);
+      params.set("bounded", "1");
     }
-    return [url.toString()];
+    return [buildNominatimSearchUrl(params)];
   },
   parseResponse(json: any, q: GeocodeQuery): GeocodeResult[] {
     if (!json || !Array.isArray(json)) {

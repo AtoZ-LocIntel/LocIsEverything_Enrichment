@@ -4727,6 +4727,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'portwatch_ports': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Ports' },
   'usgs_earthquakes': { icon: '🌍', color: '#dc2626', title: 'USGS Earthquakes' },
   'maritime_boundaries': { icon: '🌊', color: '#06b6d4', title: "World's Maritime Boundaries" },
+  'global_data_centers_osm': { icon: '🖥️', color: '#0d9488', title: 'Global Data Centers (OSM)' },
   'global_oil_gas_processing_plants': { icon: '🏭', color: '#8b5cf6', title: 'Global Oil and Gas - Processing Plants' },
   'global_oil_gas_lng': { icon: '⛽', color: '#06b6d4', title: 'Global Oil and Gas - LNG' },
   'global_oil_gas_power_plants': { icon: '⚡', color: '#f59e0b', title: 'Global Oil and Gas - Power Plants' },
@@ -17042,6 +17043,91 @@ const MapView: React.FC<MapViewProps> = ({
             };
           } else {
             legendAccumulator[legendKey].count = earthquakesFeatureCount || enrichments.usgs_earthquakes_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Global Data Centers (OSM / Overpass) — point markers
+      if (enrichments.global_data_centers_osm_all && Array.isArray(enrichments.global_data_centers_osm_all)) {
+        let dcFeatureCount = 0;
+        const dcIcon = '🖥️';
+        const dcColor = '#0d9488';
+
+        enrichments.global_data_centers_osm_all.forEach((dc: any) => {
+          const lat = dc.latitude ?? dc.geometry?.y;
+          const lon = dc.longitude ?? dc.geometry?.x;
+          if (lat == null || lon == null || isNaN(lat) || isNaN(lon)) return;
+          try {
+            const iconHtml = `<div style="
+              width: 22px;
+              height: 22px;
+              background-color: ${dcColor};
+              border: 2px solid white;
+              border-radius: 4px;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 12px;
+            ">${dcIcon}</div>`;
+
+            const marker = L.marker([lat, lon], {
+              icon: L.divIcon({
+                className: 'custom-marker',
+                html: iconHtml,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11],
+              }),
+            });
+
+            const tag = dc.data_center_tag || 'unknown';
+            const dist =
+              dc.distance_miles != null ? `${Number(dc.distance_miles).toFixed(2)} miles` : 'N/A';
+            const nameEsc = (dc.name || 'Unnamed data center').replace(/</g, '&lt;');
+            const popupContent = `
+              <div style="min-width: 260px; max-width: 420px;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                  ${dcIcon} ${nameEsc}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+                  <div><strong>OSM:</strong> ${dc.osm_id || '—'}</div>
+                  <div><strong>Tag:</strong> ${tag}</div>
+                  ${dc.operator ? `<div><strong>Operator:</strong> ${String(dc.operator).replace(/</g, '&lt;')}</div>` : ''}
+                  <div><strong>Distance:</strong> ${dist}</div>
+                </div>
+              </div>
+            `;
+            marker.bindPopup(popupContent, { maxWidth: 500 });
+            marker.addTo(primary);
+            (marker as any).__layerType = 'global_data_centers_osm';
+            (marker as any).__layerTitle = 'Global Data Centers (OSM)';
+            bounds.extend([lat, lon]);
+            dcFeatureCount++;
+          } catch (e) {
+            console.error('Error drawing Global Data Center marker:', e);
+          }
+        });
+
+        if (dcFeatureCount > 0 || enrichments.global_data_centers_osm_count !== undefined) {
+          const legendKey = 'global_data_centers_osm';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: dcIcon,
+              color: dcColor,
+              title: 'Global Data Centers (OSM)',
+              count: dcFeatureCount || enrichments.global_data_centers_osm_count || 0,
+              radius,
+              radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count =
+              dcFeatureCount || enrichments.global_data_centers_osm_count || 0;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
