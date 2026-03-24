@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus, Heart } from 'lucide-react';
+import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus, Heart, Mail } from 'lucide-react';
 import AddSourceForm from './AddSourceForm';
 import DonateModal from './DonateModal';
+import ContactModal from './ContactModal';
 
 interface HeaderProps {
   onViewDataSources?: () => void;
@@ -11,6 +12,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
   const [showDocs, setShowDocs] = useState(false);
   const [showAddSource, setShowAddSource] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   const handleResetApp = () => {
     console.log('🔄 Starting comprehensive app reset...');
@@ -150,6 +152,15 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
             </nav>
 
             <div className="flex items-center space-x-4 sm:space-x-6">
+              <button
+                type="button"
+                onClick={() => setShowContact(true)}
+                className="btn btn-outline text-sm flex items-center space-x-2 text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
+              >
+                <Mail className="w-4 h-4" />
+                <span className="hidden sm:inline">Contact Me</span>
+                <span className="sm:hidden">Contact</span>
+              </button>
               <button 
                 onClick={() => setShowDocs(true)}
                 className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
@@ -814,6 +825,10 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
       {/* Donate Modal */}
       {showDonate && (
         <DonateModal onClose={() => setShowDonate(false)} />
+      )}
+
+      {showContact && (
+        <ContactModal onClose={() => setShowContact(false)} />
       )}
     </>
   );
