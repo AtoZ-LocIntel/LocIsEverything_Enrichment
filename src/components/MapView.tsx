@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { poiConfigManager } from '../lib/poiConfig';
-import { Info, RotateCcw, Ruler, X } from 'lucide-react';
+import { Copy, Info, RotateCcw, Ruler, X } from 'lucide-react';
 
 interface MapViewProps {
   results: EnrichmentResult[];
@@ -6891,6 +6891,10 @@ const MapView: React.FC<MapViewProps> = ({
   const [measureResult, setMeasureResult] = useState<string | null>(null);
   const [measureSegments, setMeasureSegments] = useState<string[]>([]);
   const [measureArea, setMeasureArea] = useState<string | null>(null);
+  const [measureLengthUnit, setMeasureLengthUnit] = useState<'feet' | 'miles'>('feet');
+  const measureLengthUnitRef = useRef<'feet' | 'miles'>('feet');
+  const measureVisualKindRef = useRef<'none' | 'polyline' | 'polygon'>('none');
+  const redrawMeasureGraphicsRef = useRef<(() => void) | null>(null);
   const [showMeasurePathInstruction, setShowMeasurePathInstruction] = useState(false);
   const measureLayerRef = useRef<L.LayerGroup | null>(null);
   const measurePointsRef = useRef<[number, number][]>([]);
@@ -6903,11 +6907,16 @@ const MapView: React.FC<MapViewProps> = ({
   const clearMeasure = () => {
     measureLayerRef.current?.clearLayers();
     measurePointsRef.current = [];
+    measureVisualKindRef.current = 'none';
     setMeasureResult(null);
     setMeasureSegments([]);
     setMeasureArea(null);
     setShowMeasurePathInstruction(false);
   };
+
+  useEffect(() => {
+    measureLengthUnitRef.current = measureLengthUnit;
+  }, [measureLengthUnit]);
   // Collapsible basemap sections state
   const [expandedBasemapSections, setExpandedBasemapSections] = useState<Record<string, boolean>>({
     'Basemaps': true, // Default to expanded
@@ -7161,6 +7170,44 @@ const MapView: React.FC<MapViewProps> = ({
       area += dLon * (2 + Math.sin(latI) + Math.sin(latJ));
     }
     return Math.abs(area * R * R / 2);
+  };
+
+  type MeasureLengthUnit = 'feet' | 'miles';
+  const formatMeasureSegmentDistance = (miles: number, unit: MeasureLengthUnit): string => {
+    if (unit === 'feet') {
+      const ft = miles * 5280;
+      return `${ft.toLocaleString(undefined, { maximumFractionDigits: ft >= 100 ? 0 : 1 })} ft`;
+    }
+    if (miles >= 100) return `${miles.toFixed(1)} mi`;
+    if (miles >= 0.1) return `${miles.toFixed(2)} mi`;
+    if (miles >= 0.01) return `${miles.toFixed(3)} mi`;
+    return `${(miles * 5280).toFixed(0)} ft`;
+  };
+  const formatMeasureTotalDistance = (miles: number, unit: MeasureLengthUnit): string => {
+    const km = miles * 1.60934;
+    if (unit === 'feet') {
+      const ft = miles * 5280;
+      return `Total: ${ft.toLocaleString(undefined, { maximumFractionDigits: ft >= 100 ? 0 : 1 })} ft (${miles.toFixed(3)} mi, ${km.toFixed(3)} km)`;
+    }
+    return `Total: ${miles.toFixed(3)} mi (${km.toFixed(3)} km)`;
+  };
+  const formatTwoPointDistance = (miles: number, unit: MeasureLengthUnit): string => {
+    const km = miles * 1.60934;
+    if (unit === 'feet') {
+      const ft = miles * 5280;
+      return `${ft.toLocaleString(undefined, { maximumFractionDigits: ft >= 100 ? 0 : 1 })} ft (${miles.toFixed(4)} mi, ${km.toFixed(3)} km)`;
+    }
+    return `${miles.toFixed(3)} mi (${km.toFixed(3)} km)`;
+  };
+  /** Area from geodesic polygon m² — primary unit follows segment length toggle (ft → sq ft first, mi → sq mi first). */
+  const formatPolygonArea = (areaM2: number, unit: MeasureLengthUnit): string => {
+    const acres = areaM2 / 4046.86;
+    const sqMi = areaM2 / 2589988.11;
+    const sqFt = areaM2 * 10.7639;
+    if (unit === 'feet') {
+      return `Area: ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft (${acres.toFixed(2)} ac, ${sqMi.toFixed(4)} sq mi)`;
+    }
+    return `Area: ${sqMi.toFixed(4)} sq mi (${acres.toFixed(2)} ac, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`;
   };
 
   const mapInitTimeoutRef = useRef<number | null>(null);
@@ -7797,6 +7844,7 @@ const MapView: React.FC<MapViewProps> = ({
     if (isMobile || !mapInstanceRef.current || !isInitialized || measureToolMode === 'off') {
       measureAddPointRef.current = null;
       measureDblClickRef.current = null;
+      redrawMeasureGraphicsRef.current = null;
       return;
     }
     const map = mapInstanceRef.current;
@@ -7810,15 +7858,65 @@ const MapView: React.FC<MapViewProps> = ({
     } else {
       measurePointsRef.current = [];
     }
+    measureVisualKindRef.current = measurePointsRef.current.length >= 2 ? 'polyline' : 'none';
+
     const layerGroup = new L.LayerGroup();
     measureLayerRef.current = layerGroup;
     layerGroup.addTo(primary);
 
-    // If started from right-click, add the first point and draw marker
-    if (pending && measureToolMode === 'line') {
-      const latlng = L.latLng(pending[0], pending[1]);
-      L.marker(latlng, { icon: L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] }) }).addTo(layerGroup);
-    }
+    const vertexIconHtml = '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>';
+    const vertexIcon = L.divIcon({ className: 'measure-vertex', html: vertexIconHtml, iconSize: [14, 14] });
+
+    const makeLabelIcon = (dMi: number) => {
+      const labelText = formatMeasureSegmentDistance(dMi, measureLengthUnitRef.current);
+      const w = Math.min(132, Math.max(48, 7 + labelText.length * 6.5));
+      return L.divIcon({
+        className: 'measure-segment-label',
+        html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
+        iconSize: [w, 22],
+        iconAnchor: [w / 2, 11],
+      });
+    };
+
+    const syncRedraw = () => {
+      const next = measurePointsRef.current;
+      const vk = measureVisualKindRef.current;
+      layerGroup.clearLayers();
+      next.forEach((p) => {
+        L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
+      });
+      if (next.length < 2 || vk === 'none') {
+        redrawMeasureGraphicsRef.current = syncRedraw;
+        return;
+      }
+      const latlngs = next.map((p) => L.latLng(p[0], p[1]));
+      if (vk === 'polyline') {
+        L.polyline(latlngs, { color: '#3388ff', weight: 3, opacity: 0.9 }).addTo(layerGroup);
+        for (let i = 1; i < next.length; i++) {
+          const d = haversineMiles(next[i - 1], next[i]);
+          const midLat = (next[i - 1][0] + next[i][0]) / 2;
+          const midLon = (next[i - 1][1] + next[i][1]) / 2;
+          L.marker(L.latLng(midLat, midLon), { icon: makeLabelIcon(d) }).addTo(layerGroup);
+        }
+      } else if (vk === 'polygon') {
+        L.polygon(latlngs, { color: '#3388ff', weight: 3, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
+        for (let i = 1; i < next.length; i++) {
+          const d = haversineMiles(next[i - 1], next[i]);
+          L.marker(
+            L.latLng((next[i - 1][0] + next[i][0]) / 2, (next[i - 1][1] + next[i][1]) / 2),
+            { icon: makeLabelIcon(d) }
+          ).addTo(layerGroup);
+        }
+        const closeD = haversineMiles(next[next.length - 1], next[0]);
+        L.marker(
+          L.latLng((next[next.length - 1][0] + next[0][0]) / 2, (next[next.length - 1][1] + next[0][1]) / 2),
+          { icon: makeLabelIcon(closeD) }
+        ).addTo(layerGroup);
+      }
+      redrawMeasureGraphicsRef.current = syncRedraw;
+    };
+
+    syncRedraw();
 
     const addMeasurePoint = (latlng: L.LatLng) => {
       const pt: [number, number] = [latlng.lat, latlng.lng];
@@ -7826,10 +7924,11 @@ const MapView: React.FC<MapViewProps> = ({
       if (measureToolMode === 'distance' && prev.length >= 2) return;
       const next = [...prev, pt];
       measurePointsRef.current = next;
+      const unit = measureLengthUnitRef.current;
 
       if (measureToolMode === 'distance' && next.length >= 2) {
         const d = haversineMiles(next[0], next[1]);
-        setMeasureResult(`${d.toFixed(3)} mi (${(d * 1.60934).toFixed(3)} km)`);
+        setMeasureResult(formatTwoPointDistance(d, unit));
         setMeasureSegments([]);
         setMeasureArea(null);
       } else if (measureToolMode === 'line' && next.length >= 2) {
@@ -7838,17 +7937,14 @@ const MapView: React.FC<MapViewProps> = ({
         for (let i = 1; i < next.length; i++) {
           const d = haversineMiles(next[i - 1], next[i]);
           total += d;
-          segs.push(`Segment ${i}: ${d.toFixed(3)} mi`);
+          segs.push(`Segment ${i}: ${formatMeasureSegmentDistance(d, unit)}`);
         }
         setMeasureSegments(segs);
-        setMeasureResult(`Total: ${total.toFixed(3)} mi (${(total * 1.60934).toFixed(3)} km)`);
+        setMeasureResult(formatMeasureTotalDistance(total, unit));
         setMeasureArea(null);
       } else if (measureToolMode === 'area' && next.length >= 3) {
         const areaM2 = polygonAreaSqMeters(next);
-        const acres = areaM2 / 4046.86;
-        const sqMi = areaM2 / 2589988.11;
-        const sqFt = areaM2 * 10.7639;
-        setMeasureResult(`${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`);
+        setMeasureResult(formatPolygonArea(areaM2, unit));
         setMeasureSegments([]);
         setMeasureArea(null);
       } else {
@@ -7857,101 +7953,43 @@ const MapView: React.FC<MapViewProps> = ({
         setMeasureArea(null);
       }
 
-      // Clear and redraw all measure visuals (markers, lines, segment labels)
-      layerGroup.clearLayers();
-      const vertexIcon = L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] });
-      next.forEach((p) => {
-        L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
-      });
-      if (next.length >= 2) {
-        const latlngs = next.map(p => L.latLng(p[0], p[1]));
-        L.polyline(latlngs, { color: '#3388ff', weight: 3, opacity: 0.9 }).addTo(layerGroup);
-        // Add distance label at midpoint of each segment (Google Maps style)
-        for (let i = 1; i < next.length; i++) {
-          const d = haversineMiles(next[i - 1], next[i]);
-          const midLat = (next[i - 1][0] + next[i][0]) / 2;
-          const midLon = (next[i - 1][1] + next[i][1]) / 2;
-          const labelText = d >= 0.1 ? `${d.toFixed(2)} mi` : d >= 0.01 ? `${d.toFixed(3)} mi` : `${(d * 5280).toFixed(0)} ft`;
-          const labelIcon = L.divIcon({
-            className: 'measure-segment-label',
-            html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
-            iconSize: [60, 20],
-            iconAnchor: [30, 10],
-          });
-          L.marker(L.latLng(midLat, midLon), { icon: labelIcon }).addTo(layerGroup);
-        }
-      }
+      measureVisualKindRef.current = next.length >= 2 ? 'polyline' : 'none';
+      syncRedraw();
     };
 
     const onDblClick = () => {
       const pts = measurePointsRef.current;
+      const unit = measureLengthUnitRef.current;
       if (measureToolMode === 'area' && pts.length >= 3) {
-        // Redraw with polygon, markers, and segment labels (including closing)
-        layerGroup.clearLayers();
-        const vertexIcon = L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] });
-        pts.forEach((p) => {
-          L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
-        });
-        const latlngs = pts.map(p => L.latLng(p[0], p[1]));
-        L.polygon(latlngs, { color: '#3388ff', weight: 3, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
-        const labelIconOpts = (d: number) => {
-          const labelText = d >= 0.1 ? `${d.toFixed(2)} mi` : d >= 0.01 ? `${d.toFixed(3)} mi` : `${(d * 5280).toFixed(0)} ft`;
-          return L.divIcon({
-            className: 'measure-segment-label',
-            html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
-            iconSize: [60, 20],
-            iconAnchor: [30, 10],
-          });
-        };
+        measureVisualKindRef.current = 'polygon';
+        const areaM2 = polygonAreaSqMeters(pts);
+        setMeasureResult(formatPolygonArea(areaM2, unit));
+        const segs: string[] = [];
         for (let i = 1; i < pts.length; i++) {
           const d = haversineMiles(pts[i - 1], pts[i]);
-          L.marker(L.latLng((pts[i - 1][0] + pts[i][0]) / 2, (pts[i - 1][1] + pts[i][1]) / 2), { icon: labelIconOpts(d) }).addTo(layerGroup);
+          segs.push(`Segment ${i}: ${formatMeasureSegmentDistance(d, unit)}`);
         }
         const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
-        L.marker(L.latLng((pts[pts.length - 1][0] + pts[0][0]) / 2, (pts[pts.length - 1][1] + pts[0][1]) / 2), { icon: labelIconOpts(closeD) }).addTo(layerGroup);
-        const areaM2 = polygonAreaSqMeters(pts);
-        const acres = areaM2 / 4046.86;
-        const sqMi = areaM2 / 2589988.11;
-        const sqFt = areaM2 * 10.7639;
-        setMeasureResult(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`);
+        segs.push(`Segment ${pts.length}: ${formatMeasureSegmentDistance(closeD, unit)}`);
+        setMeasureSegments(segs);
+        syncRedraw();
       } else if (measureToolMode === 'line' && pts.length >= 3) {
-        // Close path to form polygon - redraw with polygon, markers, and all segment labels (including closing)
-        layerGroup.clearLayers();
-        const vertexIcon = L.divIcon({ className: 'measure-vertex', html: '<div style="width:10px;height:10px;background:#3388ff;border:2px solid white;border-radius:50%;"></div>', iconSize: [14, 14] });
-        pts.forEach((p) => {
-          L.marker(L.latLng(p[0], p[1]), { icon: vertexIcon }).addTo(layerGroup);
-        });
-        const latlngs = pts.map(p => L.latLng(p[0], p[1]));
-        L.polygon(latlngs, { color: '#3388ff', weight: 3, fillColor: '#3388ff', fillOpacity: 0.2 }).addTo(layerGroup);
-        // Segment labels including closing segment
-        const labelIconOpts = (d: number) => {
-          const labelText = d >= 0.1 ? `${d.toFixed(2)} mi` : d >= 0.01 ? `${d.toFixed(3)} mi` : `${(d * 5280).toFixed(0)} ft`;
-          return L.divIcon({
-            className: 'measure-segment-label',
-            html: `<div style="background:white;color:#1a1a1a;padding:2px 6px;font-size:11px;font-weight:600;border:1px solid #3388ff;border-radius:4px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);">${labelText}</div>`,
-            iconSize: [60, 20],
-            iconAnchor: [30, 10],
-          });
-        };
-        for (let i = 1; i < pts.length; i++) {
-          const d = haversineMiles(pts[i - 1], pts[i]);
-          const midLat = (pts[i - 1][0] + pts[i][0]) / 2;
-          const midLon = (pts[i - 1][1] + pts[i][1]) / 2;
-          L.marker(L.latLng(midLat, midLon), { icon: labelIconOpts(d) }).addTo(layerGroup);
-        }
-        const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
-        const closeMidLat = (pts[pts.length - 1][0] + pts[0][0]) / 2;
-        const closeMidLon = (pts[pts.length - 1][1] + pts[0][1]) / 2;
-        L.marker(L.latLng(closeMidLat, closeMidLon), { icon: labelIconOpts(closeD) }).addTo(layerGroup);
+        measureVisualKindRef.current = 'polygon';
         const areaM2 = polygonAreaSqMeters(pts);
-        const acres = areaM2 / 4046.86;
-        const sqMi = areaM2 / 2589988.11;
-        const sqFt = areaM2 * 10.7639;
-        setMeasureArea(`Area: ${acres.toFixed(2)} ac (${sqMi.toFixed(4)} sq mi, ${sqFt.toLocaleString(undefined, { maximumFractionDigits: 0 })} sq ft)`);
+        setMeasureArea(formatPolygonArea(areaM2, unit));
         let total = 0;
         for (let i = 1; i < pts.length; i++) total += haversineMiles(pts[i - 1], pts[i]);
         total += haversineMiles(pts[pts.length - 1], pts[0]);
-        setMeasureResult(`Total: ${total.toFixed(3)} mi (${(total * 1.60934).toFixed(3)} km)`);
+        setMeasureResult(formatMeasureTotalDistance(total, unit));
+        const segs: string[] = [];
+        for (let i = 1; i < pts.length; i++) {
+          const d = haversineMiles(pts[i - 1], pts[i]);
+          segs.push(`Segment ${i}: ${formatMeasureSegmentDistance(d, unit)}`);
+        }
+        const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
+        segs.push(`Segment ${pts.length}: ${formatMeasureSegmentDistance(closeD, unit)}`);
+        setMeasureSegments(segs);
+        syncRedraw();
       }
       map.off('dblclick', onDblClick);
     };
@@ -7959,12 +7997,10 @@ const MapView: React.FC<MapViewProps> = ({
     measureAddPointRef.current = addMeasurePoint;
     measureDblClickRef.current = onDblClick;
 
-    // Do NOT attach map click/dblclick - the transparent overlay handles all pointer events.
-    // Attaching both causes double-point bug (overlay + map both fire, adding two nearly identical points).
-
     return () => {
       measureAddPointRef.current = null;
       measureDblClickRef.current = null;
+      redrawMeasureGraphicsRef.current = null;
       if (measureLayerRef.current && map.hasLayer(measureLayerRef.current)) {
         map.removeLayer(measureLayerRef.current);
       }
@@ -7973,6 +8009,59 @@ const MapView: React.FC<MapViewProps> = ({
       setMeasureResult(null);
     };
   }, [measureToolMode, isMobile, isInitialized]);
+
+  // Refresh map labels + panel text when length unit changes (without losing points)
+  useEffect(() => {
+    if (isMobile || measureToolMode === 'off') return;
+    const pts = measurePointsRef.current;
+    if (pts.length === 0) return;
+    const unit = measureLengthUnit;
+    if (measureToolMode === 'distance' && pts.length >= 2) {
+      const d = haversineMiles(pts[0], pts[1]);
+      setMeasureResult(formatTwoPointDistance(d, unit));
+    } else if (measureToolMode === 'line' && pts.length >= 2) {
+      if (measureVisualKindRef.current === 'polygon') {
+        let total = 0;
+        for (let i = 1; i < pts.length; i++) total += haversineMiles(pts[i - 1], pts[i]);
+        total += haversineMiles(pts[pts.length - 1], pts[0]);
+        setMeasureResult(formatMeasureTotalDistance(total, unit));
+        const segs: string[] = [];
+        for (let i = 1; i < pts.length; i++) {
+          const d = haversineMiles(pts[i - 1], pts[i]);
+          segs.push(`Segment ${i}: ${formatMeasureSegmentDistance(d, unit)}`);
+        }
+        const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
+        segs.push(`Segment ${pts.length}: ${formatMeasureSegmentDistance(closeD, unit)}`);
+        setMeasureSegments(segs);
+        const areaM2 = polygonAreaSqMeters(pts);
+        setMeasureArea(formatPolygonArea(areaM2, unit));
+      } else {
+        let total = 0;
+        const segs: string[] = [];
+        for (let i = 1; i < pts.length; i++) {
+          const d = haversineMiles(pts[i - 1], pts[i]);
+          total += d;
+          segs.push(`Segment ${i}: ${formatMeasureSegmentDistance(d, unit)}`);
+        }
+        setMeasureSegments(segs);
+        setMeasureResult(formatMeasureTotalDistance(total, unit));
+      }
+    } else if (measureToolMode === 'area' && pts.length >= 3) {
+      const areaM2 = polygonAreaSqMeters(pts);
+      setMeasureResult(formatPolygonArea(areaM2, unit));
+      if (measureVisualKindRef.current === 'polygon') {
+        const segs: string[] = [];
+        for (let i = 1; i < pts.length; i++) {
+          const d = haversineMiles(pts[i - 1], pts[i]);
+          segs.push(`Segment ${i}: ${formatMeasureSegmentDistance(d, unit)}`);
+        }
+        const closeD = haversineMiles(pts[pts.length - 1], pts[0]);
+        segs.push(`Segment ${pts.length}: ${formatMeasureSegmentDistance(closeD, unit)}`);
+        setMeasureSegments(segs);
+      }
+    }
+    redrawMeasureGraphicsRef.current?.();
+  }, [measureLengthUnit, measureToolMode, isMobile]);
 
   // When measure tool is active: add a transparent overlay on top of the map to capture clicks
   // before they reach feature layers (building footprints, etc). This ensures measure points
@@ -48592,9 +48681,48 @@ const MapView: React.FC<MapViewProps> = ({
             className="fixed bg-white rounded-lg shadow-xl border border-gray-200 py-1 min-w-[200px] z-[10000] text-gray-900"
             style={{ left: contextMenu.x, top: contextMenu.y }}
           >
-            <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">
+            <div
+              className="px-4 py-2 text-xs text-gray-800 border-b border-gray-100 cursor-text"
+              style={{
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+                MozUserSelect: 'text',
+                msUserSelect: 'text',
+              }}
+              title="Select and copy, or use Copy below"
+            >
               {contextMenu.lat.toFixed(6)}, {contextMenu.lon.toFixed(6)}
             </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const text = `${contextMenu.lat.toFixed(6)}, ${contextMenu.lon.toFixed(6)}`;
+                const fallbackCopy = () => {
+                  try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                  } catch {
+                    /* ignore */
+                  }
+                };
+                if (navigator.clipboard?.writeText) {
+                  void navigator.clipboard.writeText(text).catch(fallbackCopy);
+                } else {
+                  fallbackCopy();
+                }
+              }}
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-2 border-b border-gray-100"
+            >
+              <Copy className="w-4 h-4 text-gray-600" />
+              Copy coordinates
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -49444,19 +49572,40 @@ const MapView: React.FC<MapViewProps> = ({
 
             {/* Measure result panel - shown when measuring via right-click (Ruler icon removed) */}
             {measureToolMode !== 'off' && (
-                <div className="flex-shrink-0 bg-white rounded-lg shadow-lg px-3 py-2 text-sm max-w-[220px] text-gray-900">
+                <div className="flex-shrink-0 bg-white rounded-lg shadow-lg px-3 py-2 text-sm max-w-[240px] text-gray-900">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-gray-600 text-xs">Segment length</span>
+                    <div className="flex rounded-md border border-gray-300 overflow-hidden text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setMeasureLengthUnit('feet')}
+                        className={`px-2 py-0.5 font-medium ${measureLengthUnit === 'feet' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                        title="Feet — parcels, buildings, short distances"
+                      >
+                        ft
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMeasureLengthUnit('miles')}
+                        className={`px-2 py-0.5 font-medium border-l border-gray-300 ${measureLengthUnit === 'miles' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                        title="Miles — long distances, regions"
+                      >
+                        mi
+                      </button>
+                    </div>
+                  </div>
                   <p className="text-gray-700 text-xs">
                     {measureToolMode === 'distance' && 'Click 2 points'}
                     {measureToolMode === 'line' && 'Click points for line'}
                     {measureToolMode === 'area' && 'Click polygon, dbl-click to close'}
                   </p>
                   {measureResult && <p className="font-semibold text-gray-900 mt-1">{measureResult}</p>}
-                  {measureToolMode === 'line' && measureSegments.length > 0 && (
-                    <div className="mt-1 space-y-0.5 text-xs text-gray-600">
+                  {measureSegments.length > 0 && (
+                    <div className="mt-1 space-y-0.5 text-xs text-gray-600 max-h-32 overflow-y-auto">
                       {measureSegments.map((s, i) => <div key={i}>{s}</div>)}
                     </div>
                   )}
-                  {measureToolMode === 'line' && measureArea && (
+                  {measureArea && (
                     <p className="text-sm font-medium text-gray-800 mt-1">{measureArea}</p>
                   )}
                   <div className="mt-2 flex items-center gap-3">
