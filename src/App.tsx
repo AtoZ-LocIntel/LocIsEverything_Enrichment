@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { debugScroll, monitorWheelEvents, checkEventListeners } from './utils/scrollDebug';
+import { debugScroll } from './utils/scrollDebug';
 
 import Header from './components/Header';
 import SingleSearch from './components/SingleSearch';
@@ -280,17 +280,10 @@ function App() {
         window.addEventListener('wheel', manualScrollHandler, { passive: true, capture: true });
       };
       
-      // Enable manual scroll handler immediately
+      // Enable manual scroll handler immediately (no automatic scroll console noise)
       setTimeout(() => {
-        debugScroll();
-        checkEventListeners();
-        
-        // Always enable manual scroll handler as fallback
         enableManualScroll();
       }, 500);
-      
-      // Monitor wheel events
-      const cleanupWheelMonitor = monitorWheelEvents();
       
       // Add keyboard shortcut for manual debug (Ctrl+Shift+D)
       const handleKeyPress = (e: KeyboardEvent) => {
@@ -305,7 +298,6 @@ function App() {
       window.addEventListener('keydown', handleKeyPress);
       
       return () => {
-        cleanupWheelMonitor();
         window.removeEventListener('keydown', handleKeyPress);
         if (manualScrollHandler) {
           document.removeEventListener('wheel', manualScrollHandler, { capture: true });

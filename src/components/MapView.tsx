@@ -4117,6 +4117,15 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://geoportal.alaska.gov/arcgis/rest/services/Alaska_IFSAR_DTM/ImageServer/exportImage',
     exportImageRasterFunction: 'Hillshade', // Use Hillshade for better elevation visualization
   },
+  // NOAA NOHRSC Snow Analysis — snow depth (MapServer raster layer 3, ExportMap tiles)
+  // Service: https://mapservices.weather.noaa.gov/raster/rest/services/snow/NOHRSC_Snow_Analysis/MapServer
+  noaa_nohrsc_snow_depth: {
+    type: 'tile',
+    name: 'NOAA NOHRSC Snow Depth',
+    attribution: 'NOAA National Operational Hydrologic Remote Sensing Center (NOHRSC)',
+    tileUrl: 'https://mapservices.weather.noaa.gov/raster/rest/services/snow/NOHRSC_Snow_Analysis/MapServer',
+    exportMapLayerId: 3,
+  },
   // NOAA DEM Global Mosaic Hillshade - Using ExportImage endpoint with raster function
   // Note: ImageServer service with Single Fused Map Cache: false
   // Uses ExportImage endpoint with ColorHillshade raster function for elevation-tinted shaded relief visualization
@@ -4728,6 +4737,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'usgs_earthquakes': { icon: '🌍', color: '#dc2626', title: 'USGS Earthquakes' },
   'maritime_boundaries': { icon: '🌊', color: '#06b6d4', title: "World's Maritime Boundaries" },
   'global_data_centers_osm': { icon: '🖥️', color: '#0d9488', title: 'Global Data Centers (OSM)' },
+  'global_desalination_plants_osm': { icon: '💧', color: '#0284c7', title: 'Global Desalination Plants (OSM)' },
   'global_oil_gas_processing_plants': { icon: '🏭', color: '#8b5cf6', title: 'Global Oil and Gas - Processing Plants' },
   'global_oil_gas_lng': { icon: '⛽', color: '#06b6d4', title: 'Global Oil and Gas - LNG' },
   'global_oil_gas_power_plants': { icon: '⚡', color: '#f59e0b', title: 'Global Oil and Gas - Power Plants' },
@@ -17078,6 +17088,95 @@ const MapView: React.FC<MapViewProps> = ({
           } else {
             legendAccumulator[legendKey].count =
               dcFeatureCount || enrichments.global_data_centers_osm_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Global Desalination Plants (OSM / Overpass) — point markers
+      if (enrichments.global_desalination_plants_osm_all && Array.isArray(enrichments.global_desalination_plants_osm_all)) {
+        let desalFeatureCount = 0;
+        const desalIcon = '💧';
+        const desalColor = '#0284c7';
+
+        enrichments.global_desalination_plants_osm_all.forEach((row: any) => {
+          const lat = row.latitude ?? row.geometry?.y;
+          const lon = row.longitude ?? row.geometry?.x;
+          if (lat == null || lon == null || isNaN(lat) || isNaN(lon)) return;
+          try {
+            const iconHtml = `<div style="
+              width: 22px;
+              height: 22px;
+              background-color: ${desalColor};
+              border: 2px solid white;
+              border-radius: 50%;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 11px;
+            ">${desalIcon}</div>`;
+
+            const marker = L.marker([lat, lon], {
+              icon: L.divIcon({
+                className: 'custom-marker',
+                html: iconHtml,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11],
+              }),
+            });
+
+            const profile = row.desal_profile || 'unknown';
+            const dist =
+              row.distance_miles != null ? `${Number(row.distance_miles).toFixed(2)} miles` : 'N/A';
+            const nameEsc = (row.name || 'Unnamed facility').replace(/</g, '&lt;');
+            const method = row.tags?.['plant:method'] || '—';
+            const source = row.tags?.['plant:source'] || '—';
+            const popupContent = `
+              <div style="min-width: 260px; max-width: 420px;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                  ${desalIcon} ${nameEsc}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280;">
+                  <div><strong>OSM:</strong> ${row.osm_id || '—'}</div>
+                  <div><strong>Profile:</strong> ${profile}</div>
+                  <div><strong>plant:method:</strong> ${method}</div>
+                  <div><strong>plant:source:</strong> ${source}</div>
+                  ${row.operator ? `<div><strong>Operator:</strong> ${String(row.operator).replace(/</g, '&lt;')}</div>` : ''}
+                  <div><strong>Distance:</strong> ${dist}</div>
+                </div>
+              </div>
+            `;
+            marker.bindPopup(popupContent, { maxWidth: 500 });
+            marker.addTo(primary);
+            (marker as any).__layerType = 'global_desalination_plants_osm';
+            (marker as any).__layerTitle = 'Global Desalination Plants (OSM)';
+            bounds.extend([lat, lon]);
+            desalFeatureCount++;
+          } catch (e) {
+            console.error('Error drawing Global Desalination Plant marker:', e);
+          }
+        });
+
+        if (desalFeatureCount > 0 || enrichments.global_desalination_plants_osm_count !== undefined) {
+          const legendKey = 'global_desalination_plants_osm';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: desalIcon,
+              color: desalColor,
+              title: 'Global Desalination Plants (OSM)',
+              count: desalFeatureCount || enrichments.global_desalination_plants_osm_count || 0,
+              radius,
+              radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count =
+              desalFeatureCount || enrichments.global_desalination_plants_osm_count || 0;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;

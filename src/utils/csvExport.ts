@@ -525,6 +525,53 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // Global Desalination Plants (OSM / Overpass)
+  if (enrichments.global_desalination_plants_osm_all && Array.isArray(enrichments.global_desalination_plants_osm_all)) {
+    enrichments.global_desalination_plants_osm_all.forEach((row: any) => {
+      const lat = row.latitude ?? row.geometry?.y ?? location.lat;
+      const lon = row.longitude ?? row.geometry?.x ?? location.lon;
+      const profile = row.desal_profile || 'unknown';
+      const title = row.name || `OSM ${row.osm_type} ${row.osm_id}`;
+      const pm = row.tags?.['plant:method'] ?? '';
+      const ps = row.tags?.['plant:source'] ?? '';
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Global Desalination Plants (OSM)',
+        (location.confidence || 'N/A').toString(),
+        'GLOBAL_DESALINATION_PLANTS_OSM',
+        `${title} (${profile})`,
+        lat.toString(),
+        lon.toString(),
+        (row.distance_miles ?? enrichments.global_desalination_plants_osm_proximity_distance ?? 0).toFixed(2),
+        'OpenStreetMap via Overpass API',
+        `plant:method=${pm || '—'}, plant:source=${ps || '—'}${row.operator ? `, Operator: ${row.operator}` : ''}`,
+        enrichments.global_desalination_plants_osm_summary || '',
+        row.geometry ? JSON.stringify(row.geometry) : '',
+        'OpenStreetMap'
+      ]);
+    });
+  } else if (enrichments.global_desalination_plants_osm_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Global Desalination Plants (OSM)',
+      (location.confidence || 'N/A').toString(),
+      'GLOBAL_DESALINATION_PLANTS_OSM',
+      'Global Desalination Plants (OSM)',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.global_desalination_plants_osm_proximity_distance || 0).toFixed(1),
+      'OpenStreetMap via Overpass API',
+      `${enrichments.global_desalination_plants_osm_count || 0} found`,
+      enrichments.global_desalination_plants_osm_summary || '',
+      '',
+      'OpenStreetMap'
+    ]);
+  }
+
   // Add Port Watch Ports data
   if (enrichments.portwatch_ports_all && Array.isArray(enrichments.portwatch_ports_all)) {
     enrichments.portwatch_ports_all.forEach((port: any) => {

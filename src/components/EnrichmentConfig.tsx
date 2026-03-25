@@ -49,6 +49,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   global_risk: <img src="/assets/global_risk.webp" alt="Global Risk" className="w-5 h-5" />,
   nws: <img src="/assets/NWS.webp" alt="National Weather Service Watches and Warnings" className="w-5 h-5" />,
   hazards: <img src="/assets/human_hazards.webp" alt="Human Caused Hazards" className="w-8 h-8" />,
+  mobility: <img src="/assets/Mobility.webp" alt="Mobility" className="w-5 h-5" />,
   fish_wildlife: <img src="/assets/fishwildlife.webp" alt="Fish and Wildlife" className="w-5 h-5" />,
   community: <span className="text-xl">👥</span>,
   education: <img src="/assets/Education.webp" alt="Education" className="w-5 h-5" />,
@@ -1792,6 +1793,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
     const iconMap: { [key: string]: string } = {
       'nws': 'NWS',
       'hazards': 'hazards_risk',
+      'mobility': 'Mobility',
       'fish_wildlife': 'fishwildlife',
       'education': 'Education',
       'nh': 'newhampshire',
@@ -3553,6 +3555,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               });
                   
                   const headerColor = category.id === 'hazards' ? '#991b1b' :
+                                    category.id === 'mobility' ? '#0d9488' :
                                     category.id === 'education' ? '#1e40af' :
                                     category.id === 'health' ? '#9d174d' :
                                     category.id === 'transportation' ? '#3730a3' :

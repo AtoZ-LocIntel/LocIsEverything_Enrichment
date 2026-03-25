@@ -185,6 +185,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (key.includes('opensky_flights_all')) {
         return 'N/A'; // Skip the _all array (handled separately)
       }
+
+      if (key.includes('global_desalination_plants_osm_all')) {
+        return 'N/A';
+      }
       
       // Regular array handling for non-POI data
       return value.map((item: any) => {
@@ -293,7 +297,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // Global Risk - check before Natural Hazards
-    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries') || key.includes('global_data_centers_osm')) {
+    if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries') || key.includes('global_data_centers_osm') || key.includes('global_desalination_plants_osm')) {
       return 'Global Risk';
     }
     

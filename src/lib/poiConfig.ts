@@ -47,6 +47,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: '🌊'
   },
   {
+    id: 'mobility',
+    title: 'Mobility',
+    description: 'Transit, traffic, trip planning, and movement-related data',
+    icon: 'Mobility.webp'
+  },
+  {
     id: 'fish_wildlife',
     title: 'Fish and Wildlife',
     description: 'Fish and wildlife species, critical habitat, and aquatic barriers',
@@ -553,6 +559,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'shipping_lanes', label: 'Global Shipping Lanes', description: 'Global Shipping Lanes - Major, medium, and minor global shipping routes derived from CIA world oceans map. Shows maritime shipping corridors worldwide (proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'shippinglanes', section: 'global_risk' },
   { id: 'maritime_boundaries', label: "World's Maritime Boundaries", description: "World's Maritime Boundaries - Global maritime boundaries including Exclusive Economic Zones (200NM), Territorial Seas (12NM), Contiguous Zones (24NM), Internal Waters, Archipelagic Waters, and High Seas (point-in-polygon and proximity queries up to 1000 miles)", isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'maritimeboundaries', section: 'global_risk' },
   { id: 'global_data_centers_osm', label: 'Global Data Centers (OSM)', description: 'OpenStreetMap data centers via Overpass API — man_made=data_center, building=data_center, telecom=data_center (proximity queries up to 250 miles)', isPOI: true, defaultRadius: 50, maxRadius: 250, category: 'osmdatacenters', section: 'global_risk' },
+  { id: 'global_desalination_plants_osm', label: 'Global Desalination Plants (OSM)', description: 'OpenStreetMap desalination via Overpass — single proximity query (compound tags + plant:method=desalination); 429/504 retried with backoff — up to 250 miles', isPOI: true, defaultRadius: 50, maxRadius: 250, category: 'osmdesalination', section: 'global_risk' },
   { id: 'global_oil_gas_processing_plants', label: 'Global Oil and Gas - Processing Plants', description: 'Global Oil and Gas Processing Plants - Oil and gas processing facilities worldwide (point-in-polygon for polygons, proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'globaloilgas', section: 'global_risk' },
   { id: 'global_oil_gas_lng', label: 'Global Oil and Gas - LNG', description: 'Global Oil and Gas LNG Facilities - Liquefied Natural Gas facilities worldwide (point-in-polygon for polygons, proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'globaloilgas', section: 'global_risk' },
   { id: 'global_oil_gas_power_plants', label: 'Global Oil and Gas - Power Plants', description: 'Global Oil and Gas Power Plants - Power generation facilities related to oil and gas (point-in-polygon for polygons, proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'globaloilgas', section: 'global_risk' },

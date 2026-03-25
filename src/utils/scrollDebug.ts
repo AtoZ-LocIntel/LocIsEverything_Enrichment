@@ -169,58 +169,8 @@ export const debugScroll = () => {
   };
 };
 
-// Monitor wheel events
-export const monitorWheelEvents = () => {
-  let wheelEventCount = 0;
-  let preventedCount = 0;
-  let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  
-  const wheelHandler = (e: WheelEvent) => {
-    wheelEventCount++;
-    if (e.defaultPrevented) {
-      preventedCount++;
-      console.warn('⚠️ WHEEL EVENT PREVENTED:', {
-        count: preventedCount,
-        target: e.target,
-        currentTarget: e.currentTarget,
-        timeStamp: e.timeStamp
-      });
-    }
-    
-    // Check if scroll actually changed after wheel event
-    setTimeout(() => {
-      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      if (currentScrollTop === lastScrollTop && Math.abs(e.deltaY) > 0) {
-        console.warn('🚨 WHEEL EVENT FIRED BUT SCROLL DID NOT CHANGE!', {
-          deltaY: e.deltaY,
-          scrollTop: currentScrollTop,
-          target: e.target,
-          targetTag: (e.target as Element)?.tagName,
-          targetClasses: typeof (e.target as Element)?.className === 'string' 
-            ? (e.target as Element).className.substring(0, 50)
-            : ''
-        });
-      }
-      lastScrollTop = currentScrollTop;
-    }, 50);
-    
-    if (wheelEventCount % 10 === 0) {
-      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      console.log('🖱️ Wheel events:', wheelEventCount, 'Prevented:', preventedCount, 'ScrollTop:', currentScrollTop);
-    }
-  };
-  
-  // Listen on document and window
-  document.addEventListener('wheel', wheelHandler, { passive: true, capture: true });
-  window.addEventListener('wheel', wheelHandler, { passive: true, capture: true });
-  
-  console.log('👂 Monitoring wheel events...');
-  
-  return () => {
-    document.removeEventListener('wheel', wheelHandler, { capture: true });
-    window.removeEventListener('wheel', wheelHandler, { capture: true });
-  };
-};
+/** No-op: wheel logging was useful during scroll debugging but is too noisy in production. */
+export const monitorWheelEvents = (): (() => void) => () => {};
 
 // Check for event listeners that might prevent scroll
 export const checkEventListeners = () => {

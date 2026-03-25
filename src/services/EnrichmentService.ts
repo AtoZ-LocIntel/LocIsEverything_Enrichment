@@ -336,6 +336,7 @@ import {
 } from '../adapters/globalOilAndGas';
 import { getMaritimeBoundariesData } from '../adapters/maritimeBoundaries';
 import { getGlobalDataCentersOSMData } from '../adapters/osmGlobalDataCenters';
+import { getGlobalDesalinationPlantsOSMData } from '../adapters/osmGlobalDesalinationPlants';
 import { getHurricaneEvacuationRoutesData } from '../adapters/hurricaneEvacuationRoutes';
 import { getLACountyHydrologyData } from '../adapters/laCountyHydrology';
 import { getLACountyInfrastructureData } from '../adapters/laCountyInfrastructure';
@@ -2472,6 +2473,92 @@ export class EnrichmentService {
       };
     }
   }
+
+  private async getGlobalDesalinationPlantsOSM(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      const facilities = await getGlobalDesalinationPlantsOSMData(lat, lon, radiusMiles);
+
+      if (!facilities || facilities.length === 0) {
+        return {
+          global_desalination_plants_osm_count: 0,
+          global_desalination_plants_osm_summary: `No OpenStreetMap desalination / seawater water works found within ${radiusMiles} miles`,
+          global_desalination_plants_osm_all: [],
+          global_desalination_plants_osm_proximity_distance: radiusMiles,
+          global_desalination_plants_osm_man_made_desalination_count: 0,
+          global_desalination_plants_osm_industrial_seawater_count: 0,
+          global_desalination_plants_osm_man_made_seawater_count: 0,
+          global_desalination_plants_osm_industrial_desalination_count: 0,
+          global_desalination_plants_osm_plant_method_desalination_count: 0,
+          global_desalination_plants_osm_plant_source_seawater_count: 0,
+        };
+      }
+
+      const byProfile = {
+        desalination_plant: facilities.filter((f) => f.desal_profile === 'desalination_plant').length,
+        plant_method_desalination: facilities.filter((f) => f.desal_profile === 'plant_method_desalination').length,
+        man_made_desalination: facilities.filter((f) => f.desal_profile === 'man_made_desalination').length,
+        industrial_seawater: facilities.filter((f) => f.desal_profile === 'industrial_seawater').length,
+        man_made_seawater: facilities.filter((f) => f.desal_profile === 'man_made_seawater').length,
+        industrial_desalination: facilities.filter((f) => f.desal_profile === 'industrial_desalination').length,
+        unknown: facilities.filter((f) => f.desal_profile === 'unknown').length,
+      };
+      const withMethodDesal = facilities.filter((f) => f.tags['plant:method'] === 'desalination').length;
+      const withSourceSeawater = facilities.filter((f) => f.tags['plant:source'] === 'seawater').length;
+      const nearest = facilities[0]?.distance_miles;
+      const farthest = facilities[facilities.length - 1]?.distance_miles;
+
+      const summary =
+        `Found ${facilities.length} OSM feature${facilities.length !== 1 ? 's' : ''} matching desalination / seawater water-works tags within ${radiusMiles} miles. ` +
+        `By profile: man_made=desalination_plant=${byProfile.desalination_plant}, plant:method=desalination (other)=${byProfile.plant_method_desalination}, ` +
+        `man_made+desalination=${byProfile.man_made_desalination}, industrial+seawater=${byProfile.industrial_seawater}, ` +
+        `man_made+seawater=${byProfile.man_made_seawater}, industrial+desalination=${byProfile.industrial_desalination}` +
+        (byProfile.unknown ? `, other=${byProfile.unknown}` : '') +
+        `. Tags: plant:method=desalination → ${withMethodDesal}, plant:source=seawater → ${withSourceSeawater}. ` +
+        (nearest != null && farthest != null
+          ? `Distance range: ${nearest.toFixed(1)}–${farthest.toFixed(1)} mi.`
+          : '');
+
+      return {
+        global_desalination_plants_osm_count: facilities.length,
+        global_desalination_plants_osm_summary: summary.trim(),
+        global_desalination_plants_osm_proximity_distance: radiusMiles,
+        global_desalination_plants_osm_man_made_desalination_count: byProfile.man_made_desalination,
+        global_desalination_plants_osm_industrial_seawater_count: byProfile.industrial_seawater,
+        global_desalination_plants_osm_man_made_seawater_count: byProfile.man_made_seawater,
+        global_desalination_plants_osm_industrial_desalination_count: byProfile.industrial_desalination,
+        global_desalination_plants_osm_plant_method_desalination_count: withMethodDesal,
+        global_desalination_plants_osm_plant_source_seawater_count: withSourceSeawater,
+        global_desalination_plants_osm_nearest_miles: nearest ?? null,
+        global_desalination_plants_osm_farthest_miles: farthest ?? null,
+        global_desalination_plants_osm_all: facilities.map((f) => ({
+          osm_id: f.osm_id,
+          osm_type: f.osm_type,
+          name: f.name,
+          desal_profile: f.desal_profile,
+          latitude: f.latitude,
+          longitude: f.longitude,
+          distance_miles: f.distance_miles,
+          operator: f.operator,
+          geometry: f.geometry,
+          tags: f.tags,
+        })),
+      };
+    } catch (error) {
+      console.error('Error fetching OSM Global Desalination Plants:', error);
+      return {
+        global_desalination_plants_osm_count: 0,
+        global_desalination_plants_osm_summary: 'Error querying OpenStreetMap desalination plants',
+        global_desalination_plants_osm_all: [],
+        global_desalination_plants_osm_proximity_distance: radiusMiles,
+        global_desalination_plants_osm_man_made_desalination_count: 0,
+        global_desalination_plants_osm_industrial_seawater_count: 0,
+        global_desalination_plants_osm_man_made_seawater_count: 0,
+        global_desalination_plants_osm_industrial_desalination_count: 0,
+        global_desalination_plants_osm_plant_method_desalination_count: 0,
+        global_desalination_plants_osm_plant_source_seawater_count: 0,
+      };
+    }
+  }
   
   private async getPortWatchChokepoints(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
@@ -3665,6 +3752,9 @@ export class EnrichmentService {
 
       case 'global_data_centers_osm':
         return await this.getGlobalDataCentersOSM(lat, lon, radius);
+
+      case 'global_desalination_plants_osm':
+        return await this.getGlobalDesalinationPlantsOSM(lat, lon, radius);
       
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':

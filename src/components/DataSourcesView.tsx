@@ -500,462 +500,7 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://hazards.fema.gov/arcgis/rest/services/FIRMette/NFHLREST_FIRMette/MapServer/32"
-        }
-      ]
-    },
-    {
-      category: "The National Map",
-      sources: [
-        {
-          name: "2023 National Seismic Hazard Model",
-          description: "USGS Modified Mercalli Intensity polygons (point-in-polygon)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/2023_National_Seismic_Hazard_Model/FeatureServer/0"
         },
-        {
-          name: "Tornado Tracks 1950-2017",
-          description: "Historical tornado tracks (polyline) with proximity up to 50 miles",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Tornado_Tracks_1950_2017_1/FeatureServer/0"
-        },
-        {
-          name: "US National Grid (USNG)",
-          description: "US National Grid layers including USNG 6x8 Zones, 100000m, 10000m, 1000m, and 100m grids. Point-in-polygon and proximity queries up to 25 miles.",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/US_National_Grid_HFL_V/FeatureServer"
-        },
-        {
-          name: "US Historical Cultural Political Points",
-          description: "USGS GNIS Historical Cultural Political Points of Interest - proximity queries up to 50 miles",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Cultural_Political_Points_v/FeatureServer/0"
-        },
-        {
-          name: "US Historical Hydrographic Points",
-          description: "USGS GNIS Historical Hydrographic Points of Interest - proximity queries up to 50 miles",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Hydrographic_Points_v/FeatureServer/0"
-        },
-        {
-          name: "US Historical Physical Points",
-          description: "USGS GNIS Historical Physical Points of Interest - proximity queries up to 50 miles",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Physical_Points_v/FeatureServer/0"
-        },
-        {
-          name: "Hurricane Evacuation Routes",
-          description: "USGS Hurricane Evacuation Routes - proximity queries up to 100 miles",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/Hurricane_Evacuation_Routes_1/FeatureServer/0"
-        },
-        {
-          name: "USGS Governmental Unit Boundaries",
-          description: "USGS Governmental Unit Boundaries - 20 layers including Incorporated/Unincorporated Places, Minor Civil Divisions, Native American Areas, National Parks/Forests/Wilderness, US Fish & Wildlife Service, National Grasslands/Cemeteries, Military Reserves, NASA Facilities, Metropolitan Washington Airport, Tennessee Valley Authority, Bureau of Land Management, Congressional Districts, Counties, and States/Territories. Point-in-polygon and proximity queries up to 50 miles.",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/govunits/MapServer"
-        },
-        {
-          name: "TNM Structures",
-          description: "USGS The National Map Structures - Schools, Technical/Trade Schools, Colleges/Universities, Fire Stations/EMS Stations, Law Enforcement/Police Stations, Prisons/Correctional Facilities, State Capitols, Hospitals/Medical Centers, Ambulance Services, Cemeteries, Post Offices, Campgrounds, Trailheads, and Visitor/Information Centers. Proximity queries up to 50 miles.",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/structures/MapServer"
-        },
-        {
-          name: "USGS Trails",
-          description: "USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)",
-          coverage: "United States",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://partnerships.nationalmap.gov/arcgis/rest/services/USGSTrails/MapServer/0"
-        },
-        {
-          name: "USGS Transportation - Airport",
-          description: "USGS The National Map Transportation - Airports (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/1"
-        },
-        {
-          name: "USGS Transportation - Airport Runway",
-          description: "USGS The National Map Transportation - Airport Runways (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/2"
-        },
-        {
-          name: "USGS Transportation - Interstate",
-          description: "USGS The National Map Transportation - Interstate Highways (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/3"
-        },
-        {
-          name: "USGS Transportation - US Route",
-          description: "USGS The National Map Transportation - US Routes (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/4"
-        },
-        {
-          name: "USGS Transportation - State Route",
-          description: "USGS The National Map Transportation - State Routes (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/5"
-        },
-        {
-          name: "USGS Transportation - US Railroad",
-          description: "USGS The National Map Transportation - US Railroads (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/6"
-        },
-        {
-          name: "USGS Transportation - Local Road",
-          description: "USGS The National Map Transportation - Local Roads (proximity queries up to 5 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/7"
-        },
-        {
-          name: "USGS Transportation - Trails",
-          description: "USGS The National Map Transportation - Trails (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/8"
-        },
-        {
-          name: "USGS GeoNames - Administrative",
-          description: "USGS The National Map GeoNames - Administrative features (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/0"
-        },
-        {
-          name: "USGS GeoNames - Transportation",
-          description: "USGS The National Map GeoNames - Transportation features (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/1"
-        },
-        {
-          name: "USGS GeoNames - Landform",
-          description: "USGS The National Map GeoNames - Landform features (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/2"
-        },
-        {
-          name: "USGS GeoNames - Hydro Lines",
-          description: "USGS The National Map GeoNames - Hydrographic line features (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/3"
-        },
-        {
-          name: "USGS GeoNames - Hydro Points",
-          description: "USGS The National Map GeoNames - Hydrographic point features (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/4"
-        },
-        {
-          name: "USGS GeoNames - Antarctica",
-          description: "USGS The National Map GeoNames - Antarctica features (proximity queries up to 25 miles)",
-          coverage: "Antarctica",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/5"
-        },
-        {
-          name: "USGS GeoNames - Historical",
-          description: "USGS The National Map GeoNames - Historical features (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6"
-        },
-        {
-          name: "USGS Selectable Polygons - State or Territory",
-          description: "USGS The National Map Selectable Polygons - State or Territory boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/1"
-        },
-        {
-          name: "USGS Selectable Polygons - Congressional District",
-          description: "USGS The National Map Selectable Polygons - Congressional Districts (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/2"
-        },
-        {
-          name: "USGS Selectable Polygons - County or Equivalent",
-          description: "USGS The National Map Selectable Polygons - Counties or Equivalents (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/3"
-        },
-        {
-          name: "USGS Selectable Polygons - Incorporated Place",
-          description: "USGS The National Map Selectable Polygons - Incorporated Places (Cities and Towns) (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/4"
-        },
-        {
-          name: "USGS Selectable Polygons - Unincorporated Place",
-          description: "USGS The National Map Selectable Polygons - Unincorporated Places (Cities and Towns) (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/5"
-        },
-        {
-          name: "USGS Selectable Polygons - 1x1 Degree Index",
-          description: "USGS The National Map Selectable Polygons - 1x1 Degree Map Index (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/7"
-        },
-        {
-          name: "USGS Selectable Polygons - 1:100K Index",
-          description: "USGS The National Map Selectable Polygons - 1:100K Map Index (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/8"
-        },
-        {
-          name: "USGS Selectable Polygons - 1:63K Index (AK)",
-          description: "USGS The National Map Selectable Polygons - 1:63K Map Index for Alaska (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States (Alaska)",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/9"
-        },
-        {
-          name: "USGS Selectable Polygons - 1:24K Index",
-          description: "USGS The National Map Selectable Polygons - 1:24K Map Index (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/10"
-        },
-        {
-          name: "USGS Selectable Polygons - Hydrologic Unit Region",
-          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Regions (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/12"
-        },
-        {
-          name: "USGS Selectable Polygons - Hydrologic Unit Subregion",
-          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Subregions (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/13"
-        },
-        {
-          name: "USGS Selectable Polygons - Hydrologic Unit Subbasin",
-          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Subbasins (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/14"
-        },
-        {
-          name: "USGS WBD - WBDLine",
-          description: "USGS Watershed Boundary Dataset - WBDLine boundaries (proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/0"
-        },
-        {
-          name: "USGS WBD - 2-digit HU (Region)",
-          description: "USGS Watershed Boundary Dataset - 2-digit Hydrologic Unit (Region) boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/1"
-        },
-        {
-          name: "USGS WBD - 4-digit HU (Subregion)",
-          description: "USGS Watershed Boundary Dataset - 4-digit Hydrologic Unit (Subregion) boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/2"
-        },
-        {
-          name: "USGS WBD - 6-digit HU (Basin)",
-          description: "USGS Watershed Boundary Dataset - 6-digit Hydrologic Unit (Basin) boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/3"
-        },
-        {
-          name: "USGS WBD - 8-digit HU (Subbasin)",
-          description: "USGS Watershed Boundary Dataset - 8-digit Hydrologic Unit (Subbasin) boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/4"
-        },
-        {
-          name: "USGS WBD - 10-digit HU (Watershed)",
-          description: "USGS Watershed Boundary Dataset - 10-digit Hydrologic Unit (Watershed) boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/5"
-        },
-        {
-          name: "USGS WBD - 12-digit HU (Subwatershed)",
-          description: "USGS Watershed Boundary Dataset - 12-digit Hydrologic Unit (Subwatershed) boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6"
-        },
-        {
-          name: "USGS WBD - 14-digit HU",
-          description: "USGS Watershed Boundary Dataset - 14-digit Hydrologic Unit boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/7"
-        },
-        {
-          name: "USGS WBD - 16-digit HU",
-          description: "USGS Watershed Boundary Dataset - 16-digit Hydrologic Unit boundaries (point-in-polygon and proximity queries up to 25 miles)",
-          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/8"
-        },
-        {
-          name: "USGS Contours - 100 Foot",
-          description: "USGS The National Map Elevation Contours - 100-foot contours generated from 1 arc-second data (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/0"
-        },
-        {
-          name: "USGS Contours - 100 Foot Lines",
-          description: "USGS The National Map Elevation Contours - 100-foot contour lines generated from 1 arc-second data (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/1"
-        },
-        {
-          name: "USGS Contours - 50 Foot",
-          description: "USGS The National Map Elevation Contours - 50-foot contours generated from 1/3-arc-second data (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/2"
-        },
-        {
-          name: "USGS Contours - 50 Foot Lines",
-          description: "USGS The National Map Elevation Contours - 50-foot contour lines generated from 1/3-arc-second data (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/3"
-        },
-        {
-          name: "USGS Contours - Large Scale",
-          description: "USGS The National Map Elevation Contours - Large-scale contours created for 7.5' 1:24,000-scale US Topo digital map series, derived from 1/3 arc-second or better resolution data (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/4"
-        },
-        {
-          name: "USGS Contours - Large Scale Lines",
-          description: "USGS The National Map Elevation Contours - Large-scale contour lines created for 7.5' 1:24,000-scale US Topo digital map series, derived from 1/3 arc-second or better resolution data (proximity queries up to 25 miles)",
-          coverage: "United States",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/5"
-        }
-      ]
-    },
-    {
-      category: "District of Columbia Open Data",
-      sources: [
-        {
-          name: "DC Urban Tree Canopy",
-          description: "DC Urban Tree Canopy layers - 22 layers including Urban Tree Canopy by Advisory Neighborhood Commission, Census Block, Census Block Group, DC Boundary, DC Owned Property, Generalized Ownership Parcel, Ownership Lot, Right of Way, Single Member District, Ward (2020 and 2015), DC Trees, UFA Street Trees, and Arborists Zone. Point-in-polygon and proximity queries up to 10 miles.",
-          coverage: "District of Columbia",
-          accuracy: "Very High",
-          cost: "Free",
-          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Urban_Tree_Canopy/FeatureServer"
-        },
-        {
-          name: "DC Bike Trails",
-          description: "DC Bike Trails layers - 8 layers including Trail Mile Marker, Planned Multi Use Trails, Bicycle Lanes, Bike Trails, Capital Bike Share Locations, Signed Bike Routes, NPS Trails, and Public Bike Racks. Proximity queries up to 5 miles. Mix of point and polyline features.",
-          coverage: "District of Columbia",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Transportation_Bikes_Trails_WebMercator/MapServer"
-        },
-        {
-          name: "DC Property and Land",
-          description: "DC Property and Land layers - 43 layers including Air Rights Lots, Appropriations, Assessment Neighborhoods, Military Bases, Parcel Lots, Record Lots, Tax Lots, Reservations, Square Boundaries, Owner Polygons, District Land, Affordable Housing, Real Estate Portfolio, District Structures, Vacant and Blighted Buildings, and many more. Point layers and line layers support proximity queries up to 5 miles. Polygon layers support point-in-polygon and proximity queries up to 1 mile.",
-          coverage: "District of Columbia",
-          accuracy: "High",
-          cost: "Free",
-          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Property_and_Land_WebMercator/FeatureServer"
-        }
-      ]
-    },
-    {
-      category: "Natural Hazards",
-      sources: [
         {
           name: "National Risk Index (NRI) Annualized Frequency Hurricane - County",
           description: "FEMA National Risk Index - Annualized frequency of hurricane events (County). Point-in-polygon + proximity up to 25 miles.",
@@ -1851,6 +1396,456 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://waterwatch.usgs.gov/"
+        }
+      ]
+    },
+    {
+      category: "The National Map",
+      sources: [
+        {
+          name: "2023 National Seismic Hazard Model",
+          description: "USGS Modified Mercalli Intensity polygons (point-in-polygon)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/2023_National_Seismic_Hazard_Model/FeatureServer/0"
+        },
+        {
+          name: "Tornado Tracks 1950-2017",
+          description: "Historical tornado tracks (polyline) with proximity up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Tornado_Tracks_1950_2017_1/FeatureServer/0"
+        },
+        {
+          name: "US National Grid (USNG)",
+          description: "US National Grid layers including USNG 6x8 Zones, 100000m, 10000m, 1000m, and 100m grids. Point-in-polygon and proximity queries up to 25 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/US_National_Grid_HFL_V/FeatureServer"
+        },
+        {
+          name: "US Historical Cultural Political Points",
+          description: "USGS GNIS Historical Cultural Political Points of Interest - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Cultural_Political_Points_v/FeatureServer/0"
+        },
+        {
+          name: "US Historical Hydrographic Points",
+          description: "USGS GNIS Historical Hydrographic Points of Interest - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Hydrographic_Points_v/FeatureServer/0"
+        },
+        {
+          name: "US Historical Physical Points",
+          description: "USGS GNIS Historical Physical Points of Interest - proximity queries up to 50 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/GNIS_Historical_Physical_Points_v/FeatureServer/0"
+        },
+        {
+          name: "Hurricane Evacuation Routes",
+          description: "USGS Hurricane Evacuation Routes - proximity queries up to 100 miles",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/Hurricane_Evacuation_Routes_1/FeatureServer/0"
+        },
+        {
+          name: "USGS Governmental Unit Boundaries",
+          description: "USGS Governmental Unit Boundaries - 20 layers including Incorporated/Unincorporated Places, Minor Civil Divisions, Native American Areas, National Parks/Forests/Wilderness, US Fish & Wildlife Service, National Grasslands/Cemeteries, Military Reserves, NASA Facilities, Metropolitan Washington Airport, Tennessee Valley Authority, Bureau of Land Management, Congressional Districts, Counties, and States/Territories. Point-in-polygon and proximity queries up to 50 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/govunits/MapServer"
+        },
+        {
+          name: "TNM Structures",
+          description: "USGS The National Map Structures - Schools, Technical/Trade Schools, Colleges/Universities, Fire Stations/EMS Stations, Law Enforcement/Police Stations, Prisons/Correctional Facilities, State Capitols, Hospitals/Medical Centers, Ambulance Services, Cemeteries, Post Offices, Campgrounds, Trailheads, and Visitor/Information Centers. Proximity queries up to 50 miles.",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/structures/MapServer"
+        },
+        {
+          name: "USGS Trails",
+          description: "USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://partnerships.nationalmap.gov/arcgis/rest/services/USGSTrails/MapServer/0"
+        },
+        {
+          name: "USGS Transportation - Airport",
+          description: "USGS The National Map Transportation - Airports (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/1"
+        },
+        {
+          name: "USGS Transportation - Airport Runway",
+          description: "USGS The National Map Transportation - Airport Runways (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/2"
+        },
+        {
+          name: "USGS Transportation - Interstate",
+          description: "USGS The National Map Transportation - Interstate Highways (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/3"
+        },
+        {
+          name: "USGS Transportation - US Route",
+          description: "USGS The National Map Transportation - US Routes (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/4"
+        },
+        {
+          name: "USGS Transportation - State Route",
+          description: "USGS The National Map Transportation - State Routes (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/5"
+        },
+        {
+          name: "USGS Transportation - US Railroad",
+          description: "USGS The National Map Transportation - US Railroads (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/6"
+        },
+        {
+          name: "USGS Transportation - Local Road",
+          description: "USGS The National Map Transportation - Local Roads (proximity queries up to 5 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/7"
+        },
+        {
+          name: "USGS Transportation - Trails",
+          description: "USGS The National Map Transportation - Trails (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/transportation/MapServer/8"
+        },
+        {
+          name: "USGS GeoNames - Administrative",
+          description: "USGS The National Map GeoNames - Administrative features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/0"
+        },
+        {
+          name: "USGS GeoNames - Transportation",
+          description: "USGS The National Map GeoNames - Transportation features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/1"
+        },
+        {
+          name: "USGS GeoNames - Landform",
+          description: "USGS The National Map GeoNames - Landform features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/2"
+        },
+        {
+          name: "USGS GeoNames - Hydro Lines",
+          description: "USGS The National Map GeoNames - Hydrographic line features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/3"
+        },
+        {
+          name: "USGS GeoNames - Hydro Points",
+          description: "USGS The National Map GeoNames - Hydrographic point features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/4"
+        },
+        {
+          name: "USGS GeoNames - Antarctica",
+          description: "USGS The National Map GeoNames - Antarctica features (proximity queries up to 25 miles)",
+          coverage: "Antarctica",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/5"
+        },
+        {
+          name: "USGS GeoNames - Historical",
+          description: "USGS The National Map GeoNames - Historical features (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/geonames/MapServer/6"
+        },
+        {
+          name: "USGS Selectable Polygons - State or Territory",
+          description: "USGS The National Map Selectable Polygons - State or Territory boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/1"
+        },
+        {
+          name: "USGS Selectable Polygons - Congressional District",
+          description: "USGS The National Map Selectable Polygons - Congressional Districts (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/2"
+        },
+        {
+          name: "USGS Selectable Polygons - County or Equivalent",
+          description: "USGS The National Map Selectable Polygons - Counties or Equivalents (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/3"
+        },
+        {
+          name: "USGS Selectable Polygons - Incorporated Place",
+          description: "USGS The National Map Selectable Polygons - Incorporated Places (Cities and Towns) (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/4"
+        },
+        {
+          name: "USGS Selectable Polygons - Unincorporated Place",
+          description: "USGS The National Map Selectable Polygons - Unincorporated Places (Cities and Towns) (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/5"
+        },
+        {
+          name: "USGS Selectable Polygons - 1x1 Degree Index",
+          description: "USGS The National Map Selectable Polygons - 1x1 Degree Map Index (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/7"
+        },
+        {
+          name: "USGS Selectable Polygons - 1:100K Index",
+          description: "USGS The National Map Selectable Polygons - 1:100K Map Index (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/8"
+        },
+        {
+          name: "USGS Selectable Polygons - 1:63K Index (AK)",
+          description: "USGS The National Map Selectable Polygons - 1:63K Map Index for Alaska (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States (Alaska)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/9"
+        },
+        {
+          name: "USGS Selectable Polygons - 1:24K Index",
+          description: "USGS The National Map Selectable Polygons - 1:24K Map Index (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/10"
+        },
+        {
+          name: "USGS Selectable Polygons - Hydrologic Unit Region",
+          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Regions (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/12"
+        },
+        {
+          name: "USGS Selectable Polygons - Hydrologic Unit Subregion",
+          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Subregions (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/13"
+        },
+        {
+          name: "USGS Selectable Polygons - Hydrologic Unit Subbasin",
+          description: "USGS The National Map Selectable Polygons - Hydrologic Unit Subbasins (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/14"
+        },
+        {
+          name: "USGS WBD - WBDLine",
+          description: "USGS Watershed Boundary Dataset - WBDLine boundaries (proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/0"
+        },
+        {
+          name: "USGS WBD - 2-digit HU (Region)",
+          description: "USGS Watershed Boundary Dataset - 2-digit Hydrologic Unit (Region) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/1"
+        },
+        {
+          name: "USGS WBD - 4-digit HU (Subregion)",
+          description: "USGS Watershed Boundary Dataset - 4-digit Hydrologic Unit (Subregion) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/2"
+        },
+        {
+          name: "USGS WBD - 6-digit HU (Basin)",
+          description: "USGS Watershed Boundary Dataset - 6-digit Hydrologic Unit (Basin) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/3"
+        },
+        {
+          name: "USGS WBD - 8-digit HU (Subbasin)",
+          description: "USGS Watershed Boundary Dataset - 8-digit Hydrologic Unit (Subbasin) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/4"
+        },
+        {
+          name: "USGS WBD - 10-digit HU (Watershed)",
+          description: "USGS Watershed Boundary Dataset - 10-digit Hydrologic Unit (Watershed) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/5"
+        },
+        {
+          name: "USGS WBD - 12-digit HU (Subwatershed)",
+          description: "USGS Watershed Boundary Dataset - 12-digit Hydrologic Unit (Subwatershed) boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/6"
+        },
+        {
+          name: "USGS WBD - 14-digit HU",
+          description: "USGS Watershed Boundary Dataset - 14-digit Hydrologic Unit boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/7"
+        },
+        {
+          name: "USGS WBD - 16-digit HU",
+          description: "USGS Watershed Boundary Dataset - 16-digit Hydrologic Unit boundaries (point-in-polygon and proximity queries up to 25 miles)",
+          coverage: "United States, Puerto Rico, U.S. Virgin Islands",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://hydrowfs.nationalmap.gov/arcgis/rest/services/wbd/MapServer/8"
+        },
+        {
+          name: "USGS Contours - 100 Foot",
+          description: "USGS The National Map Elevation Contours - 100-foot contours generated from 1 arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/0"
+        },
+        {
+          name: "USGS Contours - 100 Foot Lines",
+          description: "USGS The National Map Elevation Contours - 100-foot contour lines generated from 1 arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/1"
+        },
+        {
+          name: "USGS Contours - 50 Foot",
+          description: "USGS The National Map Elevation Contours - 50-foot contours generated from 1/3-arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/2"
+        },
+        {
+          name: "USGS Contours - 50 Foot Lines",
+          description: "USGS The National Map Elevation Contours - 50-foot contour lines generated from 1/3-arc-second data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/3"
+        },
+        {
+          name: "USGS Contours - Large Scale",
+          description: "USGS The National Map Elevation Contours - Large-scale contours created for 7.5' 1:24,000-scale US Topo digital map series, derived from 1/3 arc-second or better resolution data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/4"
+        },
+        {
+          name: "USGS Contours - Large Scale Lines",
+          description: "USGS The National Map Elevation Contours - Large-scale contour lines created for 7.5' 1:24,000-scale US Topo digital map series, derived from 1/3 arc-second or better resolution data (proximity queries up to 25 miles)",
+          coverage: "United States",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/contours/MapServer/5"
+        }
+      ]
+    },
+    {
+      category: "District of Columbia Open Data",
+      sources: [
+        {
+          name: "DC Urban Tree Canopy",
+          description: "DC Urban Tree Canopy layers - 22 layers including Urban Tree Canopy by Advisory Neighborhood Commission, Census Block, Census Block Group, DC Boundary, DC Owned Property, Generalized Ownership Parcel, Ownership Lot, Right of Way, Single Member District, Ward (2020 and 2015), DC Trees, UFA Street Trees, and Arborists Zone. Point-in-polygon and proximity queries up to 10 miles.",
+          coverage: "District of Columbia",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Urban_Tree_Canopy/FeatureServer"
+        },
+        {
+          name: "DC Bike Trails",
+          description: "DC Bike Trails layers - 8 layers including Trail Mile Marker, Planned Multi Use Trails, Bicycle Lanes, Bike Trails, Capital Bike Share Locations, Signed Bike Routes, NPS Trails, and Public Bike Racks. Proximity queries up to 5 miles. Mix of point and polyline features.",
+          coverage: "District of Columbia",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Transportation_Bikes_Trails_WebMercator/MapServer"
+        },
+        {
+          name: "DC Property and Land",
+          description: "DC Property and Land layers - 43 layers including Air Rights Lots, Appropriations, Assessment Neighborhoods, Military Bases, Parcel Lots, Record Lots, Tax Lots, Reservations, Square Boundaries, Owner Polygons, District Land, Affordable Housing, Real Estate Portfolio, District Structures, Vacant and Blighted Buildings, and many more. Point layers and line layers support proximity queries up to 5 miles. Polygon layers support point-in-polygon and proximity queries up to 1 mile.",
+          coverage: "District of Columbia",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://maps2.dcgis.dc.gov/dcgis/rest/services/DCGIS_DATA/Property_and_Land_WebMercator/FeatureServer"
         }
       ]
     },
@@ -10418,6 +10413,14 @@ export const getDataSources = (): DataSourceCategory[] => {
         {
           name: "OpenStreetMap — Global Data Centers (Overpass API)",
           description: "Global Risk layer: data center facilities from OpenStreetMap using the public Overpass API. Queries features tagged man_made=data_center, building=data_center, or telecom=data_center around the search location. Coverage and completeness vary by region (stronger in the US and EU). Proximity is capped at 250 miles for reliability with the public Overpass service.",
+          coverage: "Global (OSM coverage)",
+          accuracy: "Variable (community map)",
+          cost: "Free",
+          url: "https://overpass-api.de/"
+        },
+        {
+          name: "OpenStreetMap — Global Desalination Plants (Overpass API)",
+          description: "Global Risk layer: desalination and seawater water works from OpenStreetMap via Overpass — one interpreter request per search with (around:) on each tag clause (same pattern as other OSM layers). Tags: man_made=water_works+plant:method=desalination, industrial=water_works+plant:source=seawater, man_made=desalination_plant, plant:method=desalination. Client retries 429/504 with backoff. Proximity capped at 250 miles.",
           coverage: "Global (OSM coverage)",
           accuracy: "Variable (community map)",
           cost: "Free",

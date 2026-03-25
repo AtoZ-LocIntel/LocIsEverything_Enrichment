@@ -33,62 +33,57 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 /**
- * Retry wrapper for API calls that may fail with 504 Gateway Timeout
- * Automatically retries 504 errors with exponential backoff
+ * Retry wrapper for Overpass: 504 (timeout), 429 (rate limit), and transient network errors.
  */
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
-  maxRetries: number = 3,
+  maxRetries: number = 5,
   initialDelay: number = 1000
 ): Promise<Response> {
   let lastError: Error | null = null;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch(url, options);
-      
-      // If we get a 504 Gateway Timeout, retry (unless this is the last attempt)
-      if (response.status === 504) {
+
+      if (response.status === 504 || response.status === 429) {
         if (attempt < maxRetries - 1) {
-          const delay = initialDelay * Math.pow(2, attempt); // Exponential backoff: 1s, 2s, 4s
-          console.log(`⚠️ Overpass API returned 504 (Gateway Timeout). Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue; // Retry
-        } else {
-          // Last attempt failed with 504
-          throw new Error(`Overpass API error: 504 Gateway Timeout (after ${maxRetries} attempts)`);
+          const base = response.status === 429 ? 2000 : initialDelay;
+          const delay = base * Math.pow(2, attempt);
+          const why = response.status === 429 ? 'Too Many Requests (rate limit)' : 'Gateway Timeout';
+          console.log(
+            `⚠️ Overpass API returned ${response.status} (${why}). Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
         }
+        throw new Error(`Overpass API error: ${response.status} ${response.statusText} (after ${maxRetries} attempts)`);
       }
-      
-      // For successful responses, return immediately
+
       if (response.ok) {
         return response;
       }
-      
-      // For other HTTP errors, throw immediately (don't retry non-504 errors)
+
       throw new Error(`Overpass API error: ${response.status} ${response.statusText}`);
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
-      // If this is the last attempt or it's not a 504/network error, throw
+
       if (attempt === maxRetries - 1) {
         throw lastError;
       }
-      
-      // Only retry for network errors (not HTTP errors except 504, which is handled above)
+
       const errorMessage = error instanceof Error ? error.message : String(error);
       if (error instanceof TypeError || errorMessage.includes('fetch')) {
         const delay = initialDelay * Math.pow(2, attempt);
         console.log(`⚠️ Overpass API network error. Retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       } else {
-        // Don't retry other errors
         throw lastError;
       }
     }
   }
-  
+
   throw lastError || new Error('Overpass API request failed after retries');
 }
 
@@ -115,7 +110,8 @@ export async function fetchOverpassInterpreter(query: string): Promise<OverpassE
   }
 }
 
-function buildQueryWithInlineAround(
+/** Build Overpass QL: each `nwr[...];` line gets its own `(around:)` — safe for one or many statements. */
+export function buildQueryWithInlineAround(
   layerFilters: string,
   radiusMeters: number,
   lat: number,
