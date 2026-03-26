@@ -41,6 +41,10 @@ import { getNHUndergroundStorageTanksData } from '../adapters/nhUndergroundStora
 import { getNHWaterWellsData } from '../adapters/nhWaterWells';
 import { getNHPublicWaterSupplyWellsData } from '../adapters/nhPublicWaterSupplyWells';
 import { getNHRemediationSitesData } from '../adapters/nhRemediationSites';
+import {
+  getNHDesWetlandPermitApplicationsData,
+  buildNHDesWetlandPermitApplicationsSummary,
+} from '../adapters/nhDesWetlandPermitApplications';
 import { getNHAutomobileSalvageYardsData } from '../adapters/nhAutomobileSalvageYards';
 import { getNHSolidWasteFacilitiesData } from '../adapters/nhSolidWasteFacilities';
 import { getNHSourceWaterProtectionAreaData } from '../adapters/nhSourceWaterProtectionAreas';
@@ -4030,6 +4034,10 @@ export class EnrichmentService {
       // NH National Wetland Inventory (NWI) Plus (NH DES) - Point-in-polygon and proximity queries (polygon dataset)
       case 'nh_nwi_plus':
         return await this.getNHNWIPlus(lat, lon, radius);
+      
+      // NHDES Wetlands Permit Applications and Notifications — point proximity (NH GRANIT / DES MapServer)
+      case 'nh_des_wetland_permit_applications':
+        return await this.getNHDesWetlandPermitApplications(lat, lon, radius);
       
       // MA DEP Wetlands (MassGIS) - Point-in-polygon and proximity query (polygon dataset)
       case 'ma_dep_wetlands':
@@ -13625,6 +13633,62 @@ export class EnrichmentService {
         nh_remediation_sites_count: 0,
         nh_remediation_sites_all: [],
         nh_remediation_sites_error: 'Error fetching NH Remediation Sites data'
+      };
+    }
+  }
+
+  private async getNHDesWetlandPermitApplications(
+    lat: number,
+    lon: number,
+    radius: number
+  ): Promise<Record<string, any>> {
+    try {
+      console.log(
+        `🌿 Fetching NHDES Wetlands Permit Applications and Notifications for [${lat}, ${lon}] with radius ${radius} miles`
+      );
+
+      const radiusMiles = radius || 5;
+      const permits = await getNHDesWetlandPermitApplicationsData(lat, lon, radiusMiles);
+
+      const result: Record<string, any> = {};
+
+      if (permits && permits.length > 0) {
+        result.nh_des_wetland_permit_applications_count = permits.length;
+        result.nh_des_wetland_permit_applications_all = permits.map((p) => {
+          const row = {
+            ...p.attributes,
+            lat: p.latitude,
+            lon: p.longitude,
+            distance_miles: p.distance_miles,
+          };
+          return row;
+        });
+        const flatForSummary = result.nh_des_wetland_permit_applications_all as Record<string, any>[];
+        result.nh_des_wetland_permit_applications_summary =
+          buildNHDesWetlandPermitApplicationsSummary(flatForSummary, radiusMiles);
+      } else {
+        result.nh_des_wetland_permit_applications_count = 0;
+        result.nh_des_wetland_permit_applications_all = [];
+        result.nh_des_wetland_permit_applications_summary =
+          buildNHDesWetlandPermitApplicationsSummary([], radiusMiles);
+      }
+
+      result.nh_des_wetland_permit_applications_search_radius_miles = radiusMiles;
+
+      console.log(`✅ NHDES Wetland Permit Applications processed:`, {
+        count: result.nh_des_wetland_permit_applications_count || 0,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NHDES Wetland Permit Applications:', error);
+      const radiusMiles = radius || 5;
+      return {
+        nh_des_wetland_permit_applications_count: 0,
+        nh_des_wetland_permit_applications_all: [],
+        nh_des_wetland_permit_applications_summary: 'Error fetching NHDES Wetland Permit Applications data',
+        nh_des_wetland_permit_applications_search_radius_miles: radiusMiles,
+        nh_des_wetland_permit_applications_error: 'Error fetching NHDES Wetland Permit Applications data',
       };
     }
   }

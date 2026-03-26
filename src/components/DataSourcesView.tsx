@@ -7553,6 +7553,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://nhgeodata.unh.edu/hosting/rest/services/Hosted/GG_NWI_Plus/FeatureServer/0"
+        },
+        {
+          name: "NHDES Wetlands Permit Applications and Notifications",
+          description: "New Hampshire Department of Environmental Services wetland permit application and notification points from the NHDES Wetland Permits by Year service - proximity queries up to 50 miles",
+          coverage: "New Hampshire",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.des.nh.gov/server/rest/services/Projects_LRM/NHDES_Wetland_Permits_by_Year/MapServer/8"
         }
       ]
     },

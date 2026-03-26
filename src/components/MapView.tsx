@@ -5,8 +5,12 @@ import 'leaflet/dist/leaflet.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
+import {
+  exportMapElementAsImage,
+  exportMapElementAsPdf,
+} from '../utils/mapViewExport';
 import { poiConfigManager } from '../lib/poiConfig';
-import { Copy, Info, RotateCcw, Ruler, X } from 'lucide-react';
+import { Copy, FileImage, FileText, ImageDown, Info, RotateCcw, Ruler, X } from 'lucide-react';
 
 interface MapViewProps {
   results: EnrichmentResult[];
@@ -5750,6 +5754,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'nh_water_wells_all' || // Skip water wells array (handled separately for map drawing)
     key === 'nh_public_water_supply_wells_all' || // Skip public water supply wells array (handled separately for map drawing)
     key === 'nh_remediation_sites_all' || // Skip remediation sites array (handled separately for map drawing)
+    key === 'nh_des_wetland_permit_applications_all' || // Skip NHDES wetland permit points (handled separately for map drawing)
     key === 'nh_automobile_salvage_yards_all' || // Skip automobile salvage yards array (handled separately for map drawing)
     key === 'nh_solid_waste_facilities_all' || // Skip solid waste facilities array (handled separately for map drawing)
     key === 'nh_source_water_protection_area_geometry' || // Skip geometry field (handled separately for map drawing)
@@ -6914,6 +6919,7 @@ const MapView: React.FC<MapViewProps> = ({
   const [contextMenu, setContextMenu] = useState<{ lat: number; lon: number; x: number; y: number } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const pendingRightClickMeasureRef = useRef<[number, number] | null>(null);
+  const [mapExportBusy, setMapExportBusy] = useState(false);
   const clearMeasure = () => {
     measureLayerRef.current?.clearLayers();
     measurePointsRef.current = [];
@@ -7353,6 +7359,8 @@ const MapView: React.FC<MapViewProps> = ({
             style: baseBasemapConfig.styleUrl,
             attribution: baseBasemapConfig.attribution,
             interactive: false,
+            // Required so map snapshot / html2canvas can read the WebGL canvas for PNG/PDF export
+            preserveDrawingBuffer: true,
           });
           // Mark basemap with key for comparison
           (basemapLayer as any)._basemapKey = selectedBaseBasemap;
@@ -7495,6 +7503,7 @@ const MapView: React.FC<MapViewProps> = ({
                     style: transformedStyle, // Pass the transformed style object, not the URL
                     attribution: thematicConfig.attribution,
                     interactive: false,
+                    preserveDrawingBuffer: true,
                   });
                   
                   overlayLayer.addTo(map);
@@ -7848,6 +7857,36 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, [isInitialized, isMobile, measureToolMode]);
 
+  const runMapViewExport = async (format: 'png' | 'jpeg' | 'pdf') => {
+    setContextMenu(null);
+    setMapExportBusy(true);
+    try {
+      await new Promise((r) => setTimeout(r, 80));
+      const el = mapRef.current;
+      if (!el) {
+        alert('Map is not ready.');
+        return;
+      }
+      const leafletMap = mapInstanceRef.current;
+      if (format === 'pdf') {
+        await exportMapElementAsPdf(el, leafletMap);
+      } else {
+        await exportMapElementAsImage(el, format, leafletMap);
+      }
+    } catch (err: unknown) {
+      console.error('Map export failed:', err);
+      const name = err && typeof err === 'object' && 'name' in err ? String((err as { name: string }).name) : '';
+      if (name === 'NotAllowedError') {
+        alert('Export was cancelled or permission was denied. When prompted, allow sharing this tab to capture the map.');
+      } else {
+        alert(
+          'Could not export the map. Use Chrome or Edge for best results (tab capture). If the browser blocked sharing, try again and allow this tab.'
+        );
+      }
+    } finally {
+      setMapExportBusy(false);
+    }
+  };
 
   // Measure tool: attach click handlers when mode is active (desktop only)
   useEffect(() => {
@@ -9309,6 +9348,7 @@ const MapView: React.FC<MapViewProps> = ({
           style: finalBaseConfig.styleUrl,
           attribution: finalBaseConfig.attribution,
           interactive: false,
+          preserveDrawingBuffer: true,
         });
         // Store basemap key for comparison
         (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
@@ -9468,6 +9508,7 @@ const MapView: React.FC<MapViewProps> = ({
                   style: transformedStyle, // Pass the transformed style object, not the URL
                   attribution: thematicConfig.attribution,
                   interactive: false,
+                  preserveDrawingBuffer: true,
                 });
                 
                 newOverlayLayer.addTo(map);
@@ -11315,6 +11356,106 @@ const MapView: React.FC<MapViewProps> = ({
             };
           }
           legendAccumulator['nh_remediation_sites'].count += remediationCount;
+        }
+      }
+
+      // NHDES Wetlands Permit Applications and Notifications (points)
+      if (
+        enrichments.nh_des_wetland_permit_applications_all &&
+        Array.isArray(enrichments.nh_des_wetland_permit_applications_all)
+      ) {
+        let wetlandPermitCount = 0;
+        enrichments.nh_des_wetland_permit_applications_all.forEach((rec: any) => {
+          if (rec.lat && rec.lon) {
+            try {
+              wetlandPermitCount++;
+              const pLat = rec.lat;
+              const pLon = rec.lon;
+              const oid =
+                rec.OBJECTID ??
+                rec.ObjectId ??
+                rec.objectid ??
+                rec.FID ??
+                rec.fid ??
+                rec.id ??
+                rec.ID ??
+                '';
+              const title =
+                rec.PERMIT_NAME ??
+                rec.Permit_Name ??
+                rec.APPLICATION_NAME ??
+                rec.Application_Name ??
+                rec.PROJECT_NAME ??
+                rec.Project_Name ??
+                rec.SITE_NAME ??
+                rec.site_name ??
+                '';
+              const town =
+                rec.MUNICIPALITY ??
+                rec.Municipality ??
+                rec.TOWN ??
+                rec.Town ??
+                rec.CITY ??
+                rec.City ??
+                '';
+
+              const icon = createPOIIcon('🌿', '#059669');
+
+              const marker = L.marker([pLat, pLon], { icon });
+
+              let popupContent = `
+                <div style="min-width: 250px; max-width: 400px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    🌿 ${title || (oid ? `ID ${String(oid)}` : 'Wetland permit / notification')}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                    ${oid ? `<div><strong>Object ID:</strong> ${String(oid)}</div>` : ''}
+                    ${town ? `<div><strong>Location:</strong> ${town}</div>` : ''}
+                    ${rec.distance_miles !== null && rec.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${rec.distance_miles.toFixed(2)} miles</div>` : ''}
+                  </div>
+                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+              `;
+
+              const excludeFields = ['lat', 'lon', 'distance_miles'];
+              Object.entries(rec).forEach(([key, value]) => {
+                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
+                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                  let displayValue = '';
+                  if (typeof value === 'object') {
+                    displayValue = JSON.stringify(value);
+                  } else if (typeof value === 'number') {
+                    displayValue = value.toLocaleString();
+                  } else {
+                    displayValue = String(value);
+                  }
+                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
+                }
+              });
+
+              popupContent += `
+                  </div>
+                </div>
+              `;
+
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.addTo(poi);
+              bounds.extend([pLat, pLon]);
+            } catch (error) {
+              console.error('Error drawing NHDES wetland permit point:', error);
+            }
+          }
+        });
+
+        if (wetlandPermitCount > 0) {
+          if (!legendAccumulator['nh_des_wetland_permit_applications']) {
+            legendAccumulator['nh_des_wetland_permit_applications'] = {
+              icon: '🌿',
+              color: '#059669',
+              title: 'NHDES Wetland Permit Apps / Notifications',
+              count: 0,
+            };
+          }
+          legendAccumulator['nh_des_wetland_permit_applications'].count += wetlandPermitCount;
         }
       }
 
@@ -48809,6 +48950,14 @@ const MapView: React.FC<MapViewProps> = ({
           }}
         />
 
+        {mapExportBusy && (
+          <div className="absolute inset-0 bg-black/20 z-[10001] flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-auto bg-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-gray-800 border border-gray-200">
+              Exporting map…
+            </div>
+          </div>
+        )}
+
         {/* Right-click context menu - Desktop only */}
         {!isMobile && contextMenu && (
           <div
@@ -48866,10 +49015,55 @@ const MapView: React.FC<MapViewProps> = ({
                 setContextMenu(null);
                 setShowMeasurePathInstruction(true);
               }}
-              className="w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-gray-100 flex items-center gap-2"
+              className="w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-gray-100 flex items-center gap-2 border-b border-gray-100"
             >
               <Ruler className="w-4 h-4 text-blue-600" />
               Measure Distance
+            </button>
+            <div
+              className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-500"
+              title="Uses tab capture (like a screenshot) when your browser allows — you will be asked to share this tab. Best in Chrome or Edge."
+            >
+              Export map view
+            </div>
+            <button
+              type="button"
+              disabled={mapExportBusy}
+              title="When prompted, share this browser tab to capture the map (includes basemap)"
+              onClick={(e) => {
+                e.stopPropagation();
+                void runMapViewExport('png');
+              }}
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50"
+            >
+              <ImageDown className="w-4 h-4 text-emerald-600" />
+              Export as PNG
+            </button>
+            <button
+              type="button"
+              disabled={mapExportBusy}
+              title="Download the current map as a JPEG image"
+              onClick={(e) => {
+                e.stopPropagation();
+                void runMapViewExport('jpeg');
+              }}
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50"
+            >
+              <FileImage className="w-4 h-4 text-emerald-600" />
+              Export as JPEG
+            </button>
+            <button
+              type="button"
+              disabled={mapExportBusy}
+              title="Download the current map as a one-page PDF"
+              onClick={(e) => {
+                e.stopPropagation();
+                void runMapViewExport('pdf');
+              }}
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-2 rounded-b-lg disabled:opacity-50"
+            >
+              <FileText className="w-4 h-4 text-emerald-600" />
+              Export as PDF
             </button>
           </div>
         )}

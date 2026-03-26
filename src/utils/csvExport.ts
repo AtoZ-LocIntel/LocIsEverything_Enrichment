@@ -846,6 +846,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'nh_water_wells_all' ||
         key === 'nh_public_water_supply_wells_all' ||
         key === 'nh_remediation_sites_all' ||
+        key === 'nh_des_wetland_permit_applications_all' ||
         key === 'nh_automobile_salvage_yards_all' ||
         key === 'nh_solid_waste_facilities_all' ||
         key === 'nh_nwi_plus_all' ||
@@ -6634,6 +6635,71 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           waterDepthFt ? `${waterDepthFt} ft` : '',
           attributesJson,
           'NH DES'
+        ]);
+      });
+    } else if (key === 'nh_des_wetland_permit_applications_all' && Array.isArray(value)) {
+      value.forEach((rec: any) => {
+        const oid =
+          rec.OBJECTID ??
+          rec.ObjectId ??
+          rec.objectid ??
+          rec.FID ??
+          rec.fid ??
+          rec.FEATURE_ID ??
+          rec.id ??
+          rec.ID ??
+          'Unknown';
+        const title =
+          rec.PERMIT_NAME ??
+          rec.Permit_Name ??
+          rec.APPLICATION_NAME ??
+          rec.Application_Name ??
+          rec.PROJECT_NAME ??
+          rec.Project_Name ??
+          rec.SITE_NAME ??
+          rec.site_name ??
+          '';
+        const town =
+          rec.MUNICIPALITY ??
+          rec.Municipality ??
+          rec.TOWN ??
+          rec.Town ??
+          rec.CITY ??
+          rec.City ??
+          rec.GISMUNIC ??
+          '';
+        const status =
+          rec.STATUS ??
+          rec.Status ??
+          rec.APPLICATION_STATUS ??
+          rec.Permit_Status ??
+          '';
+
+        const allAttributes = { ...rec };
+        delete allAttributes.lat;
+        delete allAttributes.lon;
+        delete allAttributes.distance_miles;
+        const attributesJson = JSON.stringify(allAttributes);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NH DES',
+          (location.confidence || 'N/A').toString(),
+          'NH_DES_WETLAND_PERMIT_APP',
+          oid ? String(oid) : 'Unknown',
+          (rec.lat || location.lat).toString(),
+          (rec.lon || location.lon).toString(),
+          rec.distance_miles !== null && rec.distance_miles !== undefined
+            ? rec.distance_miles.toFixed(2)
+            : '',
+          title || attributesJson,
+          town || '',
+          status || '',
+          '',
+          attributesJson,
+          'NH DES',
         ]);
       });
     } else if (key === 'nh_remediation_sites_all' && Array.isArray(value)) {
