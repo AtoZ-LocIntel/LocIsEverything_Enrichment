@@ -35,6 +35,95 @@ interface LegendItem {
   ranges?: Array<{ label: string; color: string; count: number }>; // For color-coded layers like broadband
 }
 
+/** Distinct colors for batch geocoded pins (cycles if more than length). */
+const BATCH_LOCATION_COLORS = [
+  '#2563eb',
+  '#16a34a',
+  '#ca8a04',
+  '#dc2626',
+  '#9333ea',
+  '#ea580c',
+  '#0891b2',
+  '#db2777',
+];
+
+function buildLocationMarkerIcon(isMobile: boolean, color: string, labelNumber: number | null): L.DivIcon {
+  const showNum = labelNumber != null;
+  if (isMobile) {
+    return L.divIcon({
+      className: 'custom-location-marker-mobile',
+      html: `<div style="
+              width: 32px;
+              height: 32px;
+              background-color: ${color};
+              border: 3px solid white;
+              border-radius: 50%;
+              box-shadow: none;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              box-sizing: border-box;
+              line-height: 1;
+              margin: 0;
+              padding: 0;
+              font-weight: 700;
+              font-size: 12px;
+              color: white;
+            ">${showNum ? String(labelNumber) : `<div style="
+              width: 12px;
+              height: 12px;
+              background-color: white;
+              border-radius: 50%;
+              margin: 0;
+              padding: 0;
+            "></div>`}
+            </div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16],
+    });
+  }
+  const inner = showNum
+    ? `<div style="
+                transform: rotate(45deg);
+                width: 18px;
+                height: 18px;
+                background-color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 11px;
+                color: ${color};
+              ">${labelNumber}</div>`
+    : `<div style="
+                transform: rotate(45deg);
+                width: 16px;
+                height: 16px;
+                background-color: white;
+                border-radius: 50%;
+              "></div>`;
+  return L.divIcon({
+    className: 'custom-location-marker',
+    html: `<div style="
+              width: 40px;
+              height: 40px;
+              background-color: ${color};
+              border: 4px solid white;
+              border-radius: 50% 50% 50% 0;
+              transform: rotate(-45deg);
+              box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">${inner}</div>`,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+  });
+}
+
 // Basemap configuration supporting MapLibre (vector), WMS (raster), and direct tile layers
 export type BasemapType = 'maplibre' | 'wms' | 'tile';
 
@@ -62,6 +151,73 @@ export interface BasemapConfig {
   exportImageBandIds?: number[]; // Band IDs array for band combination (e.g., [1, 4, 3] for RGB)
   // For ExportMap-based tile layers (MapServer raster services)
   exportMapLayerId?: number; // Layer ID for MapServer ExportMap endpoint (e.g., 0, 1, 2...)
+}
+
+/**
+ * NOAA WPC gridded Flash Flood Guidance (CONUS) — ArcGIS MapServer layer IDs.
+ * Service: https://mapservices.weather.noaa.gov/raster/rest/services/precip/rfc_gridded_ffg/MapServer
+ */
+const FFG_GRIDDED_LAYERS = [
+  { id: 3, label: '1 hour' },
+  { id: 4, label: '3 hour' },
+  { id: 8, label: '6 hour' },
+  { id: 12, label: '12 hour' },
+  { id: 16, label: '24 hour' },
+] as const;
+
+const FFG_GRIDDED_EXPORT_BASE =
+  'https://mapservices.weather.noaa.gov/raster/rest/services/precip/rfc_gridded_ffg/MapServer/export';
+
+/** WPC Winter Weather Outlook Day 4–7 — raster layer IDs (NOAA MapServer). */
+const WWO_WINTER_OUTLOOK_LAYERS = [
+  { id: 3, label: 'Day 4' },
+  { id: 23, label: 'Day 5' },
+  { id: 19, label: 'Day 6' },
+  { id: 27, label: 'Day 7' },
+] as const;
+
+const WWO_WINTER_OUTLOOK_EXPORT_BASE =
+  'https://mapservices.weather.noaa.gov/raster/rest/services/outlooks/winter_weather_outlook/MapServer/export';
+
+/** ArcGIS MapServer /export image in EPSG:3857 for Leaflet alignment. */
+function buildNoaaRasterMapServerExportUrl(
+  exportBaseUrl: string,
+  layerId: number,
+  bounds: L.LatLngBounds
+): string {
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+  const crs = L.CRS.EPSG3857;
+  const swProj = crs.project(sw);
+  const neProj = crs.project(ne);
+  const xmin = Math.min(swProj.x, neProj.x);
+  const xmax = Math.max(swProj.x, neProj.x);
+  const ymin = Math.min(swProj.y, neProj.y);
+  const ymax = Math.max(swProj.y, neProj.y);
+  const bbox = `${xmin},${ymin},${xmax},${ymax}`;
+  const widthM = xmax - xmin;
+  const heightM = ymax - ymin;
+  const maxPx = 1024;
+  let pxW = maxPx;
+  let pxH = Math.round((heightM / widthM) * maxPx);
+  if (!Number.isFinite(pxH) || pxH < 1) pxH = maxPx;
+  if (pxH > maxPx) {
+    pxH = maxPx;
+    pxW = Math.round((widthM / heightM) * maxPx);
+  }
+  pxW = Math.max(64, Math.min(maxPx, pxW));
+  pxH = Math.max(64, Math.min(maxPx, pxH));
+  const params = new URLSearchParams({
+    bbox,
+    bboxSR: '3857',
+    imageSR: '3857',
+    size: `${pxW},${pxH}`,
+    format: 'png',
+    transparent: 'true',
+    layers: `show:${layerId}`,
+    f: 'image',
+  });
+  return `${exportBaseUrl}?${params.toString()}`;
 }
 
 export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
@@ -6945,9 +7101,13 @@ const MapView: React.FC<MapViewProps> = ({
     'USDA': false,
     'Alaska': false,
     'NASA': false,
+    'Weather': false,
+    'NOAA': false,
   });
   const [showThematicThemes, setShowThematicThemes] = useState<boolean>(false); // Toggle to show/hide thematic themes list
   const [showEventThemes, setShowEventThemes] = useState<boolean>(false); // Toggle to show/hide event themes list
+  /** Mobile: Weather basemap overlays (WWO + FFG; paired with Basemap Themes › Weather on desktop) */
+  const [showWeatherBasemapMobile, setShowWeatherBasemapMobile] = useState<boolean>(false);
   // Search queries for basemap sections
   const [noaaSearchQuery, setNoaaSearchQuery] = useState<string>('');
   const [usfsSearchQuery, setUsfsSearchQuery] = useState<string>('');
@@ -6955,6 +7115,12 @@ const MapView: React.FC<MapViewProps> = ({
   const [nationalmapSearchQuery, setNationalmapSearchQuery] = useState<string>('');
   const [nasaSearchQuery, setNasaSearchQuery] = useState<string>('');
   const weatherRadarOverlayRef = useRef<L.ImageOverlay | null>(null);
+  /** Active FFG MapServer layer id (3,4,8,12,16) or null when off */
+  const [activeFFGGriddedLayerId, setActiveFFGGriddedLayerId] = useState<number | null>(null);
+  const ffgGriddedOverlayRef = useRef<L.ImageOverlay | null>(null);
+  /** WPC Winter Weather Outlook (Day 4–7) MapServer layer id or null */
+  const [activeWwoLayerId, setActiveWwoLayerId] = useState<number | null>(null);
+  const wwoOverlayRef = useRef<L.ImageOverlay | null>(null);
   // Removed viewportHeight and viewportWidth - not needed and were causing issues
 
   /**
@@ -7093,6 +7259,85 @@ const MapView: React.FC<MapViewProps> = ({
         map.removeLayer(overlay);
       }
       weatherRadarOverlayRef.current = null;
+    });
+  };
+
+  const getFFGGriddedExportUrl = (layerId: number, bounds: L.LatLngBounds): string =>
+    buildNoaaRasterMapServerExportUrl(FFG_GRIDDED_EXPORT_BASE, layerId, bounds);
+
+  const updateFFGGriddedOverlay = () => {
+    if (!mapInstanceRef.current || activeFFGGriddedLayerId == null) {
+      return;
+    }
+    const map = mapInstanceRef.current;
+    const layerId = activeFFGGriddedLayerId;
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    const latPadding = (ne.lat - sw.lat) * 0.1;
+    const lonPadding = (ne.lng - sw.lng) * 0.1;
+    const paddedBounds = L.latLngBounds(
+      [sw.lat - latPadding, sw.lng - lonPadding],
+      [ne.lat + latPadding, ne.lng + lonPadding]
+    );
+
+    if (ffgGriddedOverlayRef.current) {
+      map.removeLayer(ffgGriddedOverlayRef.current);
+      ffgGriddedOverlayRef.current = null;
+    }
+
+    const exportUrl = getFFGGriddedExportUrl(layerId, paddedBounds);
+    const overlay = L.imageOverlay(exportUrl, paddedBounds, {
+      opacity: 0.75,
+      interactive: false,
+      zIndex: 299,
+    });
+    overlay.addTo(map);
+    ffgGriddedOverlayRef.current = overlay;
+    overlay.on('error', () => {
+      console.warn('FFG gridded overlay failed to load');
+      if (map.hasLayer(overlay)) {
+        map.removeLayer(overlay);
+      }
+      ffgGriddedOverlayRef.current = null;
+    });
+  };
+
+  const updateWwoOverlay = () => {
+    if (!mapInstanceRef.current || activeWwoLayerId == null) {
+      return;
+    }
+    const map = mapInstanceRef.current;
+    const layerId = activeWwoLayerId;
+    const bounds = map.getBounds();
+    const sw = bounds.getSouthWest();
+    const ne = bounds.getNorthEast();
+    const latPadding = (ne.lat - sw.lat) * 0.1;
+    const lonPadding = (ne.lng - sw.lng) * 0.1;
+    const paddedBounds = L.latLngBounds(
+      [sw.lat - latPadding, sw.lng - lonPadding],
+      [ne.lat + latPadding, ne.lng + lonPadding]
+    );
+
+    if (wwoOverlayRef.current) {
+      map.removeLayer(wwoOverlayRef.current);
+      wwoOverlayRef.current = null;
+    }
+
+    const exportUrl = buildNoaaRasterMapServerExportUrl(WWO_WINTER_OUTLOOK_EXPORT_BASE, layerId, paddedBounds);
+    const overlay = L.imageOverlay(exportUrl, paddedBounds, {
+      opacity: 0.72,
+      interactive: false,
+      zIndex: 298,
+    });
+    overlay.addTo(map);
+    wwoOverlayRef.current = overlay;
+    overlay.on('error', () => {
+      console.warn('Winter Weather Outlook overlay failed to load');
+      if (map.hasLayer(overlay)) {
+        map.removeLayer(overlay);
+      }
+      wwoOverlayRef.current = null;
     });
   };
 
@@ -7770,6 +8015,26 @@ const MapView: React.FC<MapViewProps> = ({
             }
             weatherRadarOverlayRef.current = null;
           }
+          if (ffgGriddedOverlayRef.current) {
+            try {
+              if (mapInstanceRef.current.hasLayer(ffgGriddedOverlayRef.current)) {
+                mapInstanceRef.current.removeLayer(ffgGriddedOverlayRef.current);
+              }
+            } catch {
+              /* ignore */
+            }
+            ffgGriddedOverlayRef.current = null;
+          }
+          if (wwoOverlayRef.current) {
+            try {
+              if (mapInstanceRef.current.hasLayer(wwoOverlayRef.current)) {
+                mapInstanceRef.current.removeLayer(wwoOverlayRef.current);
+              }
+            } catch {
+              /* ignore */
+            }
+            wwoOverlayRef.current = null;
+          }
           
           // Clean up basemap layers before removing map
           if (basemapLayerRef.current) {
@@ -8195,6 +8460,58 @@ const MapView: React.FC<MapViewProps> = ({
       }
     }
   }, [showWeatherRadar, isInitialized, results]);
+
+  // Gridded Flash Flood Guidance (NOAA raster MapServer) overlay
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized) {
+      return;
+    }
+    if (activeFFGGriddedLayerId != null) {
+      updateFFGGriddedOverlay();
+      const map = mapInstanceRef.current;
+      const updateOverlay = () => {
+        if (activeFFGGriddedLayerId != null) {
+          updateFFGGriddedOverlay();
+        }
+      };
+      map.on('moveend', updateOverlay);
+      map.on('zoomend', updateOverlay);
+      return () => {
+        map.off('moveend', updateOverlay);
+        map.off('zoomend', updateOverlay);
+      };
+    }
+    if (ffgGriddedOverlayRef.current && mapInstanceRef.current) {
+      mapInstanceRef.current.removeLayer(ffgGriddedOverlayRef.current);
+      ffgGriddedOverlayRef.current = null;
+    }
+  }, [activeFFGGriddedLayerId, isInitialized, results]);
+
+  // WPC Winter Weather Outlook (Day 4–7) overlay
+  useEffect(() => {
+    if (!mapInstanceRef.current || !isInitialized) {
+      return;
+    }
+    if (activeWwoLayerId != null) {
+      updateWwoOverlay();
+      const map = mapInstanceRef.current;
+      const updateOverlay = () => {
+        if (activeWwoLayerId != null) {
+          updateWwoOverlay();
+        }
+      };
+      map.on('moveend', updateOverlay);
+      map.on('zoomend', updateOverlay);
+      return () => {
+        map.off('moveend', updateOverlay);
+        map.off('zoomend', updateOverlay);
+      };
+    }
+    if (wwoOverlayRef.current && mapInstanceRef.current) {
+      mapInstanceRef.current.removeLayer(wwoOverlayRef.current);
+      wwoOverlayRef.current = null;
+    }
+  }, [activeWwoLayerId, isInitialized, results]);
 
   // Handle flight tracker toggle
   useEffect(() => {
@@ -9941,80 +10258,31 @@ const MapView: React.FC<MapViewProps> = ({
     // Clear feature metadata for tabbed popup
     featuresMetadataRef.current = [];
     
-    // Add location marker (larger blue pin) - skip if hideLocationMarker is true
-    if (results[0]?.location && !hideLocationMarker) {
-      // Create a simpler icon for mobile, complex pin for desktop
-      const locationIcon = isMobile 
-        ? L.divIcon({
-            className: 'custom-location-marker-mobile',
-            html: `<div style="
-              width: 32px;
-              height: 32px;
-              background-color: #3b82f6;
-              border: 3px solid white;
-              border-radius: 50%;
-              box-shadow: none;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              box-sizing: border-box;
-              line-height: 1;
-              margin: 0;
-              padding: 0;
-            ">
-              <div style="
-                width: 12px;
-                height: 12px;
-                background-color: white;
-                border-radius: 50%;
-                margin: 0;
-                padding: 0;
-              "></div>
-            </div>`,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
-            popupAnchor: [0, -16]
-          })
-        : L.divIcon({
-            className: 'custom-location-marker',
-            html: `<div style="
-              width: 40px;
-              height: 40px;
-              background-color: #3b82f6;
-              border: 4px solid white;
-              border-radius: 50% 50% 50% 0;
-              transform: rotate(-45deg);
-              box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            ">
-              <div style="
-                transform: rotate(45deg);
-                width: 16px;
-                height: 16px;
-                background-color: white;
-                border-radius: 50%;
-              "></div>
-            </div>`,
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
-          });
-      
-      const locationMarker = L.marker([results[0].location.lat, results[0].location.lon], {
-        title: results[0].location.name,
-        icon: locationIcon,
-        pane: 'locationMarkerPane' // Use custom pane with higher z-index
+    // Geocoded location pin(s): one per result; batch runs get numbered, color-coded pins + legend keys
+    if (!hideLocationMarker) {
+      const isBatch = results.length > 1;
+      results.forEach((result, idx) => {
+        const loc = result.location;
+        if (!loc) return;
+        if (loc.lat === 0 && loc.lon === 0) return;
+        const color = isBatch ? BATCH_LOCATION_COLORS[idx % BATCH_LOCATION_COLORS.length] : '#3b82f6';
+        const labelNum = isBatch ? idx + 1 : null;
+        const locationIcon = buildLocationMarkerIcon(isMobile, color, labelNum);
+        const locationMarker = L.marker([loc.lat, loc.lon], {
+          title: loc.name,
+          icon: locationIcon,
+          pane: 'locationMarkerPane',
+        });
+        locationMarker.bindPopup(createPopupContent(result, isMobile), {
+          maxWidth: isMobile ? 280 : 540,
+          className: isMobile ? 'mobile-popup' : undefined,
+        });
+        locationMarker.addTo(primary);
+        (locationMarker as any).__isLocationMarker = true;
+        if (isBatch) {
+          (locationMarker as any).__legendKey = `batch_location_${idx}`;
+        }
       });
-      locationMarker.bindPopup(createPopupContent(results[0], isMobile), { 
-        maxWidth: isMobile ? 280 : 540,
-        className: isMobile ? 'mobile-popup' : undefined
-      });
-      locationMarker.addTo(primary);
-      
-      // Store reference to location marker so we can bring it to front after all features are added
-      (locationMarker as any).__isLocationMarker = true;
     }
     
     // Add all enrichment features - use requestAnimationFrame for smooth rendering
@@ -10033,6 +10301,19 @@ const MapView: React.FC<MapViewProps> = ({
         resetColorTracking();
         const bounds = L.latLngBounds([]);
         const legendAccumulator: Record<string, LegendItem> = {};
+
+        if (results.length > 1) {
+          results.forEach((result, idx) => {
+            const loc = result.location;
+            if (!loc || (loc.lat === 0 && loc.lon === 0)) return;
+            legendAccumulator[`batch_location_${idx}`] = {
+              icon: '📍',
+              color: BATCH_LOCATION_COLORS[idx % BATCH_LOCATION_COLORS.length],
+              title: `${idx + 1}. ${loc.name || 'Location'}`,
+              count: 1,
+            };
+          });
+        }
         
         // Track drawn schools and businesses across ALL results to prevent duplicates
         const drawnPrivateSchoolIds = new Set<string>();
@@ -10056,11 +10337,6 @@ const MapView: React.FC<MapViewProps> = ({
         const laneCountStats: Record<number, number> = {}; // Track lane count distribution for legend
         const funclassStats: Record<string, number> = {}; // Track functional class distribution for legend
         
-        // Re-add location marker to bounds (already added above, but need for bounds calculation)
-        if (results[0]?.location) {
-          bounds.extend(L.latLng(results[0].location.lat, results[0].location.lon));
-        }
-        
     results.forEach((result) => {
       const { location } = result;
       if (!location) {
@@ -10071,9 +10347,11 @@ const MapView: React.FC<MapViewProps> = ({
       const enrichments = isGlobalRiskMode ? globalRiskEnrichmentsRef.current : result.enrichments;
 
       const latLng = L.latLng(location.lat, location.lon);
-      bounds.extend(latLng);
+      if (!(location.lat === 0 && location.lon === 0)) {
+        bounds.extend(latLng);
+      }
 
-      // Location marker already added in STEP 1 above, just extend bounds here
+      // Geocoded pins were added before this loop; bounds include enrichment geometries below
 
       // Draw NH EMS facilities as markers on the map
       if (enrichments.nh_ems_all && Array.isArray(enrichments.nh_ems_all)) {
@@ -47677,6 +47955,7 @@ const MapView: React.FC<MapViewProps> = ({
         // Ensure ALL legend items (points, polylines, AND polygons) have radius info if available
         // This is critical for showing proximity values in the legend for all layer types
         Object.keys(legendAccumulator).forEach(legendKey => {
+          if (legendKey.startsWith('batch_location_')) return;
           const item = legendAccumulator[legendKey];
           if (item) {
             // Always try to get radius - this works for all geometry types (points, polylines, polygons)
@@ -47701,10 +47980,20 @@ const MapView: React.FC<MapViewProps> = ({
           }
         });
         
-        const finalLegendItems = Object.entries(legendAccumulator)
-          .filter(([, item]) => item.count > 0) // Filter out items with zero count
-          .map(([key, item]) => ({ ...item, key }))
+        const legendEntries = Object.entries(legendAccumulator)
+          .filter(([, item]) => item.count > 0)
+          .map(([key, item]) => ({ ...item, key }));
+        const batchLegendItems = legendEntries
+          .filter((e) => e.key?.startsWith('batch_location_'))
+          .sort((a, b) => {
+            const ai = parseInt(String(a.key).replace('batch_location_', ''), 10);
+            const bi = parseInt(String(b.key).replace('batch_location_', ''), 10);
+            return ai - bi;
+          });
+        const otherLegendItems = legendEntries
+          .filter((e) => !e.key?.startsWith('batch_location_'))
           .sort((a, b) => b.count - a.count);
+        const finalLegendItems = [...batchLegendItems, ...otherLegendItems];
         
         // Debug logging to help diagnose radius display issues
         if (finalLegendItems.length > 0) {
@@ -47721,64 +48010,66 @@ const MapView: React.FC<MapViewProps> = ({
         setLegendItems(finalLegendItems);
         setShowBatchSuccess(results.length > 1);
         
-        // Features drawn - smoothly animate to geocoded location if needed
-        // Wait for map to be fully ready before animating
-        if (mapInstanceRef.current && isMapReady && results && results.length > 0 && results[0]?.location) {
-          const targetLat = results[0].location.lat;
-          const targetLon = results[0].location.lon;
-          const currentCenter = mapInstanceRef.current.getCenter();
-          const currentZoom = mapInstanceRef.current.getZoom();
-          
-          // Calculate distance between current center and target
-          const distance = mapInstanceRef.current.distance(currentCenter, L.latLng(targetLat, targetLon));
-          
-          // Only animate if we're significantly away from the target (more than 100 meters)
-          // or if zoom level is not appropriate
-          // Check if any Boston Open Data layers are present - use closer zoom for Boston
-          const hasBostonLayers = results.some(result => {
-            if (!result.enrichments) return false;
-            return Object.keys(result.enrichments).some(key => 
-              key.startsWith('boston_') && key.endsWith('_all')
-            );
-          });
-          
-          // Use closer zoom (16) for Boston layers, otherwise use standard zoom
-          const targetZoom = hasBostonLayers 
-            ? (results.length === 1 ? 15 : 13)  // Closer zoom for Boston (zoomed out slightly)
-            : (results.length === 1 ? 13 : 12);  // Standard zoom for other layers (zoomed out from geocoded point)
-          const shouldAnimate = distance > 100 || Math.abs(currentZoom - targetZoom) > 2;
-          
-          if (shouldAnimate) {
-            // Smoothly fly to the geocoded location
-            // Use a longer delay to ensure map tiles are loaded and map is stable
+        // Features drawn - fit all batch geocoded points, or fly to a single location
+        const validLocPoints = results
+          .filter((r) => r.location && !(r.location.lat === 0 && r.location.lon === 0))
+          .map((r) => L.latLng(r.location!.lat, r.location!.lon));
+        if (mapInstanceRef.current && isMapReady && validLocPoints.length > 0) {
+          if (validLocPoints.length > 1) {
+            const batchBounds = L.latLngBounds(validLocPoints);
             setTimeout(() => {
               if (mapInstanceRef.current) {
                 try {
-                  mapInstanceRef.current.flyTo(
-                    [targetLat, targetLon],
-                    targetZoom,
-                    {
-                      duration: 1.2, // Smooth 1.2 second animation
-                      easeLinearity: 0.25
-                    }
-                  );
+                  mapInstanceRef.current.fitBounds(batchBounds, {
+                    padding: [56, 56],
+                    maxZoom: 14,
+                    animate: true,
+                  });
                 } catch (error) {
-                  // Fallback to setView if flyTo fails
-                  console.warn('flyTo failed, using setView instead:', error);
-                  mapInstanceRef.current.setView([targetLat, targetLon], targetZoom, { animate: true });
+                  console.warn('fitBounds failed:', error);
+                  const c = batchBounds.getCenter();
+                  mapInstanceRef.current.setView(c, 12, { animate: true });
                 }
               }
-            }, 400); // Longer delay to ensure map is fully ready
+            }, 400);
           } else {
-            // Just ensure we're at the right location without animation
-            mapInstanceRef.current.setView([targetLat, targetLon], targetZoom, { animate: false });
+            const targetLat = validLocPoints[0].lat;
+            const targetLon = validLocPoints[0].lng;
+            const currentCenter = mapInstanceRef.current.getCenter();
+            const currentZoom = mapInstanceRef.current.getZoom();
+            const distance = mapInstanceRef.current.distance(currentCenter, L.latLng(targetLat, targetLon));
+            const hasBostonLayers = results.some((result) => {
+              if (!result.enrichments) return false;
+              return Object.keys(result.enrichments).some(
+                (key) => key.startsWith('boston_') && key.endsWith('_all')
+              );
+            });
+            const targetZoom = hasBostonLayers ? 15 : 13;
+            const shouldAnimate = distance > 100 || Math.abs(currentZoom - targetZoom) > 2;
+            if (shouldAnimate) {
+              setTimeout(() => {
+                if (mapInstanceRef.current) {
+                  try {
+                    mapInstanceRef.current.flyTo([targetLat, targetLon], targetZoom, {
+                      duration: 1.2,
+                      easeLinearity: 0.25,
+                    });
+                  } catch (error) {
+                    console.warn('flyTo failed, using setView instead:', error);
+                    mapInstanceRef.current.setView([targetLat, targetLon], targetZoom, { animate: true });
+                  }
+                }
+              }, 400);
+            } else {
+              mapInstanceRef.current.setView([targetLat, targetLon], targetZoom, { animate: false });
+            }
           }
         }
         
         console.log('🗺️ All features drawn');
         
-        // Bring location marker to front to ensure it's always visible on top of all features
-        if (results[0]?.location && mapInstanceRef.current) {
+        // Bring geocoded pin(s) to front so they stay visible above proximity layers
+        if (mapInstanceRef.current) {
           try {
             primary.eachLayer((layer: any) => {
               if (layer.__isLocationMarker && typeof layer.bringToFront === 'function') {
@@ -47840,8 +48131,8 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Set up handlers for primary group
     primary.eachLayer((layer: L.Layer) => {
-      // Skip location marker
-      if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
+      // Skip geocoded location pin(s) — those use the normal marker popup, not tabbed overlap UI
+      if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
         return;
       }
       
@@ -47873,8 +48164,7 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Set up handlers for poi group as well
     poi.eachLayer((layer: L.Layer) => {
-      // Skip location marker
-      if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
+      if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
         return;
       }
       
@@ -48016,9 +48306,8 @@ const MapView: React.FC<MapViewProps> = ({
       }
       
       layerCount++;
-      // Skip location marker
-      if (layer instanceof L.Marker && (layer as any).options?.title === results[0]?.location?.name) {
-        console.log('🔍 [TABBED POPUP] Skipping location marker');
+      if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
+        console.log('🔍 [TABBED POPUP] Skipping geocoded location marker');
         return;
       }
       
@@ -49256,6 +49545,88 @@ const MapView: React.FC<MapViewProps> = ({
                         )}
                       </div>
                       
+                      {/* Weather — WPC Winter Weather Outlook + gridded FFG (NOAA raster MapServer) */}
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => setExpandedBasemapSections((prev) => ({ ...prev, Weather: !prev['Weather'] }))}
+                          className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
+                          style={{ backgroundColor: '#0284c7' }}
+                        >
+                          <span>Weather</span>
+                          <span className={`transform transition-transform ${expandedBasemapSections['Weather'] ? 'rotate-180' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+                        {expandedBasemapSections['Weather'] && (
+                          <div className="pb-1 bg-white space-y-0">
+                            <div className="border-b border-gray-200 px-3 py-2 bg-sky-50/90">
+                              <p className="text-xs font-semibold text-gray-800">Winter Weather Outlook (Day 4–7)</p>
+                              <p className="text-xs text-gray-500 mt-1 mb-2">
+                                Weather Prediction Center — probability of winter precipitation (snow/sleet) exceeding ~0.25 in
+                                water equivalent in 24h (12Z–12Z). Updated twice daily. Extent: CONUS-focused (see service
+                                footprint).
+                              </p>
+                              <div className="space-y-1.5 ml-1">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                  <input
+                                    type="radio"
+                                    name="wwo-winter-outlook-basemap"
+                                    checked={activeWwoLayerId === null}
+                                    onChange={() => setActiveWwoLayerId(null)}
+                                    className="text-blue-600 border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <span>Off</span>
+                                </label>
+                                {WWO_WINTER_OUTLOOK_LAYERS.map(({ id, label }) => (
+                                  <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                    <input
+                                      type="radio"
+                                      name="wwo-winter-outlook-basemap"
+                                      checked={activeWwoLayerId === id}
+                                      onChange={() => setActiveWwoLayerId(id)}
+                                      className="text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span>WWO — {label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="px-3 py-2 bg-cyan-50/80">
+                              <p className="text-xs font-semibold text-gray-800">Gridded Flash Flood Guidance (CONUS)</p>
+                              <p className="text-xs text-gray-500 mt-1 mb-2">
+                                NWS RFC mosaicked FFG — rainfall needed to cause small-stream flooding (soil moisture &
+                                streamflow conditions). Updates about hourly (~:38 past). Boundary discontinuities between RFCs
+                                are expected. Northwest RFC omits WA/OR east of the Cascades.
+                              </p>
+                              <div className="space-y-1.5 ml-1">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                  <input
+                                    type="radio"
+                                    name="ffg-gridded-weather-basemap"
+                                    checked={activeFFGGriddedLayerId === null}
+                                    onChange={() => setActiveFFGGriddedLayerId(null)}
+                                    className="text-blue-600 border-gray-300 focus:ring-blue-500"
+                                  />
+                                  <span>Off</span>
+                                </label>
+                                {FFG_GRIDDED_LAYERS.map(({ id, label }) => (
+                                  <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                    <input
+                                      type="radio"
+                                      name="ffg-gridded-weather-basemap"
+                                      checked={activeFFGGriddedLayerId === id}
+                                      onChange={() => setActiveFFGGriddedLayerId(id)}
+                                      className="text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span>FFG — {label}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
                       {/* NOAA basemaps */}
                       <div className="border-b border-gray-200">
                         <button
@@ -49579,9 +49950,10 @@ const MapView: React.FC<MapViewProps> = ({
                 </span>
               </button>
               {showEventThemes && (
-                <div className="bg-gray-50 mt-2 space-y-3 pt-2 max-h-[280px] overflow-y-auto overflow-x-hidden">
-                  {/* Weather Radar Toggle */}
+                <div className="bg-gray-50 mt-2 space-y-3 pt-2 max-h-[320px] overflow-y-auto overflow-x-hidden">
+                  {/* Weather — NEXRAD (FFG moved to Basemap Themes › NOAA) */}
                   <div className="px-3">
+                    <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Weather</h4>
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -49590,11 +49962,11 @@ const MapView: React.FC<MapViewProps> = ({
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <span className="text-sm font-semibold text-black">
-                        🌦️ Weather Radar (NEXRAD)
+                        🌦️ US Weather Radar (NEXRAD)
                       </span>
                     </label>
                     <p className="text-xs text-gray-500 mt-1 ml-6">
-                      Shows current weather radar overlay
+                      Current NEXRAD base reflectivity (regional mosaic by location)
                     </p>
                   </div>
                   
@@ -49873,10 +50245,77 @@ const MapView: React.FC<MapViewProps> = ({
           </div>
         )}
         
-        {/* Event Themes - Mobile */}
+        {/* Weather basemap overlays + Event Themes - Mobile */}
         {isMobile && !isGlobalRiskMode && (
           <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10" style={{ minWidth: '200px', maxWidth: '280px' }}>
             <button
+              type="button"
+              onClick={() => setShowWeatherBasemapMobile(!showWeatherBasemapMobile)}
+              className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-sky-100 rounded mb-2"
+            >
+              <span>🌤️ Weather (basemap)</span>
+              <span className={`transform transition-transform ${showWeatherBasemapMobile ? 'rotate-180' : ''}`}>
+                ▼
+              </span>
+            </button>
+            {showWeatherBasemapMobile && (
+              <div className="rounded mb-2 space-y-2 max-h-[280px] overflow-y-auto">
+                <div className="bg-sky-50/90 rounded px-3 py-2 space-y-1">
+                  <div className="text-[10px] font-semibold text-gray-800">Winter Weather Outlook</div>
+                  <p className="text-[10px] text-gray-600 leading-snug">WPC Day 4–7. Same as Basemap Themes → Weather.</p>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                    <input
+                      type="radio"
+                      name="wwo-mobile-weather-basemap"
+                      checked={activeWwoLayerId === null}
+                      onChange={() => setActiveWwoLayerId(null)}
+                      className="text-blue-600"
+                    />
+                    <span>Off</span>
+                  </label>
+                  {WWO_WINTER_OUTLOOK_LAYERS.map(({ id, label }) => (
+                    <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                      <input
+                        type="radio"
+                        name="wwo-mobile-weather-basemap"
+                        checked={activeWwoLayerId === id}
+                        onChange={() => setActiveWwoLayerId(id)}
+                        className="text-blue-600"
+                      />
+                      <span>WWO — {label}</span>
+                    </label>
+                  ))}
+                </div>
+                <div className="bg-cyan-50/80 rounded px-3 py-2 space-y-1">
+                  <div className="text-[10px] font-semibold text-gray-800">Flash flood guidance</div>
+                  <p className="text-[10px] text-gray-600 leading-snug">Gridded FFG (CONUS), hourly updates.</p>
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                    <input
+                      type="radio"
+                      name="ffg-mobile-weather-basemap"
+                      checked={activeFFGGriddedLayerId === null}
+                      onChange={() => setActiveFFGGriddedLayerId(null)}
+                      className="text-blue-600"
+                    />
+                    <span>Off</span>
+                  </label>
+                  {FFG_GRIDDED_LAYERS.map(({ id, label }) => (
+                    <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                      <input
+                        type="radio"
+                        name="ffg-mobile-weather-basemap"
+                        checked={activeFFGGriddedLayerId === id}
+                        onChange={() => setActiveFFGGriddedLayerId(id)}
+                        className="text-blue-600"
+                      />
+                      <span>FFG — {label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
               onClick={() => setShowEventThemes(!showEventThemes)}
               className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-gray-100 rounded mb-2"
             >
@@ -49887,17 +50326,20 @@ const MapView: React.FC<MapViewProps> = ({
             </button>
             {showEventThemes && (
               <div className="bg-gray-50 rounded space-y-2 pt-2 max-h-[260px] overflow-y-auto overflow-x-hidden">
-                <label className="flex items-center space-x-2 cursor-pointer px-3">
-                  <input
-                    type="checkbox"
-                    checked={showWeatherRadar}
-                    onChange={(e) => setShowWeatherRadar(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-semibold text-black">
-                    🌦️ Weather Radar
-                  </span>
-                </label>
+                <div className="px-3 pb-1">
+                  <div className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">Weather</div>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showWeatherRadar}
+                      onChange={(e) => setShowWeatherRadar(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-semibold text-black">
+                      🌦️ US Weather Radar (NEXRAD)
+                    </span>
+                  </label>
+                </div>
                 <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
                   <input
                     type="checkbox"
