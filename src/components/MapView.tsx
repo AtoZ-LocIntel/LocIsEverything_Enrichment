@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
+import { buildFullFeaturePopupHtml } from '../utils/mapFeaturePopup';
 import {
   exportMapElementAsImage,
   exportMapElementAsPdf,
@@ -5647,7 +5648,10 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
     
     const name = poi.tags?.name || poi.name || poi.title || 'Unnamed POI';
     const amenity = poi.tags?.amenity || poi.tags?.shop || poi.tags?.tourism || 'POI';
-    const distance = poi.distance_miles || 'Unknown';
+    const distance =
+      typeof poi.distance_miles === 'number' && !Number.isNaN(poi.distance_miles)
+        ? poi.distance_miles.toFixed(2)
+        : poi.distance_miles ?? 'Unknown';
     
     let content = `
       <div style="min-width: 250px; max-width: 350px;">
@@ -11106,59 +11110,27 @@ const MapView: React.FC<MapViewProps> = ({
               const wellLat = well.lat;
               const wellLon = well.lon;
               const wellId = well.well_id || well.WELL_ID || well.WellId || well._well_id || well.id || well.ID || well.Id || well.objectid || well.OBJECTID || 'Unknown Well';
-              const ownerName = well.owner_name || well.OWNER_NAME || well.OwnerName || well._owner_name || well.owner || well.OWNER || well.Owner || '';
-              const address = well.address || well.ADDRESS || well.Address || well._address || well.street || well.STREET || well.street_address || well.STREET_ADDRESS || '';
-              const city = well.city || well.CITY || well.City || well._city || well.gismunic || well.GISMUNIC || well.municipality || well.MUNICIPALITY || '';
-              const wellDepthFt = well.well_depth_ft || well.WELL_DEPTH_FT || well.WellDepthFt || well._well_depth_ft || well.depth || well.DEPTH || well.well_depth || well.WELL_DEPTH || null;
-              const waterDepthFt = well.water_depth_ft || well.WATER_DEPTH_FT || well.WaterDepthFt || well._water_depth_ft || well.water_depth || well.WATER_DEPTH || well.static_water_level || well.STATIC_WATER_LEVEL || null;
-              
+
               // Create a custom icon for water wells
               const icon = createPOIIcon('💧', '#0284c7'); // Blue icon for water wells
               
               const marker = L.marker([wellLat, wellLon], { icon });
-              
-              // Build popup content with all water well attributes
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    💧 Well ID: ${wellId ? String(wellId) : 'Unknown'}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
-                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
-                    ${wellDepthFt !== null && wellDepthFt !== undefined ? `<div><strong>Well Depth:</strong> ${wellDepthFt} ft</div>` : ''}
-                    ${waterDepthFt !== null && waterDepthFt !== undefined ? `<div><strong>Water Depth:</strong> ${waterDepthFt} ft</div>` : ''}
-                    ${well.distance_miles !== null && well.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${well.distance_miles.toFixed(2)} miles</div>` : ''}
-                  </div>
-                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-              `;
-              
-              // Add all water well attributes (excluding internal fields)
-              const excludeFields = ['well_id', 'owner_name', 'address', 'city', 'state', 'well_depth_ft', 'water_depth_ft', 'lat', 'lon', 'distance_miles'];
-              Object.entries(well).forEach(([key, value]) => {
-                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue = '';
-                  
-                  if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value);
-                  } else if (typeof value === 'number') {
-                    displayValue = value.toLocaleString();
-                  } else {
-                    displayValue = String(value);
-                  }
-                  
-                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
-                }
+
+              const popupContent = buildFullFeaturePopupHtml({
+                emoji: '💧',
+                titlePlain: wellId ? `Well ID: ${String(wellId)}` : 'NH water well',
+                subtitle: 'All fields from the well record (matches CSV columns, including empty values).',
+                poiTypeLabel: 'NH_WATER_WELL',
+                searchContext: {
+                  searchedAddress: location.name,
+                  searchedLat: location.lat,
+                  searchedLon: location.lon,
+                  confidence: location.confidence,
+                },
+                record: well,
               });
-              
-              popupContent += `
-                  </div>
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+
+              marker.bindPopup(popupContent, { maxWidth: 440 });
               marker.addTo(poi);
               
               // Extend bounds to include this water well
@@ -11194,60 +11166,29 @@ const MapView: React.FC<MapViewProps> = ({
               const wellLon = well.lon;
               const wellId = well.well_id || well.WELL_ID || well.WellId || well._well_id || well.id || well.ID || well.Id || well.objectid || well.OBJECTID || 'Unknown Well';
               const facilityName = well.facility_name || well.FACILITY_NAME || well.FacilityName || well._facility_name || well.name || well.NAME || well.Name || '';
-              const ownerName = well.owner_name || well.OWNER_NAME || well.OwnerName || well._owner_name || well.owner || well.OWNER || well.Owner || '';
-              const address = well.address || well.ADDRESS || well.Address || well._address || well.street || well.STREET || well.street_address || well.STREET_ADDRESS || '';
-              const city = well.city || well.CITY || well.City || well._city || well.gismunic || well.GISMUNIC || well.municipality || well.MUNICIPALITY || '';
-              const wellDepthFt = well.well_depth_ft || well.WELL_DEPTH_FT || well.WellDepthFt || well._well_depth_ft || well.depth || well.DEPTH || well.well_depth || well.WELL_DEPTH || null;
-              const waterDepthFt = well.water_depth_ft || well.WATER_DEPTH_FT || well.WaterDepthFt || well._water_depth_ft || well.water_depth || well.WATER_DEPTH || well.static_water_level || well.STATIC_WATER_LEVEL || null;
-              
+
               // Create a custom icon for public water supply wells
               const icon = createPOIIcon('🚰', '#0ea5e9'); // Sky blue icon for public water supply wells
               
               const marker = L.marker([wellLat, wellLon], { icon });
-              
-              // Build popup content with all public water supply well attributes
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    🚰 ${facilityName || (wellId ? `Well ID: ${String(wellId)}` : 'Public Water Supply Well')}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${ownerName ? `<div><strong>Owner:</strong> ${ownerName}</div>` : ''}
-                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
-                    ${wellId ? `<div><strong>Well ID:</strong> ${String(wellId)}</div>` : ''}
-                    ${wellDepthFt !== null && wellDepthFt !== undefined ? `<div><strong>Well Depth:</strong> ${wellDepthFt} ft</div>` : ''}
-                    ${waterDepthFt !== null && waterDepthFt !== undefined ? `<div><strong>Water Depth:</strong> ${waterDepthFt} ft</div>` : ''}
-                    ${well.distance_miles !== null && well.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${well.distance_miles.toFixed(2)} miles</div>` : ''}
-                  </div>
-                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-              `;
-              
-              // Add all public water supply well attributes (excluding internal fields)
-              const excludeFields = ['well_id', 'facility_name', 'owner_name', 'address', 'city', 'state', 'well_depth_ft', 'water_depth_ft', 'lat', 'lon', 'distance_miles'];
-              Object.entries(well).forEach(([key, value]) => {
-                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue = '';
-                  
-                  if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value);
-                  } else if (typeof value === 'number') {
-                    displayValue = value.toLocaleString();
-                  } else {
-                    displayValue = String(value);
-                  }
-                  
-                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
-                }
+
+              const popupContent = buildFullFeaturePopupHtml({
+                emoji: '🚰',
+                titlePlain:
+                  facilityName ||
+                  (wellId ? `Well ID: ${String(wellId)}` : 'Public water supply well'),
+                subtitle: 'All fields from the well record (matches CSV columns, including empty values).',
+                poiTypeLabel: 'NH_PUBLIC_WATER_SUPPLY_WELL',
+                searchContext: {
+                  searchedAddress: location.name,
+                  searchedLat: location.lat,
+                  searchedLon: location.lon,
+                  confidence: location.confidence,
+                },
+                record: well,
               });
-              
-              popupContent += `
-                  </div>
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+
+              marker.bindPopup(popupContent, { maxWidth: 440 });
               marker.addTo(poi);
               
               // Extend bounds to include this public water supply well
@@ -11284,57 +11225,30 @@ const MapView: React.FC<MapViewProps> = ({
               const siteId = site.site_id || site.SITE_ID || site.SiteId || site._site_id || site.id || site.ID || site.Id || site.objectid || site.OBJECTID || 'Unknown Site';
               const siteName = site.site_name || site.SITE_NAME || site.SiteName || site._site_name || site.name || site.NAME || site.Name || '';
               const facilityName = site.facility_name || site.FACILITY_NAME || site.FacilityName || site._facility_name || site.facility || site.FACILITY || '';
-              const address = site.address || site.ADDRESS || site.Address || site._address || site.street || site.STREET || site.street_address || site.STREET_ADDRESS || '';
-              const city = site.city || site.CITY || site.City || site._city || site.gismunic || site.GISMUNIC || site.municipality || site.MUNICIPALITY || '';
-              const siteStatus = site.site_status || site.SITE_STATUS || site.SiteStatus || site._site_status || site.status || site.STATUS || site.Status || '';
-              
+
               // Create a custom icon for remediation sites
               const icon = createPOIIcon('🔧', '#f59e0b'); // Amber/orange icon for remediation sites
               
               const marker = L.marker([siteLat, siteLon], { icon });
-              
-              // Build popup content with all remediation site attributes
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    🔧 ${siteName || facilityName || (siteId ? `Site ID: ${String(siteId)}` : 'Remediation Site')}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${siteId ? `<div><strong>Site ID:</strong> ${String(siteId)}</div>` : ''}
-                    ${facilityName ? `<div><strong>Facility:</strong> ${facilityName}</div>` : ''}
-                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
-                    ${siteStatus ? `<div><strong>Status:</strong> ${siteStatus}</div>` : ''}
-                    ${site.distance_miles !== null && site.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${site.distance_miles.toFixed(2)} miles</div>` : ''}
-                  </div>
-                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-              `;
-              
-              // Add all remediation site attributes (excluding internal fields)
-              const excludeFields = ['site_id', 'site_name', 'facility_name', 'address', 'city', 'state', 'site_status', 'lat', 'lon', 'distance_miles'];
-              Object.entries(site).forEach(([key, value]) => {
-                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue = '';
-                  
-                  if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value);
-                  } else if (typeof value === 'number') {
-                    displayValue = value.toLocaleString();
-                  } else {
-                    displayValue = String(value);
-                  }
-                  
-                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
-                }
+
+              const popupContent = buildFullFeaturePopupHtml({
+                emoji: '🔧',
+                titlePlain:
+                  siteName ||
+                  facilityName ||
+                  (siteId ? `Site ID: ${String(siteId)}` : 'NH remediation site'),
+                subtitle: 'All fields from the site record (matches CSV columns, including empty values).',
+                poiTypeLabel: 'NH_REMEDIATION_SITE',
+                searchContext: {
+                  searchedAddress: location.name,
+                  searchedLat: location.lat,
+                  searchedLon: location.lon,
+                  confidence: location.confidence,
+                },
+                record: site,
               });
-              
-              popupContent += `
-                  </div>
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+
+              marker.bindPopup(popupContent, { maxWidth: 440 });
               marker.addTo(poi);
               
               // Extend bounds to include this remediation site
@@ -11380,64 +11294,57 @@ const MapView: React.FC<MapViewProps> = ({
                 rec.id ??
                 rec.ID ??
                 '';
-              const title =
-                rec.PERMIT_NAME ??
-                rec.Permit_Name ??
-                rec.APPLICATION_NAME ??
-                rec.Application_Name ??
-                rec.PROJECT_NAME ??
-                rec.Project_Name ??
-                rec.SITE_NAME ??
-                rec.site_name ??
-                '';
-              const town =
-                rec.MUNICIPALITY ??
-                rec.Municipality ??
-                rec.TOWN ??
-                rec.Town ??
-                rec.CITY ??
-                rec.City ??
-                '';
+              // Permits_Active (MapServer layer 8): FILE_NUMBER, TYPE_CODE, DESCRIPTION, … — not PERMIT_NAME
+              const fileNumber = rec.FILE_NUMBER ?? rec.file_number ?? '';
+              const typeCode = rec.TYPE_CODE ?? rec.type_code ?? '';
+              const description = rec.DESCRIPTION ?? rec.description ?? '';
+              let titlePlain = '';
+              if (fileNumber) titlePlain = String(fileNumber);
+              if (typeCode) {
+                titlePlain = titlePlain ? `${titlePlain} · ${String(typeCode)}` : String(typeCode);
+              }
+              if (!titlePlain && description) {
+                const d = String(description);
+                titlePlain = d.length > 90 ? `${d.slice(0, 87)}…` : d;
+              }
+              if (!titlePlain) {
+                titlePlain = oid ? `OBJECTID ${String(oid)}` : 'NHDES wetland permit';
+              }
 
               const icon = createPOIIcon('🌿', '#059669');
 
               const marker = L.marker([pLat, pLon], { icon });
 
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    🌿 ${title || (oid ? `ID ${String(oid)}` : 'Wetland permit / notification')}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${oid ? `<div><strong>Object ID:</strong> ${String(oid)}</div>` : ''}
-                    ${town ? `<div><strong>Location:</strong> ${town}</div>` : ''}
-                    ${rec.distance_miles !== null && rec.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${rec.distance_miles.toFixed(2)} miles</div>` : ''}
-                  </div>
-                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-              `;
-
-              const excludeFields = ['lat', 'lon', 'distance_miles'];
-              Object.entries(rec).forEach(([key, value]) => {
-                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-                  let displayValue = '';
-                  if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value);
-                  } else if (typeof value === 'number') {
-                    displayValue = value.toLocaleString();
-                  } else {
-                    displayValue = String(value);
-                  }
-                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
-                }
+              const popupContent = buildFullFeaturePopupHtml({
+                emoji: '🌿',
+                titlePlain,
+                subtitle:
+                  'NHDES Permits_Active fields (same as ArcGIS layer). Search row matches CSV.',
+                poiTypeLabel: 'NH_DES_WETLAND_PERMIT_APP',
+                searchContext: {
+                  searchedAddress: location.name,
+                  searchedLat: location.lat,
+                  searchedLon: location.lon,
+                  confidence: location.confidence,
+                },
+                record: rec,
+                priorityKeys: [
+                  'OBJECTID',
+                  'FILE_NUMBER',
+                  'EXPIRATION_DATE',
+                  'TYPE_CODE',
+                  'PROJECT_TY',
+                  'DESCRIPTION',
+                  'STATUS_CODE',
+                  'CONSTR_START_NOTICE_RECEIVE',
+                  'CONSTR_FINISH_NOTICE_RECEIVE',
+                  'lat',
+                  'lon',
+                  'distance_miles',
+                ],
               });
 
-              popupContent += `
-                  </div>
-                </div>
-              `;
-
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+              marker.bindPopup(popupContent, { maxWidth: 440 });
               marker.addTo(poi);
               bounds.extend([pLat, pLon]);
             } catch (error) {
@@ -11470,60 +11377,29 @@ const MapView: React.FC<MapViewProps> = ({
               const yardLon = yard.lon;
               const facilityId = yard.facility_id || yard.FACILITY_ID || yard.FacilityId || yard._facility_id || yard.id || yard.ID || yard.Id || 'Unknown Facility';
               const siteName = yard.site_name || yard.SITE_NAME || yard.SiteName || yard._site_name || yard.name || yard.NAME || yard.Name || '';
-              const address = yard.address || yard.ADDRESS || yard.Address || yard._address || yard.street || yard.STREET || '';
-              const address2 = yard.address2 || yard.ADD2 || yard.Add2 || yard._add2 || yard.address2 || yard.ADDRESS2 || yard.Address2 || '';
-              const town = yard.town || yard.TOWN || yard.Town || yard._town || yard.city || yard.CITY || yard.City || yard.municipality || yard.MUNICIPALITY || '';
-              const status = yard.status || yard.STATUS || yard.Status || yard._status || yard.site_status || yard.SITE_STATUS || '';
-              const onestopLink = yard.onestop_link || yard.ONESTOP_LINK || yard.OneStopLink || yard._onestop_link || '';
-              
+
               // Create a custom icon for automobile salvage yards
               const icon = createPOIIcon('🚗', '#ef4444'); // Red icon for salvage yards
-              
+
               const marker = L.marker([yardLat, yardLon], { icon });
-              
-              // Build popup content with all salvage yard attributes
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    🚗 ${siteName || (facilityId ? `Facility ID: ${String(facilityId)}` : 'Automobile Salvage Yard')}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${facilityId ? `<div><strong>Facility ID:</strong> ${String(facilityId)}</div>` : ''}
-                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${address2 ? `<div><strong>Address 2:</strong> ${address2}</div>` : ''}
-                    ${town ? `<div><strong>Town:</strong> ${town}</div>` : ''}
-                    ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
-                    ${onestopLink ? `<div><strong>OneStop Link:</strong> <a href="${onestopLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">View Details</a></div>` : ''}
-                    ${yard.distance_miles !== null && yard.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${yard.distance_miles.toFixed(2)} miles</div>` : ''}
-                  </div>
-                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-              `;
-              
-              // Add all salvage yard attributes (excluding internal fields)
-              const excludeFields = ['facility_id', 'site_name', 'address', 'address2', 'town', 'state', 'status', 'onestop_link', 'lat', 'lon', 'distance_miles'];
-              Object.entries(yard).forEach(([key, value]) => {
-                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue = '';
-                  
-                  if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value);
-                  } else if (typeof value === 'number') {
-                    displayValue = value.toLocaleString();
-                  } else {
-                    displayValue = String(value);
-                  }
-                  
-                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
-                }
+
+              const popupContent = buildFullFeaturePopupHtml({
+                emoji: '🚗',
+                titlePlain:
+                  siteName ||
+                  (facilityId ? `Facility ID: ${String(facilityId)}` : 'Automobile salvage yard'),
+                subtitle: 'All fields from the facility record (matches CSV columns, including empty values).',
+                poiTypeLabel: 'NH_AUTOMOBILE_SALVAGE_YARD',
+                searchContext: {
+                  searchedAddress: location.name,
+                  searchedLat: location.lat,
+                  searchedLon: location.lon,
+                  confidence: location.confidence,
+                },
+                record: yard,
               });
-              
-              popupContent += `
-                  </div>
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+
+              marker.bindPopup(popupContent, { maxWidth: 440 });
               marker.addTo(poi);
               
               // Extend bounds to include this salvage yard
@@ -11559,64 +11435,27 @@ const MapView: React.FC<MapViewProps> = ({
               const facilityLon = facility.lon;
               const swfLid = facility.swf_lid || facility.SWF_LID || facility.SwfLid || facility._swf_lid || facility.facility_id || facility.FACILITY_ID || facility.id || facility.ID || facility.Id || 'Unknown Facility';
               const swfName = facility.swf_name || facility.SWF_NAME || facility.SwfName || facility._swf_name || facility.name || facility.NAME || facility.Name || '';
-              const swfType = facility.swf_type || facility.SWF_TYPE || facility.SwfType || facility._swf_type || facility.type || facility.TYPE || facility.Type || '';
-              const swfStatus = facility.swf_status || facility.SWF_STATUS || facility.SwfStatus || facility._swf_status || facility.status || facility.STATUS || facility.Status || '';
-              const swfPermit = facility.swf_permit || facility.SWF_PERMIT || facility.SwfPermit || facility._swf_permit || facility.permit || facility.PERMIT || '';
-              const address = facility.address || facility.ADDRESS || facility.Address || facility._address || facility.swf_add_1 || facility.SWF_ADD_1 || facility.street || facility.STREET || '';
-              const address2 = facility.address2 || facility.ADDRESS2 || facility.Address2 || facility._address2 || facility.swf_add_2 || facility.SWF_ADD_2 || facility.add2 || facility.ADD2 || '';
-              const city = facility.city || facility.CITY || facility.City || facility._city || facility.swf_city || facility.SWF_CITY || facility.town || facility.TOWN || facility.municipality || facility.MUNICIPALITY || '';
-              const onestopLink = facility.onestop_link || facility.ONESTOP_LINK || facility.OneStopLink || facility._onestop_link || '';
-              
+
               // Create a custom icon for solid waste facilities
               const icon = createPOIIcon('🗑️', '#16a34a'); // Green icon for solid waste facilities
-              
+
               const marker = L.marker([facilityLat, facilityLon], { icon });
-              
-              // Build popup content with all solid waste facility attributes
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    🗑️ ${swfName || (swfLid ? `Facility ID: ${String(swfLid)}` : 'Solid Waste Facility')}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${swfLid ? `<div><strong>Facility ID:</strong> ${String(swfLid)}</div>` : ''}
-                    ${swfType ? `<div><strong>Type:</strong> ${swfType}</div>` : ''}
-                    ${swfStatus ? `<div><strong>Status:</strong> ${swfStatus}</div>` : ''}
-                    ${swfPermit ? `<div><strong>Permit:</strong> ${swfPermit}</div>` : ''}
-                    ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
-                    ${address2 ? `<div><strong>Address 2:</strong> ${address2}</div>` : ''}
-                    ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
-                    ${onestopLink ? `<div><strong>OneStop Link:</strong> <a href="${onestopLink}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">View Details</a></div>` : ''}
-                    ${facility.distance_miles !== null && facility.distance_miles !== undefined ? `<div><strong>Distance:</strong> ${facility.distance_miles.toFixed(2)} miles</div>` : ''}
-                  </div>
-                  <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
-              `;
-              
-              // Add all solid waste facility attributes (excluding internal fields)
-              const excludeFields = ['swf_lid', 'swf_name', 'swf_type', 'swf_status', 'swf_permit', 'address', 'address2', 'city', 'state', 'onestop_link', 'lat', 'lon', 'distance_miles'];
-              Object.entries(facility).forEach(([key, value]) => {
-                if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
-                  const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                  let displayValue = '';
-                  
-                  if (typeof value === 'object') {
-                    displayValue = JSON.stringify(value);
-                  } else if (typeof value === 'number') {
-                    displayValue = value.toLocaleString();
-                  } else {
-                    displayValue = String(value);
-                  }
-                  
-                  popupContent += `<div style="margin-bottom: 4px;"><strong>${displayKey}:</strong> ${displayValue}</div>`;
-                }
+
+              const popupContent = buildFullFeaturePopupHtml({
+                emoji: '🗑️',
+                titlePlain: swfName || (swfLid ? `Facility ID: ${String(swfLid)}` : 'Solid waste facility'),
+                subtitle: 'All fields from the facility record (matches CSV columns, including empty values).',
+                poiTypeLabel: 'NH_SOLID_WASTE_FACILITY',
+                searchContext: {
+                  searchedAddress: location.name,
+                  searchedLat: location.lat,
+                  searchedLon: location.lon,
+                  confidence: location.confidence,
+                },
+                record: facility,
               });
-              
-              popupContent += `
-                  </div>
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 400 });
+
+              marker.bindPopup(popupContent, { maxWidth: 440 });
               marker.addTo(poi);
               
               // Extend bounds to include this solid waste facility
@@ -47256,6 +47095,19 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip Orlando Christmas Lights - handled separately with custom icons
         if (key === 'orlando_christmas_lights_all') {
+          return;
+        }
+
+        // Skip NH DES / NH facility point layers — drawn earlier with full ArcGIS attribute popups
+        // (generic handler would duplicate markers and show "Unnamed POI" / Type: POI only)
+        if (
+          key === 'nh_des_wetland_permit_applications_all' ||
+          key === 'nh_water_wells_all' ||
+          key === 'nh_public_water_supply_wells_all' ||
+          key === 'nh_remediation_sites_all' ||
+          key === 'nh_automobile_salvage_yards_all' ||
+          key === 'nh_solid_waste_facilities_all'
+        ) {
           return;
         }
 

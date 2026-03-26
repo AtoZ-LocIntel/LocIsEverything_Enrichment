@@ -6649,16 +6649,14 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           rec.id ??
           rec.ID ??
           'Unknown';
-        const title =
-          rec.PERMIT_NAME ??
-          rec.Permit_Name ??
-          rec.APPLICATION_NAME ??
-          rec.Application_Name ??
-          rec.PROJECT_NAME ??
-          rec.Project_Name ??
-          rec.SITE_NAME ??
-          rec.site_name ??
-          '';
+        // MapServer Permits_Active layer: FILE_NUMBER, TYPE_CODE, DESCRIPTION, STATUS_CODE, …
+        const fileNumber = rec.FILE_NUMBER ?? rec.file_number ?? '';
+        const typeCode = rec.TYPE_CODE ?? rec.type_code ?? '';
+        const desc = rec.DESCRIPTION ?? rec.description ?? '';
+        let title = '';
+        if (fileNumber) title = String(fileNumber);
+        if (typeCode) title = title ? `${title} · ${String(typeCode)}` : String(typeCode);
+        if (!title && desc) title = String(desc);
         const town =
           rec.MUNICIPALITY ??
           rec.Municipality ??
@@ -6669,6 +6667,8 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           rec.GISMUNIC ??
           '';
         const status =
+          rec.STATUS_CODE ??
+          rec.Status_Code ??
           rec.STATUS ??
           rec.Status ??
           rec.APPLICATION_STATUS ??
@@ -6688,7 +6688,7 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'NH DES',
           (location.confidence || 'N/A').toString(),
           'NH_DES_WETLAND_PERMIT_APP',
-          oid ? String(oid) : 'Unknown',
+          fileNumber ? String(fileNumber) : oid ? String(oid) : 'Unknown',
           (rec.lat || location.lat).toString(),
           (rec.lon || location.lon).toString(),
           rec.distance_miles !== null && rec.distance_miles !== undefined
