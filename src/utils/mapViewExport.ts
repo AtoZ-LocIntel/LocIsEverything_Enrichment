@@ -206,7 +206,7 @@ async function captureMapComposite(
  */
 async function captureMapViaDisplayMedia(element: HTMLElement): Promise<HTMLCanvasElement> {
   const md = navigator.mediaDevices;
-  if (!md?.getDisplayMedia) {
+  if (!md || typeof md.getDisplayMedia !== 'function') {
     throw new Error('getDisplayMedia not supported');
   }
 
@@ -282,7 +282,11 @@ async function captureMapForExport(
   leafletMap: LeafletMap | null,
   preferDisplayCapture: boolean
 ): Promise<HTMLCanvasElement> {
-  if (preferDisplayCapture && typeof navigator !== 'undefined' && navigator.mediaDevices?.getDisplayMedia) {
+  if (
+    preferDisplayCapture &&
+    typeof navigator !== 'undefined' &&
+    typeof navigator.mediaDevices?.getDisplayMedia === 'function'
+  ) {
     try {
       return await captureMapViaDisplayMedia(element);
     } catch (e: unknown) {
