@@ -4323,6 +4323,200 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'https://data.sfgov.org/api/v3/views/34ws-kyf6/query.geojson',
         ]);
       });
+    } else if (key === 'datasf_parking_meters_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+          row.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+          row.lon ??
+          '';
+        const postId = row.post_id || '';
+        const street = [row.street_num, row.street_name].filter(Boolean).join(' ') || row.street_name || '';
+        const label = postId || street || 'Parking meter';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.shape;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_PARKING_METERS',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'SF parking meter',
+          [postId, street].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/8vzz-qzz9/query.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_pd_incident_reports_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+          row.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+          row.lon ??
+          '';
+        const incNum = row.incident_number != null ? String(row.incident_number) : '';
+        const cat = row.incident_category || '';
+        const label = incNum || cat || 'PD incident';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.point;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_PD_INCIDENT_REPORTS',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'PD incident report (2018–present)',
+          [row.incident_subcategory, row.intersection].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/wg3w-h783/query.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_traffic_crashes_injuries_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          (row.tb_latitude != null ? parseFloat(String(row.tb_latitude)) : null) ??
+          row.latitude ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          (row.tb_longitude != null ? parseFloat(String(row.tb_longitude)) : null) ??
+          row.longitude ??
+          '';
+        const caseId = row.case_id_pkey != null ? String(row.case_id_pkey) : '';
+        const sev = row.collision_severity || '';
+        const label = caseId || sev || 'Injury crash';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.point;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_TRAFFIC_CRASHES_INJURIES',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'Traffic crash (injury)',
+          [row.primary_rd, row.secondary_rd].filter(Boolean).join(' / ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/ubvf-ztfx/query.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_temporary_street_closures_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const geom = row.geometry;
+        let plat = '';
+        let plon = '';
+        if (geom?.type === 'LineString' && Array.isArray(geom.coordinates?.[0])) {
+          const c = geom.coordinates[0] as [number, number];
+          plon = String(c[0]);
+          plat = String(c[1]);
+        } else if (geom?.type === 'MultiLineString' && Array.isArray(geom.coordinates?.[0]?.[0])) {
+          const c = geom.coordinates[0][0] as [number, number];
+          plon = String(c[0]);
+          plat = String(c[1]);
+        }
+        const label = row.loc_desc || row.street || row.case_num || 'Temporary street closure';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: geom ?? null,
+        });
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_TEMPORARY_STREET_CLOSURES',
+          String(label),
+          plat,
+          plon,
+          distance,
+          'Temporary street closure (centerline)',
+          [row.case_name, row.type, row.status].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/8x25-yybr/query.geojson',
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {

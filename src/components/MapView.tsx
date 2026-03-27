@@ -5047,6 +5047,10 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'datasf_commercial_vacancy_tax_status': { icon: '🗺️', color: '#c2410c', title: 'DataSF — Commercial Vacancy Tax Status' },
   'datasf_active_food_services': { icon: '🍽️', color: '#b45309', title: 'DataSF — Active Food Services' },
   'datasf_street_vending_permits': { icon: '🛒', color: '#059669', title: 'DataSF — SF Street Vending Permits' },
+  'datasf_parking_meters': { icon: '🅿️', color: '#0e7490', title: 'DataSF — SF Parking Meters' },
+  'datasf_pd_incident_reports': { icon: '🚓', color: '#1e3a8a', title: 'DataSF — PD Incident Reports (2018–Present)' },
+  'datasf_traffic_crashes_injuries': { icon: '🚗', color: '#ea580c', title: 'DataSF — Traffic Crashes Resulting in Injuries' },
+  'datasf_temporary_street_closures': { icon: '🚧', color: '#dc2626', title: 'DataSF — Temporary Street Closures' },
   'ca_la_zoning': { icon: '🏙️', color: '#7c3aed', title: 'City of Los Angeles Zoning' },
   'la_county_arts_recreation': { icon: '🎨', color: '#ec4899', title: 'LA County Arts and Recreation' },
   'la_county_education': { icon: '🎓', color: '#3b82f6', title: 'LA County Education' },
@@ -6063,6 +6067,10 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'datasf_commercial_vacancy_tax_status_all' || // Skip DataSF Commercial Vacancy Tax Status array (handled separately for map drawing)
     key === 'datasf_active_food_services_all' || // Skip DataSF Active Food Services array (handled separately for map drawing)
     key === 'datasf_street_vending_permits_all' || // Skip DataSF SF Street Vending Permits array (handled separately for map drawing)
+    key === 'datasf_parking_meters_all' || // Skip DataSF SF Parking Meters array (handled separately for map drawing)
+    key === 'datasf_pd_incident_reports_all' || // Skip DataSF PD Incident Reports array (handled separately for map drawing)
+    key === 'datasf_traffic_crashes_injuries_all' || // Skip DataSF Traffic Crashes (Injuries) array (handled separately for map drawing)
+    key === 'datasf_temporary_street_closures_all' || // Skip DataSF Temporary Street Closures array (handled separately for map drawing)
     key === 'ca_solar_footprints_all' || // Skip CA Solar Footprints array (handled separately for map drawing)
     key === 'ca_natural_gas_service_areas_all' || // Skip CA Natural Gas Service Areas array (handled separately for map drawing)
     key === 'ca_plss_sections_all' || // Skip CA PLSS Sections array (handled separately for map drawing)
@@ -27290,6 +27298,446 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing DataSF Street Vending Permits:', error);
       }
 
+      // Draw DataSF SF Parking Meters as point markers
+      try {
+        if (enrichments.datasf_parking_meters_all && Array.isArray(enrichments.datasf_parking_meters_all)) {
+          let pmCount = 0;
+          enrichments.datasf_parking_meters_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const postId = row.post_id || '';
+                const street = [row.street_num, row.street_name].filter(Boolean).join(' ') || row.street_name || '';
+                const meterType = row.meter_type || '';
+                const active = row.active_meter_flag || '';
+                const onOff = row.on_offstreet_type || '';
+                const neighborhood = row.analysis_neighborhood || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#0e7490';
+
+                const title = postId || street || 'Parking meter';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🅿️', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🅿️ ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${postId ? `<div><strong>Post ID:</strong> ${postId}</div>` : ''}
+                      ${street ? `<div><strong>Street:</strong> ${street}</div>` : ''}
+                      ${meterType && meterType !== '-' ? `<div><strong>Meter type:</strong> ${meterType}</div>` : ''}
+                      ${active && active !== '-' ? `<div><strong>Active flag:</strong> ${active}</div>` : ''}
+                      ${onOff ? `<div><strong>On/off street:</strong> ${onOff}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'post_id',
+                  'street_name',
+                  'street_num',
+                  'meter_type',
+                  'active_meter_flag',
+                  'on_offstreet_type',
+                  'analysis_neighborhood',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'shape',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_parking_meters';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                pmCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Parking Meter marker:', err);
+              }
+            }
+          });
+
+          if (pmCount > 0) {
+            if (!legendAccumulator['datasf_parking_meters']) {
+              legendAccumulator['datasf_parking_meters'] = {
+                icon: '🅿️',
+                color: '#0e7490',
+                title: 'DataSF — SF Parking Meters',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_parking_meters'].count += pmCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Parking Meters:', error);
+      }
+
+      // Draw DataSF PD Incident Reports (2018–present) as point markers
+      try {
+        if (enrichments.datasf_pd_incident_reports_all && Array.isArray(enrichments.datasf_pd_incident_reports_all)) {
+          let pdCount = 0;
+          enrichments.datasf_pd_incident_reports_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const category = row.incident_category || '';
+                const subcat = row.incident_subcategory || '';
+                const desc = row.incident_description || '';
+                const incNum = row.incident_number != null ? String(row.incident_number) : '';
+                const when = row.incident_datetime || row.incident_date || '';
+                const district = row.police_district || '';
+                const resolution = row.resolution || '';
+                const intersection = row.intersection || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#1e3a8a';
+
+                const title = category || incNum || 'PD incident';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚓', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚓 ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${incNum ? `<div><strong>Incident #:</strong> ${incNum}</div>` : ''}
+                      ${subcat ? `<div><strong>Subcategory:</strong> ${subcat}</div>` : ''}
+                      ${desc ? `<div><strong>Description:</strong> ${desc}</div>` : ''}
+                      ${when ? `<div><strong>When:</strong> ${when}</div>` : ''}
+                      ${district ? `<div><strong>District:</strong> ${district}</div>` : ''}
+                      ${resolution ? `<div><strong>Resolution:</strong> ${resolution}</div>` : ''}
+                      ${intersection ? `<div><strong>Intersection:</strong> ${intersection}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'incident_category',
+                  'incident_subcategory',
+                  'incident_description',
+                  'incident_datetime',
+                  'incident_date',
+                  'incident_number',
+                  'police_district',
+                  'resolution',
+                  'intersection',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'point',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_pd_incident_reports';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                pdCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF PD Incident Report marker:', err);
+              }
+            }
+          });
+
+          if (pdCount > 0) {
+            if (!legendAccumulator['datasf_pd_incident_reports']) {
+              legendAccumulator['datasf_pd_incident_reports'] = {
+                icon: '🚓',
+                color: '#1e3a8a',
+                title: 'DataSF — PD Incident Reports (2018–Present)',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_pd_incident_reports'].count += pdCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF PD Incident Reports:', error);
+      }
+
+      // Draw DataSF Traffic Crashes (Injuries) as point markers
+      try {
+        if (enrichments.datasf_traffic_crashes_injuries_all && Array.isArray(enrichments.datasf_traffic_crashes_injuries_all)) {
+          let crashCount = 0;
+          enrichments.datasf_traffic_crashes_injuries_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.tb_latitude != null ? parseFloat(String(row.tb_latitude)) : null) ??
+              row.latitude ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.tb_longitude != null ? parseFloat(String(row.tb_longitude)) : null) ??
+              row.longitude ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const sev = row.collision_severity || '';
+                const typ = row.type_of_collision || '';
+                const mviw = row.mviw || '';
+                const when = row.collision_datetime || row.collision_date || '';
+                const district = row.police_district || row.reporting_district || '';
+                const primaryRd = row.primary_rd || '';
+                const secondaryRd = row.secondary_rd || '';
+                const injured = row.number_injured != null ? String(row.number_injured) : '';
+                const killed = row.number_killed != null ? String(row.number_killed) : '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#ea580c';
+
+                const title = sev || typ || 'Injury crash';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🚗', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚗 ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${row.case_id_pkey != null ? `<div><strong>Case ID:</strong> ${row.case_id_pkey}</div>` : ''}
+                      ${typ ? `<div><strong>Collision type:</strong> ${typ}</div>` : ''}
+                      ${mviw ? `<div><strong>MV Involved With:</strong> ${mviw}</div>` : ''}
+                      ${when ? `<div><strong>When:</strong> ${when}</div>` : ''}
+                      ${district ? `<div><strong>District:</strong> ${district}</div>` : ''}
+                      ${primaryRd || secondaryRd ? `<div><strong>Roads:</strong> ${[primaryRd, secondaryRd].filter(Boolean).join(' / ')}</div>` : ''}
+                      ${injured ? `<div><strong>Injured:</strong> ${injured}</div>` : ''}
+                      ${killed ? `<div><strong>Killed:</strong> ${killed}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'case_id_pkey',
+                  'collision_severity',
+                  'type_of_collision',
+                  'mviw',
+                  'collision_datetime',
+                  'collision_date',
+                  'police_district',
+                  'reporting_district',
+                  'primary_rd',
+                  'secondary_rd',
+                  'number_injured',
+                  'number_killed',
+                  'latitude',
+                  'longitude',
+                  'tb_latitude',
+                  'tb_longitude',
+                  'geometry',
+                  'distance_miles',
+                  'point',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_traffic_crashes_injuries';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                crashCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF injury crash marker:', err);
+              }
+            }
+          });
+
+          if (crashCount > 0) {
+            if (!legendAccumulator['datasf_traffic_crashes_injuries']) {
+              legendAccumulator['datasf_traffic_crashes_injuries'] = {
+                icon: '🚗',
+                color: '#ea580c',
+                title: 'DataSF — Traffic Crashes Resulting in Injuries',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_traffic_crashes_injuries'].count += crashCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Traffic Crashes (Injuries):', error);
+      }
+
+      // Draw DataSF Temporary Street Closures as polylines (LineString / MultiLineString)
+      try {
+        if (enrichments.datasf_temporary_street_closures_all && Array.isArray(enrichments.datasf_temporary_street_closures_all)) {
+          let tscDrawn = 0;
+          enrichments.datasf_temporary_street_closures_all.forEach((row: any) => {
+            const geom = row.geometry;
+            if (!geom) return;
+
+            const addPolyline = (coords: number[][]) => {
+              if (!coords || coords.length < 2) return;
+              try {
+                const latlngs = coords.map((c) => [c[1], c[0]] as [number, number]);
+                const polyline = L.polyline(latlngs, {
+                  color: '#dc2626',
+                  weight: 4,
+                  opacity: 0.9,
+                  smoothFactor: 1,
+                });
+                const loc = row.loc_desc || row.street || '';
+                const caseNum = row.case_num != null ? String(row.case_num) : '';
+                const caseName = row.case_name || '';
+                const typ = row.type || '';
+                const status = row.status || '';
+                const veh = row.veh_imp || '';
+                const dist =
+                  row.distance_miles !== null && row.distance_miles !== undefined
+                    ? Number(row.distance_miles).toFixed(2)
+                    : '';
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🚧 Temporary street closure
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${loc ? `<div><strong>Location:</strong> ${loc}</div>` : ''}
+                      ${caseNum ? `<div><strong>Case:</strong> ${caseNum}</div>` : ''}
+                      ${caseName ? `<div><strong>Case name:</strong> ${caseName}</div>` : ''}
+                      ${typ ? `<div><strong>Type:</strong> ${typ}</div>` : ''}
+                      ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                      ${veh ? `<div><strong>Vehicle impact:</strong> ${veh}</div>` : ''}
+                      ${dist ? `<div style="margin-top: 8px;"><strong>Distance to line:</strong> ${dist} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+                const excludeFields = [
+                  'loc_desc',
+                  'street',
+                  'case_num',
+                  'case_name',
+                  'type',
+                  'status',
+                  'veh_imp',
+                  'geometry',
+                  'distance_miles',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+                popupContent += `</div></div>`;
+                polyline.bindPopup(popupContent, { maxWidth: 400 });
+                (polyline as any).__legendKey = 'datasf_temporary_street_closures';
+                polyline.addTo(primary);
+                bounds.extend(polyline.getBounds());
+                tscDrawn++;
+              } catch (err) {
+                console.error('Error drawing DataSF Temporary Street Closure polyline:', err);
+              }
+            };
+
+            if (geom.type === 'LineString' && Array.isArray(geom.coordinates)) {
+              addPolyline(geom.coordinates as number[][]);
+            } else if (geom.type === 'MultiLineString' && Array.isArray(geom.coordinates)) {
+              (geom.coordinates as number[][][]).forEach((line) => addPolyline(line));
+            }
+          });
+
+          if (tscDrawn > 0) {
+            if (!legendAccumulator['datasf_temporary_street_closures']) {
+              legendAccumulator['datasf_temporary_street_closures'] = {
+                icon: '🚧',
+                color: '#dc2626',
+                title: 'DataSF — Temporary Street Closures',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_temporary_street_closures'].count += tscDrawn;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Temporary Street Closures:', error);
+      }
+
       // Draw CA Solar Footprints as polygons on the map
       try {
         if (enrichments.ca_solar_footprints_all && Array.isArray(enrichments.ca_solar_footprints_all)) {
@@ -47941,6 +48389,22 @@ const MapView: React.FC<MapViewProps> = ({
         }
 
         if (key === 'datasf_street_vending_permits_all') {
+          return;
+        }
+
+        if (key === 'datasf_parking_meters_all') {
+          return;
+        }
+
+        if (key === 'datasf_pd_incident_reports_all') {
+          return;
+        }
+
+        if (key === 'datasf_traffic_crashes_injuries_all') {
+          return;
+        }
+
+        if (key === 'datasf_temporary_street_closures_all') {
           return;
         }
 

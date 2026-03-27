@@ -292,7 +292,9 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               radiusOptions = [0.25, 0.50, 0.75, 1.0];
             } else if (enrichment.id === 'nh_nwi_plus' || enrichment.id === 'ma_dep_wetlands' || enrichment.id === 'ma_open_space' || enrichment.id === 'cape_cod_zoning') {
               radiusOptions = [0.1, 0.25, 0.5, 0.75, 1.0];
-            } else if (enrichment.id === 'datasf_active_business_locations' || enrichment.id === 'datasf_taxable_commercial_spaces' || enrichment.id === 'datasf_commercial_vacancy_tax_status' || enrichment.id === 'datasf_active_food_services' || enrichment.id === 'datasf_street_vending_permits') {
+            } else if (enrichment.id === 'datasf_temporary_street_closures') {
+              radiusOptions = [0.25, 0.5, 1.0, 2.5, 5.0];
+            } else if (enrichment.id === 'datasf_active_business_locations' || enrichment.id === 'datasf_taxable_commercial_spaces' || enrichment.id === 'datasf_commercial_vacancy_tax_status' || enrichment.id === 'datasf_active_food_services' || enrichment.id === 'datasf_street_vending_permits' || enrichment.id === 'datasf_parking_meters' || enrichment.id === 'datasf_pd_incident_reports' || enrichment.id === 'datasf_traffic_crashes_injuries') {
               radiusOptions = [0.25, 0.5, 0.75, 1.0];
             } else if (enrichment.id === 'nh_dot_roads' || enrichment.id === 'nh_railroads' || enrichment.id === 'nh_transmission_pipelines' || enrichment.id === 'ma_trails') {
               radiusOptions = [0.5, 1, 2.5, 5, 10];

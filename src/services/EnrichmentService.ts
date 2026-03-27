@@ -96,6 +96,10 @@ import { getDatasfTaxableCommercialSpacesData } from '../adapters/datasfTaxableC
 import { getDatasfCommercialVacancyTaxStatusData } from '../adapters/datasfCommercialVacancyTaxStatus';
 import { getDatasfActiveFoodServicesData } from '../adapters/datasfActiveFoodServices';
 import { getDatasfStreetVendingPermitsData } from '../adapters/datasfStreetVendingPermits';
+import { getDatasfTemporaryStreetClosuresData } from '../adapters/datasfTemporaryStreetClosures';
+import { getDatasfParkingMetersData } from '../adapters/datasfParkingMeters';
+import { getDatasfPdIncidentReportsData } from '../adapters/datasfPdIncidentReports';
+import { getDatasfTrafficCrashesInjuriesData } from '../adapters/datasfTrafficCrashesInjuries';
 import { getCASolarFootprintsData } from '../adapters/caSolarFootprints';
 import { getCANaturalGasServiceAreasData } from '../adapters/caNaturalGasServiceAreas';
 import { getCAPLSSSectionsData } from '../adapters/caPlssSections';
@@ -4215,6 +4219,22 @@ export class EnrichmentService {
       // DataSF — SF Street Vending Permits - Proximity query only (max 1 mi)
       case 'datasf_street_vending_permits':
         return await this.getDatasfStreetVendingPermits(lat, lon, radius);
+      
+      // DataSF — Temporary Street Closures - Proximity query only (max 5 mi, polylines)
+      case 'datasf_temporary_street_closures':
+        return await this.getDatasfTemporaryStreetClosures(lat, lon, radius);
+      
+      // DataSF — SF Parking Meters - Proximity query only (max 1 mi)
+      case 'datasf_parking_meters':
+        return await this.getDatasfParkingMeters(lat, lon, radius);
+      
+      // DataSF — PD Incident Reports (2018–present) - Proximity query only (max 1 mi)
+      case 'datasf_pd_incident_reports':
+        return await this.getDatasfPdIncidentReports(lat, lon, radius);
+      
+      // DataSF — Traffic Crashes Resulting in Injuries - Proximity query only (max 1 mi)
+      case 'datasf_traffic_crashes_injuries':
+        return await this.getDatasfTrafficCrashesInjuries(lat, lon, radius);
       
       // CA Oil and Gas Wells - Proximity query only
       case 'ca_oil_gas_wells':
@@ -19843,6 +19863,106 @@ out center tags;`;
       return {
         datasf_street_vending_permits_count: 0,
         datasf_street_vending_permits_all: []
+      };
+    }
+  }
+
+  private async getDatasfTemporaryStreetClosures(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚧 Fetching DataSF Temporary Street Closures for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_temporary_street_closures_count: 0,
+          datasf_temporary_street_closures_all: []
+        };
+      }
+      const rows = await getDatasfTemporaryStreetClosuresData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_temporary_street_closures_count = rows.length;
+      result.datasf_temporary_street_closures_all = rows.map((r) => ({ ...r }));
+      result.datasf_temporary_street_closures_summary = `Found ${rows.length} temporary street closure segment(s) within ${radius} miles (closest approach to search point).`;
+      console.log(`✅ DataSF Temporary Street Closures processed:`, { totalCount: result.datasf_temporary_street_closures_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Temporary Street Closures:', error);
+      return {
+        datasf_temporary_street_closures_count: 0,
+        datasf_temporary_street_closures_all: []
+      };
+    }
+  }
+
+  private async getDatasfParkingMeters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🅿️ Fetching DataSF Parking Meters for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_parking_meters_count: 0,
+          datasf_parking_meters_all: []
+        };
+      }
+      const rows = await getDatasfParkingMetersData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_parking_meters_count = rows.length;
+      result.datasf_parking_meters_all = rows.map((r) => ({ ...r }));
+      result.datasf_parking_meters_summary = `Found ${rows.length} parking meter location(s) within ${radius} miles.`;
+      console.log(`✅ DataSF Parking Meters processed:`, { totalCount: result.datasf_parking_meters_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Parking Meters:', error);
+      return {
+        datasf_parking_meters_count: 0,
+        datasf_parking_meters_all: []
+      };
+    }
+  }
+
+  private async getDatasfPdIncidentReports(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚓 Fetching DataSF PD Incident Reports for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_pd_incident_reports_count: 0,
+          datasf_pd_incident_reports_all: []
+        };
+      }
+      const rows = await getDatasfPdIncidentReportsData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_pd_incident_reports_count = rows.length;
+      result.datasf_pd_incident_reports_all = rows.map((r) => ({ ...r }));
+      result.datasf_pd_incident_reports_summary = `Found ${rows.length} PD incident report(s) with location (incident_date ≥ 2018-01-01) within ${radius} miles.`;
+      console.log(`✅ DataSF PD Incident Reports processed:`, { totalCount: result.datasf_pd_incident_reports_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF PD Incident Reports:', error);
+      return {
+        datasf_pd_incident_reports_count: 0,
+        datasf_pd_incident_reports_all: []
+      };
+    }
+  }
+
+  private async getDatasfTrafficCrashesInjuries(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚗 Fetching DataSF Traffic Crashes (Injuries) for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_traffic_crashes_injuries_count: 0,
+          datasf_traffic_crashes_injuries_all: []
+        };
+      }
+      const rows = await getDatasfTrafficCrashesInjuriesData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_traffic_crashes_injuries_count = rows.length;
+      result.datasf_traffic_crashes_injuries_all = rows.map((r) => ({ ...r }));
+      result.datasf_traffic_crashes_injuries_summary = `Found ${rows.length} injury traffic crash record(s) with location (collision_datetime ≥ 2024-01-01) within ${radius} miles.`;
+      console.log(`✅ DataSF Traffic Crashes (Injuries) processed:`, { totalCount: result.datasf_traffic_crashes_injuries_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Traffic Crashes (Injuries):', error);
+      return {
+        datasf_traffic_crashes_injuries_count: 0,
+        datasf_traffic_crashes_injuries_all: []
       };
     }
   }

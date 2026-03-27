@@ -5545,6 +5545,38 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://data.sfgov.org/api/v3/views/34ws-kyf6/query.geojson"
         },
         {
+          name: "DataSF — Temporary Street Closures",
+          description: "SFMTA-permitted temporary street closures as centerline polylines (Shared Spaces, events, construction). Proximity queries up to 5 miles (0.25, 0.5, 1.0, 2.5, 5.0).",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/8x25-yybr/query.geojson"
+        },
+        {
+          name: "DataSF — SF Parking Meters",
+          description: "SFMTA parking meter locations. Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0).",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/8vzz-qzz9/query.geojson"
+        },
+        {
+          name: "DataSF — PD Incident Reports (2018–Present)",
+          description: "Police Department incident reports with location where geocoded; incident_date from 2018 onward. Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0). Ad-hoc SoQL example: filter by incident_date range.",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/wg3w-h783/query.geojson"
+        },
+        {
+          name: "DataSF — Traffic Crashes Resulting in Injuries",
+          description: "Injury-involved traffic collisions with geocoded locations; collision_datetime from 2024 onward in this app. Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0). Example SoQL: filter collision_datetime range (e.g. 2024–2026).",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/ubvf-ztfx/query.geojson"
+        },
+        {
           name: "CA Power Outage Areas",
           description: "California Power Outage Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",
