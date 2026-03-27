@@ -41,6 +41,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'NWS.webp'
   },
   {
+    id: 'event_theme',
+    title: 'Event Theme',
+    description: 'Live maritime AIS positions and other event-oriented situational layers',
+    icon: '🚢'
+  },
+  {
     id: 'hazards',
     title: 'Human Caused Hazards',
     description: 'Man-made environmental hazards and pollution sources',
@@ -557,6 +563,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'climate_risks', label: 'Scenarios Climate Risks', description: 'Scenarios Climate Risks - Climate risk assessments including coastal, fluvial, pluvial, tropical cyclone, and earthquake damage scenarios for RCP26, RCP45, RCP85, and present-day scenarios (proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'climaterisks', section: 'global_risk' },
   { id: 'spillovers_port_impact', label: 'Spillovers Port Level Impact', description: 'Spillovers Port Level Impact - Port-to-port spillover impacts showing capacity impacts from source ports to destination ports at different time horizons (1, 7, 14, 30, 90 days) with actual and relative capacity metrics (proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'spillovers', section: 'global_risk' },
   { id: 'shipping_lanes', label: 'Global Shipping Lanes', description: 'Global Shipping Lanes - Major, medium, and minor global shipping routes derived from CIA world oceans map. Shows maritime shipping corridors worldwide (proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'shippinglanes', section: 'global_risk' },
+  { id: 'ais_live_shipping', label: 'AIS Live Ship Positions', description: 'Live vessel positions from AIS Stream (PositionReport): MMSI, SOG, COG, navigation status. Requires AISSTREAM_API_KEY on the server; snapshot collected over a few seconds per search (proximity up to 500 miles)', isPOI: true, defaultRadius: 25, maxRadius: 500, category: 'event_theme', section: 'event_theme' },
   { id: 'maritime_boundaries', label: "World's Maritime Boundaries", description: "World's Maritime Boundaries - Global maritime boundaries including Exclusive Economic Zones (200NM), Territorial Seas (12NM), Contiguous Zones (24NM), Internal Waters, Archipelagic Waters, and High Seas (point-in-polygon and proximity queries up to 1000 miles)", isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'maritimeboundaries', section: 'global_risk' },
   { id: 'global_data_centers_osm', label: 'Global Data Centers (OSM)', description: 'OpenStreetMap data centers via Overpass API — man_made=data_center, building=data_center, telecom=data_center (proximity queries up to 250 miles)', isPOI: true, defaultRadius: 50, maxRadius: 250, category: 'osmdatacenters', section: 'global_risk' },
   { id: 'global_desalination_plants_osm', label: 'Global Desalination Plants (OSM)', description: 'OpenStreetMap desalination via Overpass — single proximity query (compound tags + plant:method=desalination); 429/504 retried with backoff — up to 250 miles', isPOI: true, defaultRadius: 50, maxRadius: 250, category: 'osmdesalination', section: 'global_risk' },

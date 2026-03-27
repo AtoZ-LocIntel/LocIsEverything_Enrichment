@@ -330,6 +330,7 @@ import { getACLEDData } from '../adapters/acled';
 import { getClimateRisksData } from '../adapters/climateRisks';
 import { getSpilloversPortImpactData } from '../adapters/spilloversPortImpact';
 import { getPortWatchPortsData } from '../adapters/portWatchPorts';
+import { fetchAISLivePositionReports } from '../adapters/aisStreamLive';
 import { getUSGSEarthquakesData } from '../adapters/usgsEarthquakes';
 import { getShippingLanesData } from '../adapters/shippingLanes';
 import {
@@ -1612,6 +1613,42 @@ export class EnrichmentService {
         opensky_flights_summary: 'Error querying OpenSky Network data',
         opensky_flights_all: [],
         opensky_flights_error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  private async getAISLiveShipping(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🚢 AIS Stream snapshot for [${lat}, ${lon}] within ${radiusMiles} miles`);
+      const { features, collectedAt, error, hint } = await fetchAISLivePositionReports(lat, lon, radiusMiles);
+      if (error) {
+        return {
+          ais_live_shipping_count: 0,
+          ais_live_shipping_summary: hint ? `${error} ${hint}` : error,
+          ais_live_shipping_all: [],
+          ais_live_shipping_proximity_distance: radiusMiles,
+          ais_live_shipping_collected_at: collectedAt ?? null,
+        };
+      }
+      const summary =
+        features.length === 0
+          ? `No AIS vessel positions in snapshot within ${radiusMiles} miles (data is live and may be sparse; run again).`
+          : `AIS Stream: ${features.length} vessel position(s) within ${radiusMiles} miles.`;
+      return {
+        ais_live_shipping_count: features.length,
+        ais_live_shipping_summary: summary,
+        ais_live_shipping_all: features,
+        ais_live_shipping_proximity_distance: radiusMiles,
+        ais_live_shipping_collected_at: collectedAt ?? null,
+      };
+    } catch (e) {
+      console.error('Error in AIS live shipping query:', e);
+      return {
+        ais_live_shipping_count: 0,
+        ais_live_shipping_summary: 'Error fetching AIS live data',
+        ais_live_shipping_all: [],
+        ais_live_shipping_proximity_distance: radiusMiles,
+        ais_live_shipping_error: e instanceof Error ? e.message : 'Unknown error',
       };
     }
   }
@@ -3775,6 +3812,9 @@ export class EnrichmentService {
       // Global Risk - OpenSky Flight Tracker (global view only, no spatial queries)
       case 'opensky_flights':
         return await this.getOpenSkyFlights();
+
+      case 'ais_live_shipping':
+        return await this.getAISLiveShipping(lat, lon, radius);
       
       // USDA Local Food Portal - Farmers Markets & Local Food
       case 'poi_usda_agritourism':

@@ -6680,6 +6680,9 @@ const MapView: React.FC<MapViewProps> = ({
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
   const openskyRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const openskyMarkersRef = useRef<L.Marker[]>([]); // Track OpenSky markers for easy removal
+  const aisLiveMarkersRef = useRef<L.Marker[]>([]); // AIS from enrichment run
+  const aisToggleMarkersRef = useRef<L.Marker[]>([]); // AIS from Event Themes map toggle
+  const aisToggleRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Helper function to get radius from poiRadii, trying multiple key variations
   // Falls back to POI config defaultRadius if poiRadii is empty
@@ -6775,6 +6778,9 @@ const MapView: React.FC<MapViewProps> = ({
   const [showBaseBasemap, setShowBaseBasemap] = useState<boolean>(true); // Toggle to show/hide base basemap layers
   const [showWeatherRadar, setShowWeatherRadar] = useState<boolean>(false);
   const [showFlights, setShowFlights] = useState<boolean>(false);
+  /** Event Themes panel: live AIS ship positions (map toggle; no enrichment layer required). */
+  const [showAISLiveShips, setShowAISLiveShips] = useState<boolean>(false);
+  const [aisToggleLoading, setAisToggleLoading] = useState<boolean>(false);
   const [showEarthquakes, setShowEarthquakes] = useState<boolean>(false);
   const [showWFIGSWildfires, setShowWFIGSWildfires] = useState<boolean>(false);
   const [showNASAFIRMS, setShowNASAFIRMS] = useState<boolean>(false);
@@ -8658,6 +8664,147 @@ const MapView: React.FC<MapViewProps> = ({
     };
   }, [showFlights, isInitialized]);
 
+  // Handle AIS Live Ship Positions toggle (Event Themes — same pattern as Flight Tracker)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
+      return;
+    }
+
+    const clearMarkers = () => {
+      if (!layerGroupsRef.current) return;
+      const { primary } = layerGroupsRef.current;
+      aisToggleMarkersRef.current.forEach((m) => {
+        try {
+          primary.removeLayer(m);
+        } catch {
+          /* ignore */
+        }
+      });
+      aisToggleMarkersRef.current = [];
+    };
+
+    if (!showAISLiveShips) {
+      if (aisToggleRefreshIntervalRef.current) {
+        clearInterval(aisToggleRefreshIntervalRef.current);
+        aisToggleRefreshIntervalRef.current = null;
+      }
+      clearMarkers();
+      return;
+    }
+
+    const fetchAndDisplayAIS = async () => {
+      try {
+        const map = mapInstanceRef.current;
+        if (!map || !layerGroupsRef.current) return;
+        const { primary } = layerGroupsRef.current;
+
+        let lat: number;
+        let lon: number;
+        const loc0 = results[0]?.location;
+        if (loc0 && !(loc0.lat === 0 && loc0.lon === 0)) {
+          lat = loc0.lat;
+          lon = loc0.lon;
+        } else {
+          const c = map.getCenter();
+          lat = c.lat;
+          lon = c.lng;
+        }
+
+        const radiusMiles =
+          typeof poiRadii.ais_live_shipping === 'number' && poiRadii.ais_live_shipping > 0
+            ? poiRadii.ais_live_shipping
+            : 50;
+
+        setAisToggleLoading(true);
+        const { fetchAISLivePositionReports } = await import('../adapters/aisStreamLive');
+        const { features } = await fetchAISLivePositionReports(lat, lon, radiusMiles);
+
+        clearMarkers();
+
+        if (features && features.length > 0) {
+          features.forEach((vessel: any) => {
+            const vlat = vessel.lat ?? vessel.latitude;
+            const vlon = vessel.lon ?? vessel.longitude;
+            if (typeof vlat !== 'number' || typeof vlon !== 'number' || Number.isNaN(vlat) || Number.isNaN(vlon)) {
+              return;
+            }
+            const cog = typeof vessel.cog === 'number' ? vessel.cog : 0;
+            const sog = typeof vessel.sog === 'number' ? vessel.sog : null;
+            const mmsi = vessel.mmsi ?? '—';
+            const name = vessel.shipName || `MMSI ${mmsi}`;
+            const heading =
+              typeof vessel.trueHeading === 'number' && vessel.trueHeading >= 0 && vessel.trueHeading <= 359
+                ? vessel.trueHeading
+                : cog;
+
+            const iconHtml = `<div style="
+                transform: rotate(${heading}deg);
+                width: 22px;
+                height: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+              ">🚢</div>`;
+
+            const marker = L.marker([vlat, vlon], {
+              icon: L.divIcon({
+                className: 'custom-marker',
+                html: iconHtml,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11],
+              }),
+            });
+
+            const dist =
+              typeof vessel.distance_miles === 'number'
+                ? `<div><strong>Distance:</strong> ${vessel.distance_miles.toFixed(1)} mi</div>`
+                : '';
+            const popupContent = `
+              <div style="min-width: 220px; max-width: 360px;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                  🚢 ${name}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                  <div><strong>MMSI:</strong> ${mmsi}</div>
+                  ${dist}
+                  ${sog !== null ? `<div><strong>SOG:</strong> ${sog.toFixed(1)} kn</div>` : ''}
+                  <div><strong>COG:</strong> ${cog.toFixed(0)}°</div>
+                  ${typeof vessel.navigationalStatus === 'number' ? `<div><strong>Nav status:</strong> ${vessel.navigationalStatus}</div>` : ''}
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent, { maxWidth: 400 });
+            marker.addTo(primary);
+            (marker as any).__layerType = 'ais_live_shipping_toggle';
+            (marker as any).__layerTitle = 'AIS Live Ship Positions';
+            aisToggleMarkersRef.current.push(marker);
+          });
+        }
+      } catch (e) {
+        console.error('AIS toggle fetch error:', e);
+      } finally {
+        setAisToggleLoading(false);
+      }
+    };
+
+    void fetchAndDisplayAIS();
+    aisToggleRefreshIntervalRef.current = setInterval(() => {
+      if (showAISLiveShips) {
+        void fetchAndDisplayAIS();
+      }
+    }, 45000);
+
+    return () => {
+      if (aisToggleRefreshIntervalRef.current) {
+        clearInterval(aisToggleRefreshIntervalRef.current);
+        aisToggleRefreshIntervalRef.current = null;
+      }
+    };
+  }, [showAISLiveShips, isInitialized, results, poiRadii]);
+
   // Handle earthquake toggle (last 48 hours)
   useEffect(() => {
     if (!mapInstanceRef.current || !layerGroupsRef.current || !isInitialized) {
@@ -9547,6 +9694,7 @@ const MapView: React.FC<MapViewProps> = ({
           // Don't remove toggle layers (usgs_earthquakes_toggle, opensky_flights, wildfire toggles, shipping lanes)
           if (layer.__layerType !== 'usgs_earthquakes_toggle' && 
               layer.__layerType !== 'opensky_flights' &&
+              layer.__layerType !== 'ais_live_shipping_toggle' &&
               layer.__layerType !== 'wfigs_wildfires_toggle' &&
               layer.__layerType !== 'nasa_firms_toggle' &&
               layer.__layerType !== 'shipping_lanes_toggle' &&
@@ -10225,7 +10373,7 @@ const MapView: React.FC<MapViewProps> = ({
     return () => {
       // Cleanup handled in individual feature handlers
     };
-  }, [results, isGlobalRiskMode, globalRiskLayerStates]);
+  }, [results, isGlobalRiskMode, globalRiskLayerStates, showAISLiveShips]);
     
     function addFeaturesToMap() {
     if (!mapInstanceRef.current || !layerGroupsRef.current) {
@@ -10240,7 +10388,11 @@ const MapView: React.FC<MapViewProps> = ({
     // For Global Risk mode, use globalRiskEnrichmentsRef; otherwise use results[0].enrichments
     const getEffectiveEnrichments = () => {
       if (isGlobalRiskMode) {
-        return globalRiskEnrichmentsRef.current;
+        // Merge: enrichment API results (AIS, OpenSky, etc.) + global-risk toggle ref (port layers, etc.)
+        return {
+          ...(results[0]?.enrichments || {}),
+          ...globalRiskEnrichmentsRef.current,
+        };
       }
       if (results && results.length > 0 && results[0]?.enrichments) {
         return results[0].enrichments;
@@ -10369,8 +10521,10 @@ const MapView: React.FC<MapViewProps> = ({
         return;
       }
 
-      // Use Global Risk enrichments if in Global Risk mode, otherwise use regular enrichments
-      const enrichments = isGlobalRiskMode ? globalRiskEnrichmentsRef.current : result.enrichments;
+      // Global Risk mode: merge API enrichments (AIS Live, OpenSky, etc.) with toggle-driven globalRisk ref
+      const enrichments = isGlobalRiskMode
+        ? { ...(result.enrichments || {}), ...globalRiskEnrichmentsRef.current }
+        : result.enrichments;
 
       const latLng = L.latLng(location.lat, location.lon);
       if (!(location.lat === 0 && location.lon === 0)) {
@@ -17765,6 +17919,104 @@ const MapView: React.FC<MapViewProps> = ({
             };
           } else {
             legendAccumulator[legendKey].count = flightFeatureCount || enrichments.opensky_flights_count || 0;
+          }
+        }
+      }
+
+      // Draw AIS live ship positions from enrichment (skip when Event Themes AIS toggle is on — toggle owns the layer)
+      if (
+        enrichments.ais_live_shipping_all &&
+        Array.isArray(enrichments.ais_live_shipping_all) &&
+        !showAISLiveShips
+      ) {
+        let shipFeatureCount = 0;
+        const shipColor = '#0ea5e9';
+        const shipIcon = '🚢';
+
+        aisLiveMarkersRef.current.forEach((m) => {
+          try {
+            primary.removeLayer(m);
+          } catch {
+            /* ignore */
+          }
+        });
+        aisLiveMarkersRef.current = [];
+
+        enrichments.ais_live_shipping_all.forEach((vessel: any) => {
+          const lat = vessel.lat ?? vessel.latitude;
+          const lon = vessel.lon ?? vessel.longitude;
+          if (typeof lat !== 'number' || typeof lon !== 'number' || Number.isNaN(lat) || Number.isNaN(lon)) {
+            return;
+          }
+          try {
+            const cog = typeof vessel.cog === 'number' ? vessel.cog : 0;
+            const sog = typeof vessel.sog === 'number' ? vessel.sog : null;
+            const mmsi = vessel.mmsi ?? '—';
+            const name = vessel.shipName || `MMSI ${mmsi}`;
+            const heading = typeof vessel.trueHeading === 'number' && vessel.trueHeading >= 0 && vessel.trueHeading <= 359 ? vessel.trueHeading : cog;
+
+            const iconHtml = `<div style="
+                transform: rotate(${heading}deg);
+                width: 22px;
+                height: 22px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+              ">🚢</div>`;
+
+            const marker = L.marker([lat, lon], {
+              icon: L.divIcon({
+                className: 'custom-marker',
+                html: iconHtml,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11],
+              }),
+            });
+
+            const dist =
+              typeof vessel.distance_miles === 'number'
+                ? `<div><strong>Distance:</strong> ${vessel.distance_miles.toFixed(1)} mi</div>`
+                : '';
+            const popupContent = `
+              <div style="min-width: 220px; max-width: 360px;">
+                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                  ${shipIcon} ${name}
+                </h3>
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                  <div><strong>MMSI:</strong> ${mmsi}</div>
+                  ${dist}
+                  ${sog !== null ? `<div><strong>SOG:</strong> ${sog.toFixed(1)} kn</div>` : ''}
+                  <div><strong>COG:</strong> ${cog.toFixed(0)}°</div>
+                  ${typeof vessel.navigationalStatus === 'number' ? `<div><strong>Nav status:</strong> ${vessel.navigationalStatus}</div>` : ''}
+                </div>
+              </div>
+            `;
+
+            marker.bindPopup(popupContent, { maxWidth: 400 });
+            marker.addTo(primary);
+            (marker as any).__layerType = 'ais_live_shipping';
+            (marker as any).__layerTitle = 'AIS Live Ship Positions';
+            bounds.extend([lat, lon]);
+            aisLiveMarkersRef.current.push(marker);
+            shipFeatureCount++;
+          } catch (err) {
+            console.error('Error drawing AIS vessel marker:', err);
+          }
+        });
+
+        if (shipFeatureCount > 0 || enrichments.ais_live_shipping_count !== undefined) {
+          const legendKey = 'ais_live_shipping';
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: shipIcon,
+              color: shipColor,
+              title: 'AIS Live Ship Positions',
+              count: shipFeatureCount || enrichments.ais_live_shipping_count || 0,
+            };
+          } else {
+            legendAccumulator[legendKey].count = shipFeatureCount || enrichments.ais_live_shipping_count || 0;
           }
         }
       }
@@ -48900,6 +49152,11 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        // Skip AIS live shipping - handled separately with vessel markers
+        if (key === 'ais_live_shipping_all') {
+          return;
+        }
+
         const baseKey = key.replace(/_(detailed|elements|features|facilities|all_pois|all)$/i, '');
 
         // Skip NH and USVI layers that are explicitly drawn above with custom popups
@@ -51382,6 +51639,35 @@ const MapView: React.FC<MapViewProps> = ({
                       Shows real-time global aircraft positions
                     </p>
                   </div>
+
+                  {/* AIS Live Ship Positions */}
+                  <div className="px-3 border-t border-zinc-700 pt-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showAISLiveShips}
+                        onChange={(e) => setShowAISLiveShips(e.target.checked)}
+                        disabled={aisToggleLoading}
+                        className="w-4 h-4 text-blue-600 border-zinc-500 rounded focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-semibold text-white">
+                        🚢 AIS Live Ship Positions
+                      </span>
+                      {aisToggleLoading && (
+                        <span className="text-xs text-zinc-400">Loading…</span>
+                      )}
+                      <div className="relative group">
+                        <Info className="w-4 h-4 text-zinc-400 hover:text-zinc-200 transition-colors cursor-help" />
+                        <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                          Uses AIS Stream (server-side). Radius follows your enrichment setting for this layer when selected (default 50 mi), or 50 mi otherwise. Refreshes about every 45 seconds while enabled.
+                          <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    </label>
+                    <p className="text-xs text-zinc-400 mt-1 ml-6">
+                      Live vessel positions (MMSI, SOG, COG) near the map center or your search location
+                    </p>
+                  </div>
                   
                   {/* Earthquake Toggle */}
                   <div className="px-3 border-t border-zinc-700 pt-3">
@@ -51745,6 +52031,19 @@ const MapView: React.FC<MapViewProps> = ({
                       <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                     </div>
                   </div>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
+                  <input
+                    type="checkbox"
+                    checked={showAISLiveShips}
+                    onChange={(e) => setShowAISLiveShips(e.target.checked)}
+                    disabled={aisToggleLoading}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-semibold text-black">
+                    🚢 AIS Live Ship Positions
+                  </span>
+                  {aisToggleLoading && <span className="text-xs text-gray-500">…</span>}
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
                   <input

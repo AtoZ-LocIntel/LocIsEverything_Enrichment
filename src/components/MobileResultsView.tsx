@@ -186,6 +186,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         return 'N/A'; // Skip the _all array (handled separately)
       }
 
+      if (key.includes('ais_live_shipping_all')) {
+        return 'N/A';
+      }
+
       if (key.includes('global_desalination_plants_osm_all')) {
         return 'N/A';
       }
@@ -962,6 +966,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // OpenSky Flights fields - only show if OpenSky Flights enrichment is selected
       if (key.includes('opensky_flights')) {
         return selectedEnrichments.includes('opensky_flights');
+      }
+
+      if (key.includes('ais_live_shipping')) {
+        return selectedEnrichments.includes('ais_live_shipping');
       }
       
       return false;

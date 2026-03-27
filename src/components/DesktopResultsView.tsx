@@ -229,6 +229,10 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (key.includes('opensky_flights_all')) {
         return null; // Skip the _all array (handled separately)
       }
+
+      if (key.includes('ais_live_shipping_all')) {
+        return null;
+      }
       
       // Regular array handling for non-POI data
       return value.map((item: any) => {
