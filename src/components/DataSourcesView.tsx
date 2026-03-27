@@ -5553,6 +5553,22 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://data.sfgov.org/api/v3/views/8x25-yybr/query.geojson"
         },
         {
+          name: "DataSF — Street and Sidewalk Cleaning",
+          description: "Street and sidewalk cleaning service requests with geocoded point locations. Proximity queries up to 5 miles (0.5, 1.0, 2.5, 5.0). Example SoQL: filter opened or status.",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/h3eg-w3pj/query.geojson"
+        },
+        {
+          name: "DataSF — DBI Notices of Violation",
+          description: "Notices of violation issued by the Department of Building Inspection with geocoded point locations. Proximity queries up to 5 miles (0.5, 1.0, 2.5, 5.0). Example SoQL: filter date_filed or status.",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/nbtm-fbw5/query.geojson"
+        },
+        {
           name: "DataSF — SF Parking Meters",
           description: "SFMTA parking meter locations. Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0).",
           coverage: "San Francisco",
@@ -5575,6 +5591,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://data.sfgov.org/api/v3/views/ubvf-ztfx/query.geojson"
+        },
+        {
+          name: "DataSF — SF 311 Cases",
+          description: "311 service requests with geocoded locations where available. Proximity queries at 0.25 mile only. Example SoQL: filter requested_datetime or status.",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/vw6y-z8j6/query.geojson"
         },
         {
           name: "CA Power Outage Areas",

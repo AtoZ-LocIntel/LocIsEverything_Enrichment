@@ -5050,6 +5050,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'datasf_parking_meters': { icon: '🅿️', color: '#0e7490', title: 'DataSF — SF Parking Meters' },
   'datasf_pd_incident_reports': { icon: '🚓', color: '#1e3a8a', title: 'DataSF — PD Incident Reports (2018–Present)' },
   'datasf_traffic_crashes_injuries': { icon: '🚗', color: '#ea580c', title: 'DataSF — Traffic Crashes Resulting in Injuries' },
+  'datasf_sf_311_cases': { icon: '📞', color: '#0284c7', title: 'DataSF — SF 311 Cases' },
+  'datasf_street_sidewalk_cleaning': { icon: '🧹', color: '#15803d', title: 'DataSF — Street and Sidewalk Cleaning' },
+  'datasf_dbi_notices_of_violation': { icon: '⚠️', color: '#ca8a04', title: 'DataSF — DBI Notices of Violation' },
   'datasf_temporary_street_closures': { icon: '🚧', color: '#dc2626', title: 'DataSF — Temporary Street Closures' },
   'ca_la_zoning': { icon: '🏙️', color: '#7c3aed', title: 'City of Los Angeles Zoning' },
   'la_county_arts_recreation': { icon: '🎨', color: '#ec4899', title: 'LA County Arts and Recreation' },
@@ -6070,6 +6073,9 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'datasf_parking_meters_all' || // Skip DataSF SF Parking Meters array (handled separately for map drawing)
     key === 'datasf_pd_incident_reports_all' || // Skip DataSF PD Incident Reports array (handled separately for map drawing)
     key === 'datasf_traffic_crashes_injuries_all' || // Skip DataSF Traffic Crashes (Injuries) array (handled separately for map drawing)
+    key === 'datasf_sf_311_cases_all' || // Skip DataSF SF 311 Cases array (handled separately for map drawing)
+    key === 'datasf_street_sidewalk_cleaning_all' || // Skip DataSF Street and Sidewalk Cleaning array (handled separately for map drawing)
+    key === 'datasf_dbi_notices_of_violation_all' || // Skip DataSF DBI Notices of Violation array (handled separately for map drawing)
     key === 'datasf_temporary_street_closures_all' || // Skip DataSF Temporary Street Closures array (handled separately for map drawing)
     key === 'ca_solar_footprints_all' || // Skip CA Solar Footprints array (handled separately for map drawing)
     key === 'ca_natural_gas_service_areas_all' || // Skip CA Natural Gas Service Areas array (handled separately for map drawing)
@@ -27640,6 +27646,357 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing DataSF Traffic Crashes (Injuries):', error);
       }
 
+      // Draw DataSF SF 311 Cases as point markers
+      try {
+        if (enrichments.datasf_sf_311_cases_all && Array.isArray(enrichments.datasf_sf_311_cases_all)) {
+          let caseCount = 0;
+          enrichments.datasf_sf_311_cases_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.lat != null ? parseFloat(String(row.lat)) : null) ??
+              row.latitude ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.long != null ? parseFloat(String(row.long)) : null) ??
+              row.longitude ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const reqId = row.service_request_id != null ? String(row.service_request_id) : '';
+                const svc = row.service_name || '';
+                const sub = row.service_subtype || '';
+                const status = row.status_description || '';
+                const addr = row.address || '';
+                const when = row.requested_datetime || '';
+                const neighborhood = row.analysis_neighborhood || '';
+                const agency = row.agency_responsible || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#0284c7';
+
+                const detail = svc || sub || 'Case';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('📞', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      📞 SF 311 — ${detail}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${reqId ? `<div><strong>Request ID:</strong> ${reqId}</div>` : ''}
+                      ${sub ? `<div><strong>Subtype:</strong> ${sub}</div>` : ''}
+                      ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                      ${addr ? `<div><strong>Address:</strong> ${addr}</div>` : ''}
+                      ${when ? `<div><strong>Requested:</strong> ${when}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${agency ? `<div><strong>Agency:</strong> ${agency}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'service_request_id',
+                  'service_name',
+                  'service_subtype',
+                  'status_description',
+                  'address',
+                  'requested_datetime',
+                  'agency_responsible',
+                  'analysis_neighborhood',
+                  'latitude',
+                  'longitude',
+                  'lat',
+                  'long',
+                  'geometry',
+                  'distance_miles',
+                  'point',
+                  'point_geom',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_sf_311_cases';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                caseCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF SF 311 case marker:', err);
+              }
+            }
+          });
+
+          if (caseCount > 0) {
+            if (!legendAccumulator['datasf_sf_311_cases']) {
+              legendAccumulator['datasf_sf_311_cases'] = {
+                icon: '📞',
+                color: '#0284c7',
+                title: 'DataSF — SF 311 Cases',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_sf_311_cases'].count += caseCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF SF 311 Cases:', error);
+      }
+
+      // Draw DataSF Street and Sidewalk Cleaning as point markers
+      try {
+        if (enrichments.datasf_street_sidewalk_cleaning_all && Array.isArray(enrichments.datasf_street_sidewalk_cleaning_all)) {
+          let sscCount = 0;
+          enrichments.datasf_street_sidewalk_cleaning_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const caseId = row.case_id != null ? String(row.case_id) : '';
+                const reqType = row.request_type || '';
+                const details = row.request_details || '';
+                const status = row.status || '';
+                const addr = row.address || '';
+                const neighborhood = row.neighborhood || '';
+                const agency = row.responsible_agency || '';
+                const opened = row.opened || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#15803d';
+
+                const detail = reqType || details || 'Request';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🧹', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🧹 Street &amp; Sidewalk Cleaning — ${detail}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${caseId ? `<div><strong>Case ID:</strong> ${caseId}</div>` : ''}
+                      ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                      ${reqType ? `<div><strong>Request type:</strong> ${reqType}</div>` : ''}
+                      ${details ? `<div><strong>Details:</strong> ${details}</div>` : ''}
+                      ${addr ? `<div><strong>Address:</strong> ${addr}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${agency ? `<div><strong>Agency:</strong> ${agency}</div>` : ''}
+                      ${opened ? `<div><strong>Opened:</strong> ${opened}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'case_id',
+                  'request_type',
+                  'request_details',
+                  'status',
+                  'address',
+                  'neighborhood',
+                  'responsible_agency',
+                  'opened',
+                  'updated',
+                  'source',
+                  'category',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'point',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_street_sidewalk_cleaning';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                sscCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Street and Sidewalk Cleaning marker:', err);
+              }
+            }
+          });
+
+          if (sscCount > 0) {
+            if (!legendAccumulator['datasf_street_sidewalk_cleaning']) {
+              legendAccumulator['datasf_street_sidewalk_cleaning'] = {
+                icon: '🧹',
+                color: '#15803d',
+                title: 'DataSF — Street and Sidewalk Cleaning',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_street_sidewalk_cleaning'].count += sscCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Street and Sidewalk Cleaning:', error);
+      }
+
+      // Draw DataSF DBI Notices of Violation as point markers
+      try {
+        if (enrichments.datasf_dbi_notices_of_violation_all && Array.isArray(enrichments.datasf_dbi_notices_of_violation_all)) {
+          let dbiNovCount = 0;
+          enrichments.datasf_dbi_notices_of_violation_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const complaint =
+                  row.complaint_number != null ? String(row.complaint_number) : row.primary_key != null ? String(row.primary_key) : '';
+                const status = row.status || '';
+                const dateFiled = row.date_filed || '';
+                const codeDesc = row.code_violation_desc || '';
+                const recvDiv = row.receiving_division || '';
+                const assignDiv = row.assigned_division || '';
+                const neighborhood = row.neighborhoods_analysis_boundaries || '';
+                const zipcode = row.zipcode || '';
+                const streetLine = [row.street_number, row.street_name, row.street_suffix].filter(Boolean).join(' ');
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#ca8a04';
+
+                const headline = complaint || 'Notice of violation';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('⚠️', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ⚠️ DBI Notice of Violation — ${headline}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${dateFiled ? `<div><strong>Date filed:</strong> ${dateFiled}</div>` : ''}
+                      ${status ? `<div><strong>Status:</strong> ${status}</div>` : ''}
+                      ${streetLine ? `<div><strong>Address:</strong> ${streetLine}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${zipcode ? `<div><strong>ZIP:</strong> ${zipcode}</div>` : ''}
+                      ${recvDiv ? `<div><strong>Receiving division:</strong> ${recvDiv}</div>` : ''}
+                      ${assignDiv ? `<div><strong>Assigned division:</strong> ${assignDiv}</div>` : ''}
+                      ${codeDesc ? `<div><strong>Violation:</strong> ${codeDesc}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'complaint_number',
+                  'primary_key',
+                  'date_filed',
+                  'status',
+                  'street_number',
+                  'street_name',
+                  'street_suffix',
+                  'code_violation_desc',
+                  'neighborhoods_analysis_boundaries',
+                  'receiving_division',
+                  'assigned_division',
+                  'zipcode',
+                  'supervisor_district',
+                  'block',
+                  'lot',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'location',
+                  'point_source',
+                  'data_as_of',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    if (String(k).startsWith(':@computed_')) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_dbi_notices_of_violation';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                dbiNovCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF DBI Notice of Violation marker:', err);
+              }
+            }
+          });
+
+          if (dbiNovCount > 0) {
+            if (!legendAccumulator['datasf_dbi_notices_of_violation']) {
+              legendAccumulator['datasf_dbi_notices_of_violation'] = {
+                icon: '⚠️',
+                color: '#ca8a04',
+                title: 'DataSF — DBI Notices of Violation',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_dbi_notices_of_violation'].count += dbiNovCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF DBI Notices of Violation:', error);
+      }
+
       // Draw DataSF Temporary Street Closures as polylines (LineString / MultiLineString)
       try {
         if (enrichments.datasf_temporary_street_closures_all && Array.isArray(enrichments.datasf_temporary_street_closures_all)) {
@@ -48404,6 +48761,18 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        if (key === 'datasf_sf_311_cases_all') {
+          return;
+        }
+
+        if (key === 'datasf_street_sidewalk_cleaning_all') {
+          return;
+        }
+
+        if (key === 'datasf_dbi_notices_of_violation_all') {
+          return;
+        }
+
         if (key === 'datasf_temporary_street_closures_all') {
           return;
         }
@@ -49790,6 +50159,9 @@ const MapView: React.FC<MapViewProps> = ({
       if (title.includes('street inventory')) return 'la_county_street_inventory';
       if (title.includes('roads centerline') || title.includes('road centerline')) return 'houston_roads_centerline';
       // Chicago layers
+      if (title.includes('sf 311')) return 'datasf_sf_311_cases';
+      if (title.includes('sidewalk cleaning')) return 'datasf_street_sidewalk_cleaning';
+      if (title.includes('dbi notice of violation')) return 'datasf_dbi_notices_of_violation';
       if (title.includes('311') || title.includes('service request')) return 'chicago_311';
       if (title.includes('building') && (title.includes('centroid') || title.includes('footprint'))) return 'chicago_building_footprints';
       if (title.includes('traffic crash')) return 'chicago_traffic_crashes';
@@ -50353,17 +50725,17 @@ const MapView: React.FC<MapViewProps> = ({
         {/* Basemap Dropdown and Weather Radar Toggle + Measure Tool - Desktop only */}
         {!isMobile && (
           <div className={`absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} flex gap-3 z-10 items-start`}>
-            <div className="bg-white rounded-lg shadow-lg p-3 space-y-3 flex-shrink-0" style={{ minWidth: '280px', maxWidth: '320px' }}>
+            <div className="bg-black text-white rounded-lg shadow-lg p-3 space-y-3 flex-shrink-0 border border-zinc-700" style={{ minWidth: '280px', maxWidth: '320px' }}>
             <div>
               <div className="flex items-center justify-between mb-2 relative">
-                <label className="block text-sm font-semibold text-black">
+                <label className="block text-sm font-semibold text-white">
                   Available Basemap Themes
                 </label>
                 <div className="relative" ref={basemapInfoRef}>
                   <button
                     type="button"
                     onClick={() => setShowBasemapInfo(!showBasemapInfo)}
-                    className="w-5 h-5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 flex items-center justify-center text-xs font-bold transition-colors"
+                    className="w-5 h-5 rounded-full bg-zinc-700 hover:bg-zinc-600 text-white flex items-center justify-center text-xs font-bold transition-colors"
                     title="How basemaps work"
                   >
                     i
@@ -50403,12 +50775,12 @@ const MapView: React.FC<MapViewProps> = ({
                   )}
                 </div>
               </div>
-              <div className="border border-gray-300 rounded-md bg-white max-h-96 overflow-y-auto">
+              <div className="border border-zinc-600 rounded-md bg-zinc-950 max-h-96 overflow-y-auto">
                 {/* Thematic Basemap Themes - Collapsible */}
-                <div className="border-b border-gray-200">
+                <div className="border-b border-zinc-600">
                   <button
                     onClick={() => setShowThematicThemes(!showThematicThemes)}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-gray-100"
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:bg-zinc-700 transition-colors bg-zinc-800"
                   >
                     <span>🎨 Basemap Themes</span>
                     <span className={`transform transition-transform ${showThematicThemes ? 'rotate-180' : ''}`}>
@@ -50418,7 +50790,7 @@ const MapView: React.FC<MapViewProps> = ({
                   {showThematicThemes && (
                     <div className="bg-gray-50">
                       {/* USGS National Map basemaps */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USGS National Map': !prev['USGS National Map'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50430,16 +50802,16 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['USGS National Map'] && (
-                          <div className="pb-1 bg-white">
+                          <div className="pb-1 bg-zinc-950">
                             {/* Search bar for USGS National Map */}
-                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                            <div className="px-3 py-2 border-b border-zinc-700 bg-zinc-900">
                               <div className="relative">
                                 <input
                                   type="text"
                                   placeholder="Search USGS National Map basemaps..."
                                   value={nationalmapSearchQuery}
                                   onChange={(e) => setNationalmapSearchQuery(e.target.value)}
-                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-zinc-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-100 text-black"
                                   style={{ color: '#000000' }}
                                 />
                                 <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -50453,7 +50825,7 @@ const MapView: React.FC<MapViewProps> = ({
                                 )}
                               </div>
                               {nationalmapSearchQuery && (
-                                <div className="mt-1 text-xs text-gray-500">
+                                <div className="mt-1 text-xs text-zinc-400">
                                   Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
                                     key.startsWith('usgs_') && 
                                     (BASEMAP_CONFIGS[key].name.toLowerCase().includes(nationalmapSearchQuery.toLowerCase()) ||
@@ -50477,8 +50849,8 @@ const MapView: React.FC<MapViewProps> = ({
                                     // Toggle: if already selected, deselect it; otherwise select it
                                     setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                                   }`}
                                 >
                                   {config.name}
@@ -50489,7 +50861,7 @@ const MapView: React.FC<MapViewProps> = ({
                       </div>
                       
                       {/* NASA basemaps */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'NASA': !prev['NASA'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50501,16 +50873,16 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['NASA'] && (
-                          <div className="pb-1 bg-white">
+                          <div className="pb-1 bg-zinc-950">
                             {/* Search bar for NASA */}
-                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                            <div className="px-3 py-2 border-b border-zinc-700 bg-zinc-900">
                               <div className="relative">
                                 <input
                                   type="text"
                                   placeholder="Search NASA basemaps..."
                                   value={nasaSearchQuery}
                                   onChange={(e) => setNasaSearchQuery(e.target.value)}
-                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-zinc-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-100 text-black"
                                   style={{ color: '#000000' }}
                                 />
                                 <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -50524,7 +50896,7 @@ const MapView: React.FC<MapViewProps> = ({
                                 )}
                               </div>
                               {nasaSearchQuery && (
-                                <div className="mt-1 text-xs text-gray-500">
+                                <div className="mt-1 text-xs text-zinc-400">
                                   Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
                                     key.startsWith('nasa_') && 
                                     (BASEMAP_CONFIGS[key].name.toLowerCase().includes(nasaSearchQuery.toLowerCase()) ||
@@ -50548,8 +50920,8 @@ const MapView: React.FC<MapViewProps> = ({
                                     // Toggle: if already selected, deselect it; otherwise select it
                                     setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                                   }`}
                                 >
                                   {config.name}
@@ -50560,7 +50932,7 @@ const MapView: React.FC<MapViewProps> = ({
                       </div>
                       
                       {/* Weather — WPC Winter Weather Outlook + gridded FFG (NOAA raster MapServer) */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections((prev) => ({ ...prev, Weather: !prev['Weather'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50572,16 +50944,16 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['Weather'] && (
-                          <div className="pb-1 bg-white space-y-0">
-                            <div className="border-b border-gray-200 px-3 py-2 bg-sky-50/90">
-                              <p className="text-xs font-semibold text-gray-800">Winter Weather Outlook (Day 4–7)</p>
-                              <p className="text-xs text-gray-500 mt-1 mb-2">
+                          <div className="pb-1 bg-zinc-950 space-y-0">
+                            <div className="border-b border-zinc-700 px-3 py-2 bg-sky-950/40">
+                              <p className="text-xs font-semibold text-zinc-200">Winter Weather Outlook (Day 4–7)</p>
+                              <p className="text-xs text-zinc-400 mt-1 mb-2">
                                 Weather Prediction Center — probability of winter precipitation (snow/sleet) exceeding ~0.25 in
                                 water equivalent in 24h (12Z–12Z). Updated twice daily. Extent: CONUS-focused (see service
                                 footprint).
                               </p>
                               <div className="space-y-1.5 ml-1">
-                                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
                                   <input
                                     type="radio"
                                     name="wwo-winter-outlook-basemap"
@@ -50592,7 +50964,7 @@ const MapView: React.FC<MapViewProps> = ({
                                   <span>Off</span>
                                 </label>
                                 {WWO_WINTER_OUTLOOK_LAYERS.map(({ id, label }) => (
-                                  <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                  <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
                                     <input
                                       type="radio"
                                       name="wwo-winter-outlook-basemap"
@@ -50605,15 +50977,15 @@ const MapView: React.FC<MapViewProps> = ({
                                 ))}
                               </div>
                             </div>
-                            <div className="px-3 py-2 bg-cyan-50/80">
-                              <p className="text-xs font-semibold text-gray-800">Gridded Flash Flood Guidance (CONUS)</p>
-                              <p className="text-xs text-gray-500 mt-1 mb-2">
+                            <div className="px-3 py-2 bg-cyan-950/40">
+                              <p className="text-xs font-semibold text-zinc-200">Gridded Flash Flood Guidance (CONUS)</p>
+                              <p className="text-xs text-zinc-400 mt-1 mb-2">
                                 NWS RFC mosaicked FFG — rainfall needed to cause small-stream flooding (soil moisture &
                                 streamflow conditions). Updates about hourly (~:38 past). Boundary discontinuities between RFCs
                                 are expected. Northwest RFC omits WA/OR east of the Cascades.
                               </p>
                               <div className="space-y-1.5 ml-1">
-                                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                <label className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
                                   <input
                                     type="radio"
                                     name="ffg-gridded-weather-basemap"
@@ -50624,7 +50996,7 @@ const MapView: React.FC<MapViewProps> = ({
                                   <span>Off</span>
                                 </label>
                                 {FFG_GRIDDED_LAYERS.map(({ id, label }) => (
-                                  <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                                  <label key={id} className="flex items-center gap-2 cursor-pointer text-xs text-zinc-300">
                                     <input
                                       type="radio"
                                       name="ffg-gridded-weather-basemap"
@@ -50642,7 +51014,7 @@ const MapView: React.FC<MapViewProps> = ({
                       </div>
 
                       {/* NOAA basemaps */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'NOAA': !prev['NOAA'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50654,16 +51026,16 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['NOAA'] && (
-                          <div className="pb-1 bg-white">
+                          <div className="pb-1 bg-zinc-950">
                             {/* Search bar for NOAA */}
-                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                            <div className="px-3 py-2 border-b border-zinc-700 bg-zinc-900">
                               <div className="relative">
                                 <input
                                   type="text"
                                   placeholder="Search NOAA basemaps..."
                                   value={noaaSearchQuery}
                                   onChange={(e) => setNoaaSearchQuery(e.target.value)}
-                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-zinc-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-100 text-black"
                                   style={{ color: '#000000' }}
                                 />
                                 <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -50677,7 +51049,7 @@ const MapView: React.FC<MapViewProps> = ({
                                 )}
                               </div>
                               {noaaSearchQuery && (
-                                <div className="mt-1 text-xs text-gray-500">
+                                <div className="mt-1 text-xs text-zinc-400">
                                   Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
                                     key.startsWith('noaa_') && 
                                     (BASEMAP_CONFIGS[key].name.toLowerCase().includes(noaaSearchQuery.toLowerCase()) ||
@@ -50701,8 +51073,8 @@ const MapView: React.FC<MapViewProps> = ({
                                     // Toggle: if already selected, deselect it; otherwise select it
                                     setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                                   }`}
                                 >
                                   {config.name}
@@ -50713,7 +51085,7 @@ const MapView: React.FC<MapViewProps> = ({
                       </div>
                       
                       {/* USFS basemaps (includes FIA Forest Atlas) */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USFS': !prev['USFS'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50725,16 +51097,16 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['USFS'] && (
-                          <div className="pb-1 bg-white">
+                          <div className="pb-1 bg-zinc-950">
                             {/* Search bar for USFS */}
-                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                            <div className="px-3 py-2 border-b border-zinc-700 bg-zinc-900">
                               <div className="relative">
                                 <input
                                   type="text"
                                   placeholder="Search USFS basemaps..."
                                   value={usfsSearchQuery}
                                   onChange={(e) => setUsfsSearchQuery(e.target.value)}
-                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-zinc-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-100 text-black"
                                   style={{ color: '#000000' }}
                                 />
                                 <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -50748,7 +51120,7 @@ const MapView: React.FC<MapViewProps> = ({
                                 )}
                               </div>
                               {usfsSearchQuery && (
-                                <div className="mt-1 text-xs text-gray-500">
+                                <div className="mt-1 text-xs text-zinc-400">
                                   Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => {
                                     const matchesFilter = key.startsWith('usfs_') || 
                                                          (key.startsWith('fia_') && key.endsWith('_basemap') && !key.includes('alaska'));
@@ -50781,8 +51153,8 @@ const MapView: React.FC<MapViewProps> = ({
                                     // Toggle: if already selected, deselect it; otherwise select it
                                     setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                                   }`}
                                 >
                                   {config.name}
@@ -50793,7 +51165,7 @@ const MapView: React.FC<MapViewProps> = ({
                       </div>
                       
                       {/* USDA basemaps */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'USDA': !prev['USDA'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50805,16 +51177,16 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['USDA'] && (
-                          <div className="pb-1 bg-white">
+                          <div className="pb-1 bg-zinc-950">
                             {/* Search bar for USDA */}
-                            <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+                            <div className="px-3 py-2 border-b border-zinc-700 bg-zinc-900">
                               <div className="relative">
                                 <input
                                   type="text"
                                   placeholder="Search USDA basemaps..."
                                   value={usdaSearchQuery}
                                   onChange={(e) => setUsdaSearchQuery(e.target.value)}
-                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+                                  className="w-full px-3 py-1.5 pl-8 text-sm border border-zinc-500 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-zinc-100 text-black"
                                   style={{ color: '#000000' }}
                                 />
                                 <span className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -50828,7 +51200,7 @@ const MapView: React.FC<MapViewProps> = ({
                                 )}
                               </div>
                               {usdaSearchQuery && (
-                                <div className="mt-1 text-xs text-gray-500">
+                                <div className="mt-1 text-xs text-zinc-400">
                                   Showing {Object.entries(BASEMAP_CONFIGS).filter(([key]) => 
                                     key.startsWith('usda_') && 
                                     (BASEMAP_CONFIGS[key].name.toLowerCase().includes(usdaSearchQuery.toLowerCase()) ||
@@ -50852,8 +51224,8 @@ const MapView: React.FC<MapViewProps> = ({
                                     // Toggle: if already selected, deselect it; otherwise select it
                                     setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                                   }`}
                                 >
                                   {config.name}
@@ -50864,7 +51236,7 @@ const MapView: React.FC<MapViewProps> = ({
                       </div>
                       
                       {/* Alaska basemaps */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-zinc-600">
                         <button
                           onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'Alaska': !prev['Alaska'] }))}
                           className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:opacity-90 transition-colors"
@@ -50876,7 +51248,7 @@ const MapView: React.FC<MapViewProps> = ({
                           </span>
                         </button>
                         {expandedBasemapSections['Alaska'] && (
-                          <div className="pb-1 bg-white">
+                          <div className="pb-1 bg-zinc-950">
                             {Object.entries(BASEMAP_CONFIGS)
                               .filter(([key]) => key.startsWith('alaska_') || (key.startsWith('fia_') && key.includes('alaska')))
                               .map(([key, config]) => (
@@ -50886,8 +51258,8 @@ const MapView: React.FC<MapViewProps> = ({
                                     // Toggle: if already selected, deselect it; otherwise select it
                                     setSelectedThematicBasemap(selectedThematicBasemap === key ? null : key);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                                    selectedThematicBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                                    selectedThematicBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                                   }`}
                                 >
                                   {config.name}
@@ -50901,10 +51273,10 @@ const MapView: React.FC<MapViewProps> = ({
                 </div>
                 
                 {/* Basemaps - Always visible (bottom/base layer) */}
-                <div className="border-b border-gray-200 last:border-b-0">
+                <div className="border-b border-zinc-600 last:border-b-0">
                   <button
                     onClick={() => setExpandedBasemapSections(prev => ({ ...prev, 'Basemaps': !prev['Basemaps'] }))}
-                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:bg-zinc-800 transition-colors"
                   >
                     <span>Basemaps</span>
                     <span className={`transform transition-transform ${expandedBasemapSections['Basemaps'] ? 'rotate-180' : ''}`}>
@@ -50921,8 +51293,8 @@ const MapView: React.FC<MapViewProps> = ({
                             onClick={() => {
                               setSelectedBaseBasemap(key);
                             }}
-                            className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors ${
-                              selectedBaseBasemap === key ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700'
+                            className={`w-full px-4 py-2 text-left text-sm hover:bg-zinc-800 transition-colors ${
+                              selectedBaseBasemap === key ? 'bg-blue-900/40 text-blue-200 font-medium' : 'text-zinc-200'
                             }`}
                           >
                             {config.name}

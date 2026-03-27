@@ -4144,7 +4144,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 enrichment.id === 'datasf_parking_meters' ||
                                 enrichment.id === 'datasf_pd_incident_reports' ||
                                 enrichment.id === 'datasf_traffic_crashes_injuries';
+                              const isDatasfSf311Cases = enrichment.id === 'datasf_sf_311_cases';
                               const isDatasfTemporaryStreetClosures = enrichment.id === 'datasf_temporary_street_closures';
+                              const isDatasfStreetSidewalkCleaning =
+                                enrichment.id === 'datasf_street_sidewalk_cleaning' ||
+                                enrichment.id === 'datasf_dbi_notices_of_violation';
                               const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                               const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                               const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
@@ -4163,6 +4167,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 ? [0.25, 0.50, 0.75, 1.0]
                                 : isDatasfTemporaryStreetClosures
                                 ? [0.25, 0.5, 1.0, 2.5, 5.0]
+                                : isDatasfStreetSidewalkCleaning
+                                ? [0.5, 1.0, 2.5, 5.0]
+                                : isDatasfSf311Cases
+                                ? [0.25]
                                 : isDatasfProximityLayer
                                 ? [0.25, 0.5, 0.75, 1.0]
                                 : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
@@ -4347,7 +4355,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 enrichment.id === 'datasf_parking_meters' ||
                                 enrichment.id === 'datasf_pd_incident_reports' ||
                                 enrichment.id === 'datasf_traffic_crashes_injuries';
+                                          const isDatasfSf311Cases = enrichment.id === 'datasf_sf_311_cases';
                                           const isDatasfTemporaryStreetClosures = enrichment.id === 'datasf_temporary_street_closures';
+                                          const isDatasfStreetSidewalkCleaning =
+                                enrichment.id === 'datasf_street_sidewalk_cleaning' ||
+                                enrichment.id === 'datasf_dbi_notices_of_violation';
                                           const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                                           const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                                           const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
@@ -4363,6 +4375,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                             : isDatasfTemporaryStreetClosures
                                             ? [0.25, 0.5, 1.0, 2.5, 5.0]
+                                            : isDatasfStreetSidewalkCleaning
+                                            ? [0.5, 1.0, 2.5, 5.0]
+                                            : isDatasfSf311Cases
+                                            ? [0.25]
                                             : isDatasfProximityLayer
                                             ? [0.25, 0.5, 0.75, 1.0]
                                             : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
@@ -4507,7 +4523,11 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 enrichment.id === 'datasf_parking_meters' ||
                                 enrichment.id === 'datasf_pd_incident_reports' ||
                                 enrichment.id === 'datasf_traffic_crashes_injuries';
+                                          const isDatasfSf311Cases = enrichment.id === 'datasf_sf_311_cases';
                                           const isDatasfTemporaryStreetClosures = enrichment.id === 'datasf_temporary_street_closures';
+                                          const isDatasfStreetSidewalkCleaning =
+                                enrichment.id === 'datasf_street_sidewalk_cleaning' ||
+                                enrichment.id === 'datasf_dbi_notices_of_violation';
                                           const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                                           const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                                           const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
@@ -4523,6 +4543,10 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                     : isDatasfTemporaryStreetClosures
                                     ? [0.25, 0.5, 1.0, 2.5, 5.0]
+                                    : isDatasfStreetSidewalkCleaning
+                                    ? [0.5, 1.0, 2.5, 5.0]
+                                    : isDatasfSf311Cases
+                                    ? [0.25]
                                     : isDatasfProximityLayer
                                     ? [0.25, 0.5, 0.75, 1.0]
                                     : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts

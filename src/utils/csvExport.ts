@@ -4473,6 +4473,57 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'https://data.sfgov.org/api/v3/views/ubvf-ztfx/query.geojson',
         ]);
       });
+    } else if (key === 'datasf_sf_311_cases_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          (row.lat != null ? parseFloat(String(row.lat)) : null) ??
+          row.latitude ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          (row.long != null ? parseFloat(String(row.long)) : null) ??
+          row.longitude ??
+          '';
+        const reqId = row.service_request_id != null ? String(row.service_request_id) : '';
+        const svc = row.service_name || '';
+        const label = reqId || svc || 'SF 311 case';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.point;
+        delete allAttributes.point_geom;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_SF_311_CASES',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'SF 311 service request',
+          [row.service_subtype, row.address].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/vw6y-z8j6/query.geojson',
+        ]);
+      });
     } else if (key === 'datasf_temporary_street_closures_all' && Array.isArray(value)) {
       value.forEach((row: any) => {
         const geom = row.geometry;
@@ -4515,6 +4566,102 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           '',
           detailJson,
           'https://data.sfgov.org/api/v3/views/8x25-yybr/query.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_street_sidewalk_cleaning_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+          '';
+        const caseId = row.case_id != null ? String(row.case_id) : '';
+        const reqType = row.request_type || '';
+        const label = caseId || reqType || 'Street and sidewalk cleaning';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.point;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_STREET_SIDEWALK_CLEANING',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'Street and sidewalk cleaning',
+          [row.request_details, row.address].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/h3eg-w3pj/query.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_dbi_notices_of_violation_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+          '';
+        const complaint = row.complaint_number != null ? String(row.complaint_number) : row.primary_key != null ? String(row.primary_key) : '';
+        const label = complaint || 'DBI notice of violation';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        const streetLine = [row.street_number, row.street_name, row.street_suffix].filter(Boolean).join(' ');
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_DBI_NOTICES_OF_VIOLATION',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'DBI notice of violation',
+          [streetLine, row.code_violation_desc].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/nbtm-fbw5/query.geojson',
         ]);
       });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {

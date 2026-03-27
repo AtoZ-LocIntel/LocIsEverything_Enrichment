@@ -100,6 +100,9 @@ import { getDatasfTemporaryStreetClosuresData } from '../adapters/datasfTemporar
 import { getDatasfParkingMetersData } from '../adapters/datasfParkingMeters';
 import { getDatasfPdIncidentReportsData } from '../adapters/datasfPdIncidentReports';
 import { getDatasfTrafficCrashesInjuriesData } from '../adapters/datasfTrafficCrashesInjuries';
+import { getDatasfSf311CasesData } from '../adapters/datasfSf311Cases';
+import { getDatasfStreetSidewalkCleaningData } from '../adapters/datasfStreetSidewalkCleaning';
+import { getDatasfDbiNoticesOfViolationData } from '../adapters/datasfDbiNoticesOfViolation';
 import { getCASolarFootprintsData } from '../adapters/caSolarFootprints';
 import { getCANaturalGasServiceAreasData } from '../adapters/caNaturalGasServiceAreas';
 import { getCAPLSSSectionsData } from '../adapters/caPlssSections';
@@ -4224,6 +4227,14 @@ export class EnrichmentService {
       case 'datasf_temporary_street_closures':
         return await this.getDatasfTemporaryStreetClosures(lat, lon, radius);
       
+      // DataSF — Street and Sidewalk Cleaning - Proximity query only (max 5 mi, points)
+      case 'datasf_street_sidewalk_cleaning':
+        return await this.getDatasfStreetSidewalkCleaning(lat, lon, radius);
+      
+      // DataSF — DBI Notices of Violation - Proximity query only (max 5 mi, points)
+      case 'datasf_dbi_notices_of_violation':
+        return await this.getDatasfDbiNoticesOfViolation(lat, lon, radius);
+      
       // DataSF — SF Parking Meters - Proximity query only (max 1 mi)
       case 'datasf_parking_meters':
         return await this.getDatasfParkingMeters(lat, lon, radius);
@@ -4235,6 +4246,10 @@ export class EnrichmentService {
       // DataSF — Traffic Crashes Resulting in Injuries - Proximity query only (max 1 mi)
       case 'datasf_traffic_crashes_injuries':
         return await this.getDatasfTrafficCrashesInjuries(lat, lon, radius);
+      
+      // DataSF — SF 311 Cases - Proximity query only (max 1 mi)
+      case 'datasf_sf_311_cases':
+        return await this.getDatasfSf311Cases(lat, lon, radius);
       
       // CA Oil and Gas Wells - Proximity query only
       case 'ca_oil_gas_wells':
@@ -19892,6 +19907,56 @@ out center tags;`;
     }
   }
 
+  private async getDatasfStreetSidewalkCleaning(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🧹 Fetching DataSF Street and Sidewalk Cleaning for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_street_sidewalk_cleaning_count: 0,
+          datasf_street_sidewalk_cleaning_all: []
+        };
+      }
+      const rows = await getDatasfStreetSidewalkCleaningData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_street_sidewalk_cleaning_count = rows.length;
+      result.datasf_street_sidewalk_cleaning_all = rows.map((r) => ({ ...r }));
+      result.datasf_street_sidewalk_cleaning_summary = `Found ${rows.length} street and sidewalk cleaning request(s) with location within ${radius} miles.`;
+      console.log(`✅ DataSF Street and Sidewalk Cleaning processed:`, { totalCount: result.datasf_street_sidewalk_cleaning_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Street and Sidewalk Cleaning:', error);
+      return {
+        datasf_street_sidewalk_cleaning_count: 0,
+        datasf_street_sidewalk_cleaning_all: []
+      };
+    }
+  }
+
+  private async getDatasfDbiNoticesOfViolation(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`⚠️ Fetching DataSF DBI Notices of Violation for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_dbi_notices_of_violation_count: 0,
+          datasf_dbi_notices_of_violation_all: []
+        };
+      }
+      const rows = await getDatasfDbiNoticesOfViolationData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_dbi_notices_of_violation_count = rows.length;
+      result.datasf_dbi_notices_of_violation_all = rows.map((r) => ({ ...r }));
+      result.datasf_dbi_notices_of_violation_summary = `Found ${rows.length} DBI notice(s) of violation with location within ${radius} miles.`;
+      console.log(`✅ DataSF DBI Notices of Violation processed:`, { totalCount: result.datasf_dbi_notices_of_violation_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF DBI Notices of Violation:', error);
+      return {
+        datasf_dbi_notices_of_violation_count: 0,
+        datasf_dbi_notices_of_violation_all: []
+      };
+    }
+  }
+
   private async getDatasfParkingMeters(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🅿️ Fetching DataSF Parking Meters for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -19963,6 +20028,31 @@ out center tags;`;
       return {
         datasf_traffic_crashes_injuries_count: 0,
         datasf_traffic_crashes_injuries_all: []
+      };
+    }
+  }
+
+  private async getDatasfSf311Cases(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`📞 Fetching DataSF SF 311 Cases for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_sf_311_cases_count: 0,
+          datasf_sf_311_cases_all: []
+        };
+      }
+      const rows = await getDatasfSf311CasesData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_sf_311_cases_count = rows.length;
+      result.datasf_sf_311_cases_all = rows.map((r) => ({ ...r }));
+      result.datasf_sf_311_cases_summary = `Found ${rows.length} SF 311 case(s) with location within ${radius} miles.`;
+      console.log(`✅ DataSF SF 311 Cases processed:`, { totalCount: result.datasf_sf_311_cases_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF SF 311 Cases:', error);
+      return {
+        datasf_sf_311_cases_count: 0,
+        datasf_sf_311_cases_all: []
       };
     }
   }
