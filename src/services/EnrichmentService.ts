@@ -91,6 +91,11 @@ import { getCAMarineOilTerminalsData } from '../adapters/caMarineOilTerminals';
 import { getCAPostfireDamageInspectionsData } from '../adapters/caPostfireDamageInspections';
 import { getCAMediumHeavyDutyInfrastructureData } from '../adapters/caMediumHeavyDutyInfrastructure';
 import { getCAFRAPFacilitiesData } from '../adapters/caFrapFacilities';
+import { getDatasfActiveBusinessLocationsData } from '../adapters/datasfActiveBusinessLocations';
+import { getDatasfTaxableCommercialSpacesData } from '../adapters/datasfTaxableCommercialSpaces';
+import { getDatasfCommercialVacancyTaxStatusData } from '../adapters/datasfCommercialVacancyTaxStatus';
+import { getDatasfActiveFoodServicesData } from '../adapters/datasfActiveFoodServices';
+import { getDatasfStreetVendingPermitsData } from '../adapters/datasfStreetVendingPermits';
 import { getCASolarFootprintsData } from '../adapters/caSolarFootprints';
 import { getCANaturalGasServiceAreasData } from '../adapters/caNaturalGasServiceAreas';
 import { getCAPLSSSectionsData } from '../adapters/caPlssSections';
@@ -4190,6 +4195,26 @@ export class EnrichmentService {
       // CA Geothermal Wells - Proximity query only
       case 'ca_geothermal_wells':
         return await this.getCAGeothermalWells(lat, lon, radius);
+      
+      // DataSF — Active Business Locations - Proximity query only (max 1 mi)
+      case 'datasf_active_business_locations':
+        return await this.getDatasfActiveBusinessLocations(lat, lon, radius);
+      
+      // DataSF — Taxable Commercial Spaces - Proximity query only (max 1 mi)
+      case 'datasf_taxable_commercial_spaces':
+        return await this.getDatasfTaxableCommercialSpaces(lat, lon, radius);
+      
+      // DataSF — Commercial Vacancy Tax Status - Proximity query only (max 1 mi; same rzkk-54yv resource)
+      case 'datasf_commercial_vacancy_tax_status':
+        return await this.getDatasfCommercialVacancyTaxStatus(lat, lon, radius);
+      
+      // DataSF — Active Food Services - Proximity query only (max 1 mi)
+      case 'datasf_active_food_services':
+        return await this.getDatasfActiveFoodServices(lat, lon, radius);
+      
+      // DataSF — SF Street Vending Permits - Proximity query only (max 1 mi)
+      case 'datasf_street_vending_permits':
+        return await this.getDatasfStreetVendingPermits(lat, lon, radius);
       
       // CA Oil and Gas Wells - Proximity query only
       case 'ca_oil_gas_wells':
@@ -19693,6 +19718,131 @@ out center tags;`;
       return {
         ca_frap_facilities_count: 0,
         ca_frap_facilities_all: []
+      };
+    }
+  }
+
+  private async getDatasfActiveBusinessLocations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏢 Fetching DataSF Active Business Locations for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_active_business_locations_count: 0,
+          datasf_active_business_locations_all: []
+        };
+      }
+      const rows = await getDatasfActiveBusinessLocationsData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_active_business_locations_count = rows.length;
+      result.datasf_active_business_locations_all = rows.map((r) => ({ ...r }));
+      result.datasf_active_business_locations_summary = `Found ${rows.length} business location(s) within ${radius} miles.`;
+      console.log(`✅ DataSF Active Business Locations processed:`, { totalCount: result.datasf_active_business_locations_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Active Business Locations:', error);
+      return {
+        datasf_active_business_locations_count: 0,
+        datasf_active_business_locations_all: []
+      };
+    }
+  }
+
+  private async getDatasfTaxableCommercialSpaces(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🏬 Fetching DataSF Taxable Commercial Spaces for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_taxable_commercial_spaces_count: 0,
+          datasf_taxable_commercial_spaces_all: []
+        };
+      }
+      const rows = await getDatasfTaxableCommercialSpacesData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_taxable_commercial_spaces_count = rows.length;
+      result.datasf_taxable_commercial_spaces_all = rows.map((r) => ({ ...r }));
+      result.datasf_taxable_commercial_spaces_summary = `Found ${rows.length} taxable commercial space record(s) within ${radius} miles.`;
+      console.log(`✅ DataSF Taxable Commercial Spaces processed:`, { totalCount: result.datasf_taxable_commercial_spaces_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Taxable Commercial Spaces:', error);
+      return {
+        datasf_taxable_commercial_spaces_count: 0,
+        datasf_taxable_commercial_spaces_all: []
+      };
+    }
+  }
+
+  private async getDatasfCommercialVacancyTaxStatus(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🗺️ Fetching DataSF Commercial Vacancy Tax Status for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_commercial_vacancy_tax_status_count: 0,
+          datasf_commercial_vacancy_tax_status_all: []
+        };
+      }
+      const rows = await getDatasfCommercialVacancyTaxStatusData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_commercial_vacancy_tax_status_count = rows.length;
+      result.datasf_commercial_vacancy_tax_status_all = rows.map((r) => ({ ...r }));
+      result.datasf_commercial_vacancy_tax_status_summary = `Found ${rows.length} Commercial Vacancy Tax parcel record(s) within ${radius} miles.`;
+      console.log(`✅ DataSF Commercial Vacancy Tax Status processed:`, { totalCount: result.datasf_commercial_vacancy_tax_status_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Commercial Vacancy Tax Status:', error);
+      return {
+        datasf_commercial_vacancy_tax_status_count: 0,
+        datasf_commercial_vacancy_tax_status_all: []
+      };
+    }
+  }
+
+  private async getDatasfActiveFoodServices(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🍽️ Fetching DataSF Active Food Services for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_active_food_services_count: 0,
+          datasf_active_food_services_all: []
+        };
+      }
+      const rows = await getDatasfActiveFoodServicesData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_active_food_services_count = rows.length;
+      result.datasf_active_food_services_all = rows.map((r) => ({ ...r }));
+      result.datasf_active_food_services_summary = `Found ${rows.length} Food Services business location(s) within ${radius} miles.`;
+      console.log(`✅ DataSF Active Food Services processed:`, { totalCount: result.datasf_active_food_services_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Active Food Services:', error);
+      return {
+        datasf_active_food_services_count: 0,
+        datasf_active_food_services_all: []
+      };
+    }
+  }
+
+  private async getDatasfStreetVendingPermits(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🛒 Fetching DataSF Street Vending Permits for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
+      if (!radius || radius <= 0) {
+        return {
+          datasf_street_vending_permits_count: 0,
+          datasf_street_vending_permits_all: []
+        };
+      }
+      const rows = await getDatasfStreetVendingPermitsData(lat, lon, radius);
+      const result: Record<string, any> = {};
+      result.datasf_street_vending_permits_count = rows.length;
+      result.datasf_street_vending_permits_all = rows.map((r) => ({ ...r }));
+      result.datasf_street_vending_permits_summary = `Found ${rows.length} street vending permit(s) with location within ${radius} miles.`;
+      console.log(`✅ DataSF Street Vending Permits processed:`, { totalCount: result.datasf_street_vending_permits_count });
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching DataSF Street Vending Permits:', error);
+      return {
+        datasf_street_vending_permits_count: 0,
+        datasf_street_vending_permits_all: []
       };
     }
   }

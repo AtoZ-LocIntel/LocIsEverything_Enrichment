@@ -5505,6 +5505,46 @@ export const getDataSources = (): DataSourceCategory[] => {
       category: "California Sources",
       sources: [
         {
+          name: "DataSF — Active Business Locations",
+          description: "City and County of San Francisco registered business locations (Socrata GeoJSON). Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0). Dataset includes locations outside city limits.",
+          coverage: "San Francisco (DataSF); locations may be worldwide",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/kvj8-g7jh/query.geojson"
+        },
+        {
+          name: "DataSF — Taxable Commercial Spaces",
+          description: "City and County of San Francisco taxable commercial parcel spaces: parcels where one or more property owner(s) and/or commercial tenant(s) are required to file or pay the Commercial Vacancy Tax (Socrata GeoJSON). Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0).",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/rzkk-54yv/query.geojson"
+        },
+        {
+          name: "DataSF — Commercial Vacancy Tax Status",
+          description: "Commercial Vacancy Tax filings and status by parcel (same underlying table as Taxable Commercial Spaces; aligns with the DataSF map of CVT status). Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0).",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/rzkk-54yv/query.geojson"
+        },
+        {
+          name: "DataSF — Active Food Services",
+          description: "Active registered business locations with NAICS Food Services (7220–7229). Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0).",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/g8m3-pdis/query.geojson?query=SELECT%20*%20WHERE%20(%60naic_code_description%60%20%3D%20'Food%20Services')"
+        },
+        {
+          name: "DataSF — SF Street Vending Permits",
+          description: "Active and approved street vendor permits from DPW with approximate location where geocoded. Proximity queries up to 1 mile (0.25, 0.5, 0.75, 1.0). Roaming vendors may lack coordinates.",
+          coverage: "San Francisco",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://data.sfgov.org/api/v3/views/34ws-kyf6/query.geojson"
+        },
+        {
           name: "CA Power Outage Areas",
           description: "California Power Outage Areas - point-in-polygon and proximity queries up to 25 miles",
           coverage: "California",

@@ -5042,6 +5042,11 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'ca_geothermal_wells': { icon: '🌋', color: '#ea580c', title: 'CA Geothermal Wells' },
   'ca_oil_gas_wells': { icon: '🛢️', color: '#1f2937', title: 'CA Oil and Gas Wells' },
   'ca_eco_regions': { icon: '🌿', color: '#16a34a', title: 'CA Eco Regions' },
+  'datasf_active_business_locations': { icon: '🏢', color: '#0369a1', title: 'DataSF — Active Business Locations' },
+  'datasf_taxable_commercial_spaces': { icon: '🏬', color: '#0d9488', title: 'DataSF — Taxable Commercial Spaces' },
+  'datasf_commercial_vacancy_tax_status': { icon: '🗺️', color: '#c2410c', title: 'DataSF — Commercial Vacancy Tax Status' },
+  'datasf_active_food_services': { icon: '🍽️', color: '#b45309', title: 'DataSF — Active Food Services' },
+  'datasf_street_vending_permits': { icon: '🛒', color: '#059669', title: 'DataSF — SF Street Vending Permits' },
   'ca_la_zoning': { icon: '🏙️', color: '#7c3aed', title: 'City of Los Angeles Zoning' },
   'la_county_arts_recreation': { icon: '🎨', color: '#ec4899', title: 'LA County Arts and Recreation' },
   'la_county_education': { icon: '🎓', color: '#3b82f6', title: 'LA County Education' },
@@ -6053,6 +6058,11 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'ca_postfire_damage_inspections_all' || // Skip CA Post-Fire Damage Inspections array (handled separately for map drawing)
     key === 'ca_medium_heavy_duty_infrastructure_all' || // Skip CA Medium and Heavy Duty Infrastructure array (handled separately for map drawing)
     key === 'ca_frap_facilities_all' || // Skip CA FRAP Facilities array (handled separately for map drawing)
+    key === 'datasf_active_business_locations_all' || // Skip DataSF Active Business Locations array (handled separately for map drawing)
+    key === 'datasf_taxable_commercial_spaces_all' || // Skip DataSF Taxable Commercial Spaces array (handled separately for map drawing)
+    key === 'datasf_commercial_vacancy_tax_status_all' || // Skip DataSF Commercial Vacancy Tax Status array (handled separately for map drawing)
+    key === 'datasf_active_food_services_all' || // Skip DataSF Active Food Services array (handled separately for map drawing)
+    key === 'datasf_street_vending_permits_all' || // Skip DataSF SF Street Vending Permits array (handled separately for map drawing)
     key === 'ca_solar_footprints_all' || // Skip CA Solar Footprints array (handled separately for map drawing)
     key === 'ca_natural_gas_service_areas_all' || // Skip CA Natural Gas Service Areas array (handled separately for map drawing)
     key === 'ca_plss_sections_all' || // Skip CA PLSS Sections array (handled separately for map drawing)
@@ -26761,6 +26771,525 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing CA FRAP Facilities:', error);
       }
 
+      // Draw DataSF Active Business Locations as point markers on the map
+      try {
+        if (enrichments.datasf_active_business_locations_all && Array.isArray(enrichments.datasf_active_business_locations_all)) {
+          let bizCount = 0;
+          enrichments.datasf_active_business_locations_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              row.latitude ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              row.longitude ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null) {
+              try {
+                const dba = row.dba_name || row.DBA_NAME || row.dbaName || 'Business';
+                const address = row.full_business_address || row.mailing_address_1 || '';
+                const city = row.city || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#0369a1';
+
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🏢', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏢 ${dba}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${address ? `<div><strong>Address:</strong> ${address}</div>` : ''}
+                      ${city ? `<div><strong>City:</strong> ${city}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'dba_name',
+                  'DBA_NAME',
+                  'full_business_address',
+                  'mailing_address_1',
+                  'city',
+                  'CITY',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'location',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_active_business_locations';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                bizCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Active Business Location marker:', err);
+              }
+            }
+          });
+
+          if (bizCount > 0) {
+            if (!legendAccumulator['datasf_active_business_locations']) {
+              legendAccumulator['datasf_active_business_locations'] = {
+                icon: '🏢',
+                color: '#0369a1',
+                title: 'DataSF — Active Business Locations',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_active_business_locations'].count += bizCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Active Business Locations:', error);
+      }
+
+      // Draw DataSF Taxable Commercial Spaces as point markers on the map
+      try {
+        if (enrichments.datasf_taxable_commercial_spaces_all && Array.isArray(enrichments.datasf_taxable_commercial_spaces_all)) {
+          let tcsCount = 0;
+          enrichments.datasf_taxable_commercial_spaces_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              row.latitude ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              row.longitude ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null) {
+              try {
+                const parcelAddr = row.parcelsitusaddress || row.parcelSitusAddress || '';
+                const parcelNum = row.parcelnumber || '';
+                const neighborhood = row.analysis_neighborhood || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#0d9488';
+
+                const title = parcelAddr || parcelNum || 'Taxable commercial space';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🏬', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🏬 ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${parcelNum ? `<div><strong>Parcel:</strong> ${parcelNum}</div>` : ''}
+                      ${parcelAddr ? `<div><strong>Site address:</strong> ${parcelAddr}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'parcelsitusaddress',
+                  'parcelnumber',
+                  'analysis_neighborhood',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'location_point',
+                  'location',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_taxable_commercial_spaces';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                tcsCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Taxable Commercial Space marker:', err);
+              }
+            }
+          });
+
+          if (tcsCount > 0) {
+            if (!legendAccumulator['datasf_taxable_commercial_spaces']) {
+              legendAccumulator['datasf_taxable_commercial_spaces'] = {
+                icon: '🏬',
+                color: '#0d9488',
+                title: 'DataSF — Taxable Commercial Spaces',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_taxable_commercial_spaces'].count += tcsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Taxable Commercial Spaces:', error);
+      }
+
+      // Draw DataSF Commercial Vacancy Tax Status (same parcel points as rzkk-54yv; distinct legend/toggle)
+      try {
+        if (enrichments.datasf_commercial_vacancy_tax_status_all && Array.isArray(enrichments.datasf_commercial_vacancy_tax_status_all)) {
+          let cvtCount = 0;
+          enrichments.datasf_commercial_vacancy_tax_status_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              row.latitude ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              row.longitude ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null) {
+              try {
+                const parcelAddr = row.parcelsitusaddress || '';
+                const parcelNum = row.parcelnumber || '';
+                const filed = row.filed != null ? String(row.filed) : '';
+                const vacant = row.vacant != null ? String(row.vacant) : '';
+                const rate = row.rate != null ? String(row.rate) : '';
+                const filerType = row.filertype || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#c2410c';
+
+                const title = parcelAddr || parcelNum || 'CVT parcel';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🗺️', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🗺️ ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${parcelNum ? `<div><strong>Parcel:</strong> ${parcelNum}</div>` : ''}
+                      ${parcelAddr ? `<div><strong>Site address:</strong> ${parcelAddr}</div>` : ''}
+                      ${filed ? `<div><strong>Filed:</strong> ${filed}</div>` : ''}
+                      ${filerType ? `<div><strong>Filer type:</strong> ${filerType}</div>` : ''}
+                      ${vacant ? `<div><strong>Vacant:</strong> ${vacant}</div>` : ''}
+                      ${rate ? `<div><strong>Rate:</strong> ${rate}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'parcelsitusaddress',
+                  'parcelnumber',
+                  'filed',
+                  'filertype',
+                  'vacant',
+                  'rate',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'location_point',
+                  'location',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_commercial_vacancy_tax_status';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                cvtCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Commercial Vacancy Tax Status marker:', err);
+              }
+            }
+          });
+
+          if (cvtCount > 0) {
+            if (!legendAccumulator['datasf_commercial_vacancy_tax_status']) {
+              legendAccumulator['datasf_commercial_vacancy_tax_status'] = {
+                icon: '🗺️',
+                color: '#c2410c',
+                title: 'DataSF — Commercial Vacancy Tax Status',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_commercial_vacancy_tax_status'].count += cvtCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Commercial Vacancy Tax Status:', error);
+      }
+
+      // Draw DataSF Active Food Services (NAICS Food Services) as point markers
+      try {
+        if (enrichments.datasf_active_food_services_all && Array.isArray(enrichments.datasf_active_food_services_all)) {
+          let afsCount = 0;
+          enrichments.datasf_active_food_services_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              row.latitude ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              row.longitude ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null) {
+              try {
+                const dba = row.dba_name || '';
+                const addr = row.full_business_address || '';
+                const naic = row.naic_code_description || row.naics_code_descriptions_list || '';
+                const neighborhood = row.neighborhoods_analysis_boundaries || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#b45309';
+
+                const title = dba || addr || 'Food Services';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🍽️', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🍽️ ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${dba ? `<div><strong>DBA:</strong> ${dba}</div>` : ''}
+                      ${addr ? `<div><strong>Address:</strong> ${addr}</div>` : ''}
+                      ${naic ? `<div><strong>NAICS:</strong> ${naic}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'dba_name',
+                  'full_business_address',
+                  'naic_code_description',
+                  'naics_code_descriptions_list',
+                  'neighborhoods_analysis_boundaries',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'location',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_active_food_services';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                afsCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Active Food Services marker:', err);
+              }
+            }
+          });
+
+          if (afsCount > 0) {
+            if (!legendAccumulator['datasf_active_food_services']) {
+              legendAccumulator['datasf_active_food_services'] = {
+                icon: '🍽️',
+                color: '#b45309',
+                title: 'DataSF — Active Food Services',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_active_food_services'].count += afsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Active Food Services:', error);
+      }
+
+      // Draw DataSF SF Street Vending Permits as point markers
+      try {
+        if (enrichments.datasf_street_vending_permits_all && Array.isArray(enrichments.datasf_street_vending_permits_all)) {
+          let svpCount = 0;
+          enrichments.datasf_street_vending_permits_all.forEach((row: any) => {
+            const coords = row.geometry?.coordinates;
+            const lat =
+              (Array.isArray(coords) ? coords[1] : null) ??
+              (row.latitude != null ? parseFloat(String(row.latitude)) : null) ??
+              row.LAT ??
+              row.lat ??
+              null;
+            const lon =
+              (Array.isArray(coords) ? coords[0] : null) ??
+              (row.longitude != null ? parseFloat(String(row.longitude)) : null) ??
+              row.LON ??
+              row.lon ??
+              null;
+
+            if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+              try {
+                const dba = row.dbaname || '';
+                const permit = row.permit_number || '';
+                const vendorType = row.typeofvendor || '';
+                const street = row.vendinglocationstreet || '';
+                const cross = row.vendinglocationcrossstreet || '';
+                const neighborhood = row.analysis_neighborhood || '';
+                const distance =
+                  row.distance_miles !== null && row.distance_miles !== undefined ? row.distance_miles : 0;
+                const iconColor = '#059669';
+
+                const title = dba || permit || 'Street vending';
+                const marker = L.marker([lat, lon], {
+                  icon: createPOIIcon('🛒', iconColor),
+                });
+
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      🛒 ${title}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${permit ? `<div><strong>Permit:</strong> ${permit}</div>` : ''}
+                      ${dba ? `<div><strong>DBA:</strong> ${dba}</div>` : ''}
+                      ${vendorType ? `<div><strong>Vendor type:</strong> ${vendorType}</div>` : ''}
+                      ${street || cross ? `<div><strong>Location:</strong> ${[street, cross].filter(Boolean).join(' @ ')}</div>` : ''}
+                      ${neighborhood ? `<div><strong>Neighborhood:</strong> ${neighborhood}</div>` : ''}
+                      ${distance > 0 ? `<div style="margin-top: 8px;"><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                `;
+
+                const excludeFields = [
+                  'dbaname',
+                  'permit_number',
+                  'typeofvendor',
+                  'vendinglocationstreet',
+                  'vendinglocationcrossstreet',
+                  'analysis_neighborhood',
+                  'latitude',
+                  'longitude',
+                  'geometry',
+                  'distance_miles',
+                  'point',
+                ];
+                Object.entries(row).forEach(([k, value]) => {
+                  if (!excludeFields.includes(k) && value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object' && !Array.isArray(value)) {
+                      return;
+                    }
+                    const formattedKey = k.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+                    popupContent += `<div><strong>${formattedKey}:</strong> ${value}</div>`;
+                  }
+                });
+
+                popupContent += `
+                    </div>
+                  </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                (marker as any).__legendKey = 'datasf_street_vending_permits';
+                marker.addTo(primary);
+                bounds.extend([lat, lon]);
+                svpCount++;
+              } catch (err) {
+                console.error('Error drawing DataSF Street Vending Permit marker:', err);
+              }
+            }
+          });
+
+          if (svpCount > 0) {
+            if (!legendAccumulator['datasf_street_vending_permits']) {
+              legendAccumulator['datasf_street_vending_permits'] = {
+                icon: '🛒',
+                color: '#059669',
+                title: 'DataSF — SF Street Vending Permits',
+                count: 0,
+              };
+            }
+            legendAccumulator['datasf_street_vending_permits'].count += svpCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing DataSF Street Vending Permits:', error);
+      }
+
       // Draw CA Solar Footprints as polygons on the map
       try {
         if (enrichments.ca_solar_footprints_all && Array.isArray(enrichments.ca_solar_footprints_all)) {
@@ -47391,6 +47920,27 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip US Drilling Platforms - handled separately with custom icons
         if (key === 'us_drilling_platforms_all') {
+          return;
+        }
+
+        // Skip DataSF Active Business Locations — custom markers on primary + __legendKey for legend toggle (generic handler would duplicate points on `poi`)
+        if (key === 'datasf_active_business_locations_all') {
+          return;
+        }
+
+        if (key === 'datasf_taxable_commercial_spaces_all') {
+          return;
+        }
+
+        if (key === 'datasf_commercial_vacancy_tax_status_all') {
+          return;
+        }
+
+        if (key === 'datasf_active_food_services_all') {
+          return;
+        }
+
+        if (key === 'datasf_street_vending_permits_all') {
           return;
         }
 

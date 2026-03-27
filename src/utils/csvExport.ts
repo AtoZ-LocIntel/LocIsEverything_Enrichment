@@ -4068,6 +4068,261 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           'Caltrans GIS'
         ]);
       });
+    } else if (key === 'datasf_active_business_locations_all' && Array.isArray(value)) {
+      value.forEach((biz: any) => {
+        const coords = biz.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          biz.latitude ??
+          biz.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          biz.longitude ??
+          biz.lon ??
+          '';
+        const dba = biz.dba_name || biz.DBA_NAME || 'Business';
+        const address = biz.full_business_address || biz.mailing_address_1 || '';
+        const city = biz.city || '';
+        const distance =
+          biz.distance_miles !== null && biz.distance_miles !== undefined
+            ? Number(biz.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...biz };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: biz.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_ACTIVE_BUSINESS_LOCATIONS',
+          dba,
+          String(plat),
+          String(plon),
+          distance,
+          'Active business location',
+          [address, city].filter(Boolean).join(', ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/resource/kvj8-g7jh.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_taxable_commercial_spaces_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          row.latitude ??
+          row.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          row.longitude ??
+          row.lon ??
+          '';
+        const parcelAddr = row.parcelsitusaddress || '';
+        const parcelNum = row.parcelnumber || '';
+        const label = parcelAddr || parcelNum || 'Taxable commercial space';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location_point;
+        delete allAttributes.location;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_TAXABLE_COMMERCIAL_SPACES',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'Taxable commercial space',
+          [parcelNum, parcelAddr].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/resource/rzkk-54yv.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_commercial_vacancy_tax_status_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          row.latitude ??
+          row.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          row.longitude ??
+          row.lon ??
+          '';
+        const parcelAddr = row.parcelsitusaddress || '';
+        const parcelNum = row.parcelnumber || '';
+        const label = parcelAddr || parcelNum || 'CVT parcel';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location_point;
+        delete allAttributes.location;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_COMMERCIAL_VACANCY_TAX_STATUS',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'Commercial Vacancy Tax status (parcel)',
+          [parcelNum, parcelAddr].filter(Boolean).join(' — ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/rzkk-54yv/query.geojson',
+        ]);
+      });
+    } else if (key === 'datasf_active_food_services_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          row.latitude ??
+          row.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          row.longitude ??
+          row.lon ??
+          '';
+        const dba = row.dba_name || '';
+        const addr = row.full_business_address || '';
+        const city = row.city || '';
+        const label = [dba, addr].filter(Boolean).join(' — ') || 'Food Services';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.location;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_ACTIVE_FOOD_SERVICES',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'Active Food Services (NAICS)',
+          [addr, city].filter(Boolean).join(', ') || detailJson,
+          '',
+          detailJson,
+          "https://data.sfgov.org/api/v3/views/g8m3-pdis/query.geojson?query=SELECT%20*%20WHERE%20(%60naic_code_description%60%20%3D%20'Food%20Services')",
+        ]);
+      });
+    } else if (key === 'datasf_street_vending_permits_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const coords = row.geometry?.coordinates;
+        const plat =
+          (Array.isArray(coords) ? coords[1] : null) ??
+          row.latitude ??
+          row.lat ??
+          '';
+        const plon =
+          (Array.isArray(coords) ? coords[0] : null) ??
+          row.longitude ??
+          row.lon ??
+          '';
+        const dba = row.dbaname || row.dba_name || '';
+        const permit = row.permit_number || '';
+        const street = row.vendinglocationstreet || '';
+        const cross = row.vendinglocationcrossstreet || '';
+        const label = [dba, permit].filter(Boolean).join(' — ') || 'Street vending permit';
+        const distance =
+          row.distance_miles !== null && row.distance_miles !== undefined
+            ? Number(row.distance_miles).toFixed(4)
+            : '';
+
+        const allAttributes = { ...row };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.latitude;
+        delete allAttributes.longitude;
+        delete allAttributes.point;
+        const detailJson = JSON.stringify({
+          ...allAttributes,
+          geometry: row.geometry ?? null,
+        });
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'DataSF (Socrata)',
+          (location.confidence || 'N/A').toString(),
+          'DATASF_STREET_VENDING_PERMITS',
+          label,
+          String(plat),
+          String(plon),
+          distance,
+          'SF Street Vending Permit',
+          [street, cross].filter(Boolean).join(' @ ') || detailJson,
+          '',
+          detailJson,
+          'https://data.sfgov.org/api/v3/views/34ws-kyf6/query.geojson',
+        ]);
+      });
     } else if (key === 'de_child_care_centers_all' && Array.isArray(value)) {
       // Handle DE Child Care Centers - each center gets its own row with all attributes
       value.forEach((center: any) => {

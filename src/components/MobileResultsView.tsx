@@ -331,6 +331,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Massachusetts Data';
     }
     
+    // DataSF (City and County of San Francisco — keys use datasf_ prefix)
+    if (key.includes('datasf_')) {
+      return 'DataSF';
+    }
+
     // California Data - check before CT and DE to avoid mis-categorization
     if (key.includes('ca_fire_perimeters') || key.includes('ca_wildland_fire') || key.includes('ca_calvtp_treatment_areas') || key.includes('ca_power_outage_areas') || key.includes('ca_')) {
       return 'California Data';

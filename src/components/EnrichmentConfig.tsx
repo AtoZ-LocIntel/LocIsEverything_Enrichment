@@ -657,8 +657,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
         }
         
         if (section.id === 'ca') {
-          // Get CA Open Data Portal enrichments (filter POIs where section is 'ca' but exclude LA County layers)
-          const caOpenDataPortalPOIs = poiTypes.filter(poi => poi.section === 'ca' && !poi.id.startsWith('la_county_'));
+          // Get CA Open Data Portal enrichments (exclude LA County layers and DataSF-tagged layers)
+          const caOpenDataPortalPOIs = poiTypes.filter(
+            (poi) =>
+              poi.section === 'ca' &&
+              !poi.id.startsWith('la_county_') &&
+              poi.subCategory !== 'DataSF'
+          );
           const caOpenDataPortalEnrichments = caOpenDataPortalPOIs.map(poi => ({
             id: poi.id,
             label: poi.label,
@@ -716,6 +721,18 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
             if (!aIsDemographics && bIsDemographics && !aIsHazard && !aIsBasemapGrid && !aIsHydrology && !aIsInfrastructure && !aIsAdminBoundaries && !aIsElevation) return 1;
             return a.label.localeCompare(b.label);
           });
+
+          const datasfPOIs = poiTypes.filter((poi) => poi.section === 'ca' && poi.subCategory === 'DataSF');
+          const datasfEnrichments = datasfPOIs
+            .map((poi) => ({
+              id: poi.id,
+              label: poi.label,
+              description: poi.description,
+              isPOI: poi.isPOI,
+              defaultRadius: poi.defaultRadius,
+              category: poi.category,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
           
           // Define CA sub-categories (organized by data source)
           const caSubCategories: EnrichmentCategory[] = [
@@ -725,6 +742,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
               icon: <img src="/assets/CAopendataportal.webp" alt="CA Open Data Portal" className="w-full h-full object-cover rounded-full" />,
               description: 'California Open Data Portal data layers',
               enrichments: caOpenDataPortalEnrichments
+            },
+            {
+              id: 'datasf',
+              title: 'DataSF',
+              icon: <img src="/assets/DataSF.webp" alt="DataSF" className="w-full h-full object-cover rounded-full" />,
+              description: 'City and County of San Francisco open data (DataSF)',
+              enrichments: datasfEnrichments
             },
             {
               id: 'la_county',
@@ -4111,6 +4135,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
                               const isChicago311 = enrichment.id === 'chicago_311';
                               const isChicagoBuildingFootprints = enrichment.id === 'chicago_building_footprints';
+                              const isDatasfProximityLayer =
+                                enrichment.id === 'datasf_active_business_locations' ||
+                                enrichment.id === 'datasf_taxable_commercial_spaces' ||
+                                enrichment.id === 'datasf_commercial_vacancy_tax_status' ||
+                                enrichment.id === 'datasf_active_food_services' ||
+                                enrichment.id === 'datasf_street_vending_permits';
                               const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                               const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                               const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
@@ -4127,6 +4157,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                 ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                 : isChicago311 || isChicagoBuildingFootprints || isHoustonSiteAddresses
                                 ? [0.25, 0.50, 0.75, 1.0]
+                                : isDatasfProximityLayer
+                                ? [0.25, 0.5, 0.75, 1.0]
                                 : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                 ? [0.5, 1.0, 2.5, 5.0]
                                 : enrichment.id === 'poi_aurora_viewing_sites'
@@ -4300,6 +4332,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                           const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
                                           const isLACountyLeadRisk = enrichment.id === 'la_county_housing_lead_risk';
                                           const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
+                                          const isDatasfProximityLayer =
+                                enrichment.id === 'datasf_active_business_locations' ||
+                                enrichment.id === 'datasf_taxable_commercial_spaces' ||
+                                enrichment.id === 'datasf_commercial_vacancy_tax_status' ||
+                                enrichment.id === 'datasf_active_food_services' ||
+                                enrichment.id === 'datasf_street_vending_permits';
                                           const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                                           const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                                           const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
@@ -4313,6 +4351,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                             : isLAStreetInventory
                                             ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                            : isDatasfProximityLayer
+                                            ? [0.25, 0.5, 0.75, 1.0]
                                             : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                             ? [0.5, 1.0, 2.5, 5.0]
                                             : enrichment.id === 'poi_aurora_viewing_sites'
@@ -4446,6 +4486,12 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                   const isCTBuildingFootprints = enrichment.id === 'ct_building_footprints';
                                   const isLACountyLeadRisk = enrichment.id === 'la_county_housing_lead_risk';
                                           const isLAStreetInventory = enrichment.id === 'la_county_street_inventory';
+                                          const isDatasfProximityLayer =
+                                enrichment.id === 'datasf_active_business_locations' ||
+                                enrichment.id === 'datasf_taxable_commercial_spaces' ||
+                                enrichment.id === 'datasf_commercial_vacancy_tax_status' ||
+                                enrichment.id === 'datasf_active_food_services' ||
+                                enrichment.id === 'datasf_street_vending_permits';
                                           const isNYCBikeRoutes = enrichment.id === 'nyc_bike_routes';
                                           const isNYCBusinessImprovementDistricts = enrichment.id === 'nyc_business_improvement_districts';
                                           const isNYCCommunityDistricts = enrichment.id === 'nyc_community_districts';
@@ -4459,6 +4505,8 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
                                     : isLAStreetInventory
                                     ? [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+                                    : isDatasfProximityLayer
+                                    ? [0.25, 0.5, 0.75, 1.0]
                                     : isNYCBikeRoutes || isNYCBusinessImprovementDistricts || isNYCCommunityDistricts
                                     ? [0.5, 1.0, 2.5, 5.0]
                                     : enrichment.id === 'nyc_bike_routes' || enrichment.id === 'nyc_business_improvement_districts' || enrichment.id === 'nyc_community_districts'
