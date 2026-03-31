@@ -155,6 +155,12 @@ import {
   getUSGSSelectablePolygonsSubbasinData,
 } from '../adapters/usgsSelectablePolygons';
 import {
+  getBlmPlssTownshipData,
+  getBlmPlssSectionData,
+  getBlmPlssIntersectedData,
+  type BlmPlssFeature,
+} from '../adapters/blmPlssCadastral';
+import {
   getUSGSWBDLineData,
   getUSGSWBD2DigitHUData,
   getUSGSWBD4DigitHUData,
@@ -192,6 +198,16 @@ import {
   queryNOAAMaritime200NM,
   queryNOAAMaritimeUSCanadaBoundary
 } from '../adapters/noaaMaritimeLimitsBoundaries';
+import {
+  queryNOAAMarinePlaceNames,
+  displayNameFromAttributes as displayNOAAMarinePlaceName
+} from '../adapters/noaaMarinePlaceNames';
+import {
+  queryMarineCadastreLayerById,
+  MARINE_CADASTRE_QUERY_LAYERS,
+  displayMarineCadastreQueryLabel,
+  type MarineCadastreQueryLayerId,
+} from '../adapters/noaaMarineCadastreQueryLayers';
 import {
   getNOAOWaterTemperatureJanuary,
   getNOAOWaterTemperatureFebruary,
@@ -4541,6 +4557,14 @@ export class EnrichmentService {
       case 'usgs_selectable_polygons_subbasin':
         return await this.getUSGSSelectablePolygonsSubbasin(lat, lon, radius);
       
+      // BLM PLSS CadNSDI (USGS National Map — Public Land Survey System)
+      case 'usgs_nationalmap_plss_township':
+        return await this.getUSGSNationalMapBlmPlssTownship(lat, lon, radius);
+      case 'usgs_nationalmap_plss_section':
+        return await this.getUSGSNationalMapBlmPlssSection(lat, lon, radius);
+      case 'usgs_nationalmap_plss_intersected':
+        return await this.getUSGSNationalMapBlmPlssIntersected(lat, lon, radius);
+      
       // USGS WBD (Watershed Boundary Dataset) Layers
       case 'usgs_wbd_line':
         return await this.getUSGSWBDLine(lat, lon, radius);
@@ -4593,6 +4617,18 @@ export class EnrichmentService {
         return await this.getNOAAMaritime200NM(lat, lon, radius);
       case 'noaa_maritime_us_canada_boundary':
         return await this.getNOAAMaritimeUSCanadaBoundary(lat, lon, radius);
+      case 'noaa_marine_place_names':
+        return await this.getNOAAMarinePlaceNames(lat, lon, radius);
+      case 'noaa_marine_undersea_feature_place_names':
+        return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_undersea_feature_place_names', lat, lon, radius);
+      case 'noaa_marine_seagrasses':
+        return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_seagrasses', lat, lon, radius);
+      case 'noaa_marine_coastal_wetlands':
+        return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_coastal_wetlands', lat, lon, radius);
+      case 'noaa_marine_us_state_submerged_lands':
+        return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_us_state_submerged_lands', lat, lon, radius);
+      case 'noaa_marine_ioos_regions':
+        return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_ioos_regions', lat, lon, radius);
       
       // NOAA West Coast Essential Fish Habitat (EFH) Layers
       case 'noaa_west_coast_efh_hapc':
@@ -32404,6 +32440,102 @@ out center tags;`;
     }
   }
 
+  private buildBlmPlssResult(
+    prefix: string,
+    label: string,
+    features: BlmPlssFeature[],
+    radiusUsed: number
+  ): Record<string, any> {
+    const containing = features.filter((f) => f.isContaining).length;
+    const nearby = features.length - containing;
+    if (features.length === 0) {
+      return {
+        [`${prefix}_count`]: 0,
+        [`${prefix}_radius_miles`]: radiusUsed,
+        [`${prefix}_summary`]: `No BLM ${label} polygons within ${radiusUsed} mi (PLSS CadNSDI).`,
+        [`${prefix}_spatial_summary`]: `Point in polygon: 0; within buffer only (not containing): 0.`,
+        [`${prefix}_all`]: [],
+      };
+    }
+    return {
+      [`${prefix}_count`]: features.length,
+      [`${prefix}_radius_miles`]: radiusUsed,
+      [`${prefix}_summary`]: `BLM ${label}: ${features.length} polygon(s) intersecting ${radiusUsed} mi buffer${containing > 0 ? ` (${containing} containing search point)` : ''}.`,
+      [`${prefix}_spatial_summary`]: `Point in polygon: ${containing}; within buffer but not containing: ${nearby}.`,
+      [`${prefix}_all`]: features.map((feature) => {
+        const geom = feature.geometry;
+        const plainGeom =
+          geom && typeof geom === 'object'
+            ? (JSON.parse(JSON.stringify(geom)) as Record<string, unknown>)
+            : geom;
+        return {
+          ...feature.attributes,
+          objectid: feature.objectid,
+          geometry: plainGeom,
+          __geometry: plainGeom,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          layerId: feature.layerId,
+          layerName: feature.layerName,
+        };
+      }),
+    };
+  }
+
+  private async getUSGSNationalMapBlmPlssTownship(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const id = 'usgs_nationalmap_plss_township';
+    try {
+      const r = Math.min(radius ?? 25, 100);
+      const features = await getBlmPlssTownshipData(lat, lon, r);
+      return this.buildBlmPlssResult(id, 'PLSS Township', features, r);
+    } catch (error) {
+      console.error(`❌ Error fetching BLM PLSS Township:`, error);
+      return {
+        [`${id}_count`]: 0,
+        [`${id}_radius_miles`]: 0,
+        [`${id}_summary`]: 'Error fetching BLM PLSS Township data',
+        [`${id}_spatial_summary`]: 'Point in polygon: —; within buffer: —',
+        [`${id}_all`]: [],
+      };
+    }
+  }
+
+  private async getUSGSNationalMapBlmPlssSection(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const id = 'usgs_nationalmap_plss_section';
+    try {
+      const r = Math.min(radius ?? 25, 100);
+      const features = await getBlmPlssSectionData(lat, lon, r);
+      return this.buildBlmPlssResult(id, 'PLSS Section', features, r);
+    } catch (error) {
+      console.error(`❌ Error fetching BLM PLSS Section:`, error);
+      return {
+        [`${id}_count`]: 0,
+        [`${id}_radius_miles`]: 0,
+        [`${id}_summary`]: 'Error fetching BLM PLSS Section data',
+        [`${id}_spatial_summary`]: 'Point in polygon: —; within buffer: —',
+        [`${id}_all`]: [],
+      };
+    }
+  }
+
+  private async getUSGSNationalMapBlmPlssIntersected(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const id = 'usgs_nationalmap_plss_intersected';
+    try {
+      const r = Math.min(radius ?? 25, 100);
+      const features = await getBlmPlssIntersectedData(lat, lon, r);
+      return this.buildBlmPlssResult(id, 'PLSS Intersected', features, r);
+    } catch (error) {
+      console.error(`❌ Error fetching BLM PLSS Intersected:`, error);
+      return {
+        [`${id}_count`]: 0,
+        [`${id}_radius_miles`]: 0,
+        [`${id}_summary`]: 'Error fetching BLM PLSS Intersected data',
+        [`${id}_spatial_summary`]: 'Point in polygon: —; within buffer: —',
+        [`${id}_all`]: [],
+      };
+    }
+  }
+
   private async getUSGSWBDLine(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`💧 Fetching USGS WBD Line data for [${lat}, ${lon}]`);
@@ -33439,6 +33571,92 @@ out center tags;`;
         'noaa_maritime_us_canada_boundary_count': 0,
         'noaa_maritime_us_canada_boundary_summary': 'Error fetching NOAA Maritime Limits - US/Canada Land Boundary data',
         'noaa_maritime_us_canada_boundary_all': []
+      };
+    }
+  }
+
+  private async getNOAAMarinePlaceNames(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      console.log(`🌊 Fetching NOAA Marine Cadastre — Marine Place Names for [${lat}, ${lon}]`);
+
+      const features = await queryNOAAMarinePlaceNames(lat, lon, radius ?? 25);
+
+      const result: Record<string, any> = {};
+
+      if (features.length === 0) {
+        result['noaa_marine_place_names_count'] = 0;
+        result['noaa_marine_place_names_summary'] = 'No marine place names found within search radius';
+        result['noaa_marine_place_names_all'] = [];
+      } else {
+        const nearest = features[0];
+        const label = displayNOAAMarinePlaceName(nearest.attributes) || 'Unnamed';
+        result['noaa_marine_place_names_count'] = features.length;
+        result['noaa_marine_place_names_summary'] = `Found ${features.length} marine place name(s); nearest: ${label} (${nearest.distance_miles.toFixed(2)} mi)`;
+        result['noaa_marine_place_names_all'] = features.map((feature) => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          lat: feature.lat,
+          lon: feature.lon,
+          distance_miles: feature.distance_miles,
+          geometry: feature.geometry,
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching NOAA Marine Place Names data:', error);
+      return {
+        'noaa_marine_place_names_count': 0,
+        'noaa_marine_place_names_summary': 'Error fetching NOAA Marine Place Names data',
+        'noaa_marine_place_names_all': []
+      };
+    }
+  }
+
+  private async getNOAAMarineCadastreQueryLayerById(
+    enrichmentId: MarineCadastreQueryLayerId,
+    lat: number,
+    lon: number,
+    radius?: number
+  ): Promise<Record<string, any>> {
+    const cfg = MARINE_CADASTRE_QUERY_LAYERS[enrichmentId];
+    const shortLabel = cfg.shortLabel;
+    try {
+      const features = await queryMarineCadastreLayerById(enrichmentId, lat, lon, radius ?? 25);
+      const result: Record<string, any> = {};
+      const prefix = enrichmentId;
+
+      if (features.length === 0) {
+        result[`${prefix}_count`] = 0;
+        result[`${prefix}_summary`] = `No ${shortLabel} features found within search radius`;
+        result[`${prefix}_all`] = [];
+      } else {
+        const nearest = features[0];
+        const label = displayMarineCadastreQueryLabel(nearest.attributes) || 'Unnamed';
+        const containingCount = features.filter((f) => f.isContaining).length;
+        result[`${prefix}_count`] = features.length;
+        result[`${prefix}_summary`] =
+          containingCount > 0
+            ? `Found ${features.length} ${shortLabel} feature(s) (${containingCount} containing point); nearest: ${label} (${nearest.distance_miles.toFixed(2)} mi)`
+            : `Found ${features.length} ${shortLabel} feature(s); nearest: ${label} (${nearest.distance_miles.toFixed(2)} mi)`;
+        result[`${prefix}_all`] = features.map((feature) => ({
+          ...feature.attributes,
+          objectid: feature.objectid,
+          lat: feature.lat,
+          lon: feature.lon,
+          distance_miles: feature.distance_miles,
+          isContaining: feature.isContaining,
+          geometry: feature.geometry,
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA ${shortLabel} data:`, error);
+      return {
+        [`${enrichmentId}_count`]: 0,
+        [`${enrichmentId}_summary`]: `Error fetching NOAA ${shortLabel} data`,
+        [`${enrichmentId}_all`]: [],
       };
     }
   }

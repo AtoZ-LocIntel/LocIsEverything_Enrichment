@@ -1265,6 +1265,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key === 'noaa_critical_fisheries_habitat_all') || // Skip NOAA Critical Fisheries Habitat array (handled separately)
         (key === 'noaa_weather_radar_impact_zones_all') || // Skip NOAA Weather Radar Impact Zones array (handled separately)
         (key.startsWith('noaa_maritime_') && key.endsWith('_all')) || // Skip NOAA Maritime Limits arrays (handled separately)
+        ((key.startsWith('noaa_marine_') || key.startsWith('noaa_marinecadastre_')) && key.endsWith('_all')) || // Skip NOAA Marine Cadastre query layer arrays (handled separately)
         (key.startsWith('noaa_west_coast_efh_') && key.endsWith('_all')) || // Skip NOAA West Coast EFH arrays (handled separately)
         (key.startsWith('noaa_esa_species_ranges_') && key.endsWith('_all')) || // Skip NOAA ESA Species Ranges arrays (handled separately)
         (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all')) || // Skip NOAA NMFS Critical Habitat arrays (handled separately)
@@ -1981,6 +1982,85 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           '',
           attributesJson,
           'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // NOAA Marine Cadastre query layers (points & polygons)
+    if (
+      (key.startsWith('noaa_marine_') || key.startsWith('noaa_marinecadastre_')) &&
+      key.endsWith('_all') &&
+      Array.isArray(value)
+    ) {
+      const layerKey = key.replace('_all', '');
+      const marineExportMeta: Record<string, { poiType: string; category: string }> = {
+        noaa_marine_place_names: {
+          poiType: 'NOAA_MARINE_PLACE_NAMES',
+          category: 'Marine Cadastre — Marine Place Names',
+        },
+        noaa_marine_undersea_feature_place_names: {
+          poiType: 'NOAA_MARINE_UNDERSEA_FEATURE_PLACE_NAMES',
+          category: 'Marine Cadastre — Undersea Feature Place Names',
+        },
+        noaa_marine_seagrasses: { poiType: 'NOAA_MARINE_SEAGRASSES', category: 'Marine Cadastre — Seagrasses' },
+        noaa_marine_coastal_wetlands: {
+          poiType: 'NOAA_MARINE_COASTAL_WETLANDS',
+          category: 'Marine Cadastre — Coastal Wetlands',
+        },
+        noaa_marine_us_state_submerged_lands: {
+          poiType: 'NOAA_MARINE_US_STATE_SUBMERGED_LANDS',
+          category: 'Marine Cadastre — US State Submerged Lands',
+        },
+        noaa_marine_ioos_regions: {
+          poiType: 'NOAA_MARINE_IOOS_REGIONS',
+          category: 'Marine Cadastre — IOOS Regions',
+        },
+      };
+      const meta =
+        marineExportMeta[layerKey] || {
+          poiType: layerKey.replace(/^noaa_marine_/, 'NOAA_MARINE_').toUpperCase(),
+          category: `Marine Cadastre — ${layerKey.replace(/^noaa_marine_/, '').replace(/_/g, ' ')}`,
+        };
+
+      value.forEach((row: any) => {
+        const attrs = { ...row };
+        delete attrs.geometry;
+        const placeLabel =
+          row.bearing_label ??
+          row.name ??
+          row.NAME ??
+          attrs.name ??
+          attrs.NAME ??
+          attrs.NWIClass ??
+          attrs.bioticClass ??
+          attrs.bioticCommunity ??
+          attrs.region ??
+          attrs.REGION ??
+          row.OBJECTID ??
+          row.objectid ??
+          (row.transit_count != null ? `AIS count ${row.transit_count}` : 'Unknown');
+        const dist =
+          row.distance_miles != null ? Number(row.distance_miles).toFixed(4) : '';
+        const latStr = row.lat != null ? String(row.lat) : '';
+        const lonStr = row.lon != null ? String(row.lon) : '';
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          meta.poiType,
+          String(placeLabel),
+          latStr,
+          lonStr,
+          dist,
+          meta.category,
+          attributesJson,
+          '',
+          '',
+          'NOAA',
         ]);
       });
       return;
@@ -16025,14 +16105,17 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
       'usgs_selectable_polygons_24k_index_all': { name: 'USGS_SELECTABLE_POLYGONS_24K_INDEX', icon: '🗺️' },
       'usgs_selectable_polygons_region_all': { name: 'USGS_SELECTABLE_POLYGONS_REGION', icon: '💧' },
       'usgs_selectable_polygons_subregion_all': { name: 'USGS_SELECTABLE_POLYGONS_SUBREGION', icon: '💧' },
-      'usgs_selectable_polygons_subbasin_all': { name: 'USGS_SELECTABLE_POLYGONS_SUBBASIN', icon: '💧' }
+      'usgs_selectable_polygons_subbasin_all': { name: 'USGS_SELECTABLE_POLYGONS_SUBBASIN', icon: '💧' },
+      'usgs_nationalmap_plss_township_all': { name: 'BLM_PLSS_TOWNSHIP', icon: '📐' },
+      'usgs_nationalmap_plss_section_all': { name: 'BLM_PLSS_SECTION', icon: '📐' },
+      'usgs_nationalmap_plss_intersected_all': { name: 'BLM_PLSS_INTERSECTED', icon: '📐' },
     };
     
     if (selectablePolygonsLayerMap[key] && Array.isArray(value)) {
       const layerInfo = selectablePolygonsLayerMap[key];
       value.forEach((feature: any) => {
         // Try to find a name/identifier from common attribute fields
-        const featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
+        let featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
           feature.STATE_NAME || feature.state_name || feature.COUNTY_NAME || feature.county_name ||
           feature.PLACE_NAME || feature.place_name || feature.DISTRICT || feature.district ||
           feature.HUC || feature.huc || feature.REGION || feature.region ||
@@ -16040,6 +16123,14 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           feature.INDEX || feature.index || feature.CELL_ID || feature.cell_id ||
           (feature.attributes ? (feature.attributes.name || feature.attributes.NAME || feature.attributes.NAME1) : null) ||
           feature.layerName || 'Unknown';
+        if (key.includes('usgs_nationalmap_plss_')) {
+          const plssParts = [
+            feature.TWNSHPLAB, feature.TWPRGE, feature.TWNSHPDIR,
+            feature.TWN, feature.RNG, feature.RNGDIR,
+            feature.SECTION, feature.SEC, feature.SECTN, feature.SECT,
+          ].filter((v) => v != null && v !== '' && String(v).trim() !== '');
+          if (plssParts.length) featureName = plssParts.map(String).join(' ');
+        }
         const distance = feature.distance_miles !== null && feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (feature.isContaining ? '0.00' : '');
         const isContaining = feature.isContaining ? 'Yes' : 'No';
         
@@ -16079,7 +16170,9 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           `${attributesJson} | Contains Point: ${isContaining}`,
           '',
           '',
-          'USGS The National Map'
+          key.includes('usgs_nationalmap_plss_')
+            ? 'BLM Cadastral PLSS CadNSDI (USGS National Map query layer)'
+            : 'USGS The National Map'
         ]);
       });
     }

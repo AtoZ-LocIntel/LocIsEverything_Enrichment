@@ -4446,6 +4446,25 @@ export const BASEMAP_CONFIGS: Record<string, BasemapConfig> = {
     tileUrl: 'https://gis.ngdc.noaa.gov/arcgis/rest/services/tsunami_energy/MapServer',
     exportMapLayerId: 10,
   },
+  // Marine Cadastre — AIS Vessel Transit Counts 2024 (single fused map cache; layer 0)
+  // Service: https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/AISVesselTransitCounts2024/MapServer
+  noaa_marinecadastre_ais_vessel_transit_counts_2024: {
+    type: 'tile',
+    name: 'NOAA Marine Cadastre — AIS Vessel Transit Counts 2024',
+    attribution:
+      'NOAA Office for Coastal Management, Marine Cadastre; U.S. Coast Guard AIS (AIS Vessel Transit Counts 2024)',
+    tileUrl:
+      'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/AISVesselTransitCounts2024/MapServer/tile/{z}/{y}/{x}',
+  },
+  // Marine Cadastre — Marine Place Names (dynamic MapServer; layer 0 — use ExportMap tiles, not /tile cache)
+  // Service: https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/MarinePlaceNames/MapServer
+  noaa_marinecadastre_marine_place_names: {
+    type: 'tile',
+    name: 'NOAA Marine Cadastre — Marine Place Names',
+    attribution: 'NOAA Office for Coastal Management, Marine Cadastre (Marine Place Names)',
+    tileUrl: 'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/MarinePlaceNames/MapServer',
+    exportMapLayerId: 0,
+  },
   // Note: ArcGIS Online services (services.arcgisonline.com) do not support WMS.
   // They use WMTS or direct tile services instead, which would require a different implementation.
   // The ArcGIS World Imagery layers have been removed as they don't support WMS protocol.
@@ -4924,6 +4943,12 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'noaa_maritime_24nm': { icon: '🌊', color: '#10b981', title: 'NOAA Maritime Limits - 24NM Contiguous Zone' },
   'noaa_maritime_200nm': { icon: '🌊', color: '#8b5cf6', title: 'NOAA Maritime Limits - 200NM EEZ' },
   'noaa_maritime_us_canada_boundary': { icon: '🌊', color: '#f59e0b', title: 'NOAA Maritime Limits - US/Canada Boundary' },
+  'noaa_marine_place_names': { icon: '📍', color: '#0ea5e9', title: 'NOAA Marine Cadastre — Marine Place Names' },
+  'noaa_marine_undersea_feature_place_names': { icon: '🧭', color: '#0891b2', title: 'NOAA Marine Cadastre — Undersea Feature Place Names' },
+  'noaa_marine_seagrasses': { icon: '🌿', color: '#059669', title: 'NOAA Marine Cadastre — Seagrasses' },
+  'noaa_marine_coastal_wetlands': { icon: '🏞️', color: '#16a34a', title: 'NOAA Marine Cadastre — Coastal Wetlands' },
+  'noaa_marine_us_state_submerged_lands': { icon: '🗺️', color: '#ca8a04', title: 'NOAA Marine Cadastre — US State Submerged Lands' },
+  'noaa_marine_ioos_regions': { icon: '🛰️', color: '#6366f1', title: 'NOAA Marine Cadastre — IOOS Regions' },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_mountain_biking': { icon: '🚵', color: '#10b981', title: 'Mountain Biking & Biking Trails' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
@@ -6113,6 +6138,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     (key.startsWith('usgs_transportation_') && key.endsWith('_all')) || // Skip USGS Transportation arrays (handled separately for map drawing)
     (key.startsWith('usgs_geonames_') && key.endsWith('_all')) || // Skip USGS GeoNames arrays (handled separately for map drawing)
     (key.startsWith('usgs_selectable_polygons_') && key.endsWith('_all')) || // Skip USGS Selectable Polygons arrays (handled separately for map drawing)
+    (key.startsWith('usgs_nationalmap_plss_') && key.endsWith('_all')) || // Skip BLM PLSS CadNSDI arrays (handled with selectable polygon drawing)
     (key.startsWith('dc_utc_') && key.endsWith('_all')) || // Skip DC Urban Tree Canopy arrays (handled separately for map drawing)
     (key.startsWith('dc_bike_') && key.endsWith('_all')) || // Skip DC Bike Trails arrays (handled separately for map drawing)
     (key.startsWith('dc_property_') && key.endsWith('_all')) || // Skip DC Property and Land arrays (handled separately for map drawing)
@@ -10377,6 +10403,20 @@ const MapView: React.FC<MapViewProps> = ({
     }
   }, [selectedBaseBasemap, selectedThematicBasemap, showBaseBasemap, isInitialized]);
 
+  // Legend toggle for Marine Place Names: hide/show the thematic overlay (labels), not only the empty legend group
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !isInitialized || selectedThematicBasemap !== 'noaa_marinecadastre_marine_place_names') return;
+    const overlay = overlayLayerRef.current;
+    if (!overlay) return;
+    const hidden = hiddenLegendKeys.has('noaa_marine_place_names');
+    if (hidden) {
+      if (map.hasLayer(overlay)) map.removeLayer(overlay);
+    } else if (!map.hasLayer(overlay)) {
+      overlay.addTo(map);
+    }
+  }, [hiddenLegendKeys, selectedThematicBasemap, isInitialized]);
+
   // Close basemap info tooltip when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -12992,6 +13032,170 @@ const MapView: React.FC<MapViewProps> = ({
           }
         });
       }
+
+      // NOAA Marine Cadastre — Marine Place Names: no pins (labels come from thematic basemap); legend + dummy layer for toggle
+      const mpKey = 'noaa_marine_place_names';
+      const mpAll = enrichments[`${mpKey}_all`];
+      if (mpAll && Array.isArray(mpAll) && mpAll.length > 0) {
+        const mpIcon = '📍';
+        const mpColor = '#0ea5e9';
+        const mpTitle = 'NOAA Marine Cadastre — Marine Place Names';
+        if (!legendAccumulator[mpKey]) {
+          const radius = getRadiusForLegendKey(mpKey);
+          const radiusDisplay = formatRadiusDisplay(mpKey, radius);
+          legendAccumulator[mpKey] = {
+            icon: mpIcon,
+            color: mpColor,
+            title: mpTitle,
+            count: 0,
+            radius,
+            radiusDisplay,
+          };
+        }
+        legendAccumulator[mpKey].count = mpAll.length;
+        try {
+          const dummy = L.circleMarker([location.lat, location.lon], {
+            radius: 0,
+            stroke: false,
+            fillOpacity: 0,
+            interactive: false,
+          });
+          (dummy as any).__legendKey = mpKey;
+          dummy.addTo(poi);
+        } catch (e) {
+          console.error('Error adding Marine Place Names legend anchor:', e);
+        }
+      }
+
+      // NOAA Marine Cadastre — Undersea Feature Place Names (pins)
+      const underseaKey = 'noaa_marine_undersea_feature_place_names';
+      const underseaLayer = {
+        key: underseaKey,
+        icon: '🧭',
+        color: '#0891b2',
+        title: 'NOAA Marine Cadastre — Undersea Feature Place Names',
+      };
+      const underseaAllKey = `${underseaKey}_all`;
+      if (enrichments[underseaAllKey] && Array.isArray(enrichments[underseaAllKey])) {
+        enrichments[underseaAllKey].forEach((place: any) => {
+          if (place.lat != null && place.lon != null) {
+            try {
+              const placeLat = place.lat;
+              const placeLon = place.lon;
+              const placeName =
+                place.name || place.NAME || place.Name || 'Marine Cadastre feature';
+              const icon = createPOIIcon(underseaLayer.icon, underseaLayer.color, isMobile);
+              const marker = L.marker([placeLat, placeLon], { icon });
+              const distance = place.distance_miles;
+              let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${underseaLayer.icon} ${placeName}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+              popupContent = addMappingLinksToPopup(popupContent, placeLat, placeLon, placeName);
+              marker.bindPopup(popupContent, { maxWidth: 400 });
+              (marker as any).__legendKey = underseaKey;
+              marker.addTo(poi);
+              bounds.extend([placeLat, placeLon]);
+              if (!legendAccumulator[underseaKey]) {
+                const radius = getRadiusForLegendKey(underseaKey);
+                const radiusDisplay = formatRadiusDisplay(underseaKey, radius);
+                legendAccumulator[underseaKey] = {
+                  icon: underseaLayer.icon,
+                  color: underseaLayer.color,
+                  title: underseaLayer.title,
+                  count: 0,
+                  radius,
+                  radiusDisplay,
+                };
+              }
+              legendAccumulator[underseaKey].count += 1;
+            } catch (error) {
+              console.error(`Error drawing NOAA Marine Cadastre marker (${underseaKey}):`, error);
+            }
+          }
+        });
+      }
+
+      // NOAA Marine Cadastre — polygon query layers
+      const noaaMarineCadastrePolygonLayers = [
+        { key: 'noaa_marine_seagrasses', name: 'Seagrasses', color: '#059669' },
+        { key: 'noaa_marine_coastal_wetlands', name: 'Coastal Wetlands', color: '#16a34a' },
+        { key: 'noaa_marine_us_state_submerged_lands', name: 'US State Submerged Lands', color: '#ca8a04' },
+        { key: 'noaa_marine_ioos_regions', name: 'IOOS Regions', color: '#6366f1' },
+      ];
+      noaaMarineCadastrePolygonLayers.forEach((layer) => {
+        if (enrichments[`${layer.key}_all`] && Array.isArray(enrichments[`${layer.key}_all`])) {
+          enrichments[`${layer.key}_all`].forEach((feat: any) => {
+            if (feat.geometry && feat.geometry.rings) {
+              try {
+                const rings = feat.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const outerRing = rings[0];
+                  const latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
+                  const isContaining = feat.isContaining;
+                  const color = layer.color;
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.85 : 0.55;
+                  const polygon = L.polygon(latlngs, {
+                    color,
+                    weight,
+                    opacity,
+                    fillColor: color,
+                    fillOpacity: 0.22,
+                  });
+                  const distance = feat.distance_miles;
+                  const label =
+                    feat.name ||
+                    feat.NAME ||
+                    feat.NWIClass ||
+                    feat.bioticClass ||
+                    feat.region ||
+                    feat.REGION ||
+                    layer.name;
+                  let popupContent = `
+                    <div style="min-width: 250px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🌊 ${layer.name}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                        <div><strong>Feature:</strong> ${label}</div>
+                        ${isContaining ? '<div><strong>Relationship:</strong> Containing point</div>' : ''}
+                        ${distance !== null && distance !== undefined ? `<div><strong>Distance (approx.):</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  (polygon as any).__legendKey = layer.key;
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  const icon = POI_ICONS[layer.key]?.icon || '🌊';
+                  if (!legendAccumulator[layer.key]) {
+                    const radius = getRadiusForLegendKey(layer.key);
+                    const radiusDisplay = formatRadiusDisplay(layer.key, radius);
+                    legendAccumulator[layer.key] = {
+                      icon,
+                      color,
+                      title: POI_ICONS[layer.key]?.title || layer.name,
+                      count: 0,
+                      radius,
+                      radiusDisplay,
+                    };
+                  }
+                  legendAccumulator[layer.key].count += 1;
+                }
+              } catch (error) {
+                console.error(`Error drawing NOAA Marine Cadastre polygon ${layer.key}:`, error);
+              }
+            }
+          });
+        }
+      });
 
       // Draw NOAA West Coast EFH as polygons
       const noaaWestCoastEFHLayers = [
@@ -43405,7 +43609,10 @@ const MapView: React.FC<MapViewProps> = ({
         { key: 'usgs_selectable_polygons_24k_index_all', icon: '🗺️', color: '#b45309', title: 'USGS Selectable Polygons - 1:24K Index' },
         { key: 'usgs_selectable_polygons_region_all', icon: '💧', color: '#0284c7', title: 'USGS Selectable Polygons - Hydrologic Unit Region' },
         { key: 'usgs_selectable_polygons_subregion_all', icon: '💧', color: '#0ea5e9', title: 'USGS Selectable Polygons - Hydrologic Unit Subregion' },
-        { key: 'usgs_selectable_polygons_subbasin_all', icon: '💧', color: '#38bdf8', title: 'USGS Selectable Polygons - Hydrologic Unit Subbasin' }
+        { key: 'usgs_selectable_polygons_subbasin_all', icon: '💧', color: '#38bdf8', title: 'USGS Selectable Polygons - Hydrologic Unit Subbasin' },
+        { key: 'usgs_nationalmap_plss_township_all', icon: '📐', color: '#7c3aed', title: 'BLM PLSS — Township', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/1' },
+        { key: 'usgs_nationalmap_plss_section_all', icon: '📐', color: '#6d28d9', title: 'BLM PLSS — Section', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/2' },
+        { key: 'usgs_nationalmap_plss_intersected_all', icon: '📐', color: '#5b21b6', title: 'BLM PLSS — Intersected', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3' },
       ];
 
       selectablePolygonsLayers.forEach((layerConfig) => {
@@ -43414,11 +43621,12 @@ const MapView: React.FC<MapViewProps> = ({
             console.log(`📍 Drawing ${enrichments[layerConfig.key].length} ${layerConfig.title} features`);
             let featureCount = 0;
             enrichments[layerConfig.key].forEach((feature: any) => {
-              if (!feature.geometry || !feature.geometry.rings) return;
+              const geom = feature.geometry ?? feature.__geometry;
+              const rings = geom?.rings;
+              if (!geom || !rings || rings.length === 0) return;
 
               try {
-                // Draw polygon
-                const rings = feature.geometry.rings;
+                // Draw polygon (Esri outer ring is rings[0]; BLM query uses returnTrueCurves=false for plain rings)
                 if (rings && rings.length > 0) {
                   const outerRing = rings[0];
                   if (outerRing && outerRing.length >= 3) {
@@ -43427,13 +43635,21 @@ const MapView: React.FC<MapViewProps> = ({
                     });
 
                     const isContaining = feature.isContaining || feature.distance_miles === 0;
-                    const featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
+                    let featureName = feature.name || feature.NAME || feature.NAME1 || feature.NAME2 || 
                       feature.STATE_NAME || feature.state_name || feature.COUNTY_NAME || feature.county_name ||
                       feature.PLACE_NAME || feature.place_name || feature.DISTRICT || feature.district ||
                       feature.HUC || feature.huc || feature.REGION || feature.region ||
                       feature.SUBREGION || feature.subregion || feature.SUBBASIN || feature.subbasin ||
                       feature.INDEX || feature.index || feature.CELL_ID || feature.cell_id ||
                       feature.layerName || 'Unknown';
+                    if (layerConfig.key.startsWith('usgs_nationalmap_plss_')) {
+                      const plssParts = [
+                        feature.TWNSHPLAB, feature.TWPRGE, feature.TWNSHPDIR,
+                        feature.TWN, feature.RNG, feature.RNGDIR,
+                        feature.SECTION, feature.SEC, feature.SECTN, feature.SECT,
+                      ].filter((v) => v != null && v !== '' && String(v).trim() !== '');
+                      if (plssParts.length) featureName = plssParts.map(String).join(' ');
+                    }
                     const distance = feature.distance_miles !== undefined ? feature.distance_miles.toFixed(2) : (isContaining ? '0.00' : '');
 
                     // Get unique color for this polygon layer to ensure distinct colors across layers
@@ -43459,7 +43675,7 @@ const MapView: React.FC<MapViewProps> = ({
                         <div style="font-size: 12px; color: #6b7280; max-height: 300px; overflow-y: auto; border-top: 1px solid #e5e7eb; padding-top: 8px;">
                     `;
 
-                    const excludeFields = ['name', 'NAME', 'NAME1', 'NAME2', 'STATE_NAME', 'state_name', 'COUNTY_NAME', 'county_name', 'PLACE_NAME', 'place_name', 'DISTRICT', 'district', 'HUC', 'huc', 'REGION', 'region', 'SUBREGION', 'subregion', 'SUBBASIN', 'subbasin', 'INDEX', 'index', 'CELL_ID', 'cell_id', 'geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName', 'isContaining'];
+                    const excludeFields = ['name', 'NAME', 'NAME1', 'NAME2', 'STATE_NAME', 'state_name', 'COUNTY_NAME', 'county_name', 'PLACE_NAME', 'place_name', 'DISTRICT', 'district', 'HUC', 'huc', 'REGION', 'region', 'SUBREGION', 'subregion', 'SUBBASIN', 'subbasin', 'INDEX', 'index', 'CELL_ID', 'cell_id', 'geometry', '__geometry', 'distance_miles', 'objectid', 'OBJECTID', 'layerId', 'layerName', 'isContaining'];
                     Object.entries(feature).forEach(([key, value]) => {
                       if (!excludeFields.includes(key) && value !== null && value !== undefined && value !== '') {
                         if (typeof value === 'object' && !Array.isArray(value)) return;
@@ -43468,8 +43684,15 @@ const MapView: React.FC<MapViewProps> = ({
                       }
                     });
 
+                    if ((layerConfig as { sourceUrl?: string }).sourceUrl) {
+                      const su = (layerConfig as { sourceUrl?: string }).sourceUrl!;
+                      popupContent += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;"><a href="${su}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;font-weight:600;">BLM PLSS CadNSDI — layer source (ArcGIS REST)</a></div>`;
+                    }
+
                     popupContent += `</div></div>`;
                     polygon.bindPopup(popupContent, { maxWidth: 400 });
+                    const legendKeyForPoly = layerConfig.key.replace('_all', '');
+                    (polygon as any).__legendKey = legendKeyForPoly;
                     polygon.addTo(primary);
                     bounds.extend(polygon.getBounds());
                     featureCount++;
@@ -43487,11 +43710,14 @@ const MapView: React.FC<MapViewProps> = ({
               const uniqueColor = getUniqueColorForPolygonLayer(layerConfig.key, layerConfig.color);
               
               if (!legendAccumulator[legendKey]) {
+                const radius = getRadiusForLegendKey(legendKey);
+                const radiusDisplay = radius !== undefined ? formatRadiusDisplay(legendKey, radius) : undefined;
                 legendAccumulator[legendKey] = {
                   icon: layerConfig.icon,
                   color: uniqueColor,
                   title: layerConfig.title,
                   count: 0,
+                  ...(radius !== undefined ? { radius, radiusDisplay } : {}),
                 };
               } else {
                 // Update color to ensure it matches the rendered polygons

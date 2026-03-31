@@ -122,6 +122,12 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       if (key.includes('poi_nps_all_crashes_all')) {
         return `${value.length} crash record(s) found (see CSV for details)`;
       }
+      if (
+        (key.includes('noaa_marine_') || key.includes('noaa_marinecadastre_')) &&
+        key.includes('_all')
+      ) {
+        return `${value.length} marine cadastre record(s) found (see CSV for details)`;
+      }
       
       // Skip geometry arrays (arrays of coordinates or geometry objects)
       // Check if this is a geometry array by looking at the structure
@@ -446,6 +452,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     
     // USGS Selectable Polygons - USGS National Map
     if (key.includes('usgs_selectable_polygons_')) {
+      return 'USGS National Map';
+    }
+    
+    // BLM PLSS CadNSDI (USGS National Map — query layers)
+    if (key.includes('usgs_nationalmap_plss_')) {
       return 'USGS National Map';
     }
     

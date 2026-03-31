@@ -8,6 +8,13 @@ interface HeaderProps {
   onViewDataSources?: () => void;
 }
 
+/** Homepage header — rounded-lg like “View in Map”, slightly tighter than results bar to fit nav */
+const HEADER_ACTION_BTN =
+  'inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-2 text-sm font-medium shadow-sm hover:bg-blue-700 active:bg-blue-800 transition-colors cursor-pointer whitespace-nowrap [&_svg]:text-white [&_svg]:shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5';
+/** Same style; hidden below md (matches prior Documentation / Donate visibility) */
+const HEADER_ACTION_BTN_MD =
+  'hidden md:inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-2 text-sm font-medium shadow-sm hover:bg-blue-700 active:bg-blue-800 transition-colors cursor-pointer whitespace-nowrap [&_svg]:text-white [&_svg]:shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5';
+
 const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
   const [showDocs, setShowDocs] = useState(false);
   const [showAddSource, setShowAddSource] = useState(false);
@@ -88,9 +95,9 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
     <>
       <header className="bg-white border-b border-gray-200 shadow-sm fixed top-0 left-0 right-0 w-full z-50" style={{ width: '100vw', maxWidth: '100vw' }}>
         <div className="w-full px-0 sm:px-6 lg:px-8" style={{ width: '100vw', maxWidth: '100vw' }}>
-          <div className="flex justify-between items-center h-28 px-4 sm:px-0" style={{ width: '100%' }}>
-            <div className="flex items-center">
-              <div className="flex items-center space-x-4">
+          <div className="flex items-center h-28 px-4 sm:px-0 gap-4 md:gap-5 min-w-0" style={{ width: '100%' }}>
+            <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0 min-w-0">
+              <div className="flex items-center space-x-3 sm:space-x-4">
                 {/* Custom Logo - User's new 3D logo with metallic ring and glowing map pin */}
                 <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden shadow-lg border-2 border-gray-300 flex-shrink-0">
                   <img 
@@ -107,15 +114,15 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center flex-wrap justify-start gap-2 lg:gap-2 min-w-0 flex-1 md:ml-4 lg:ml-6">
               <button 
                 onClick={() => {
                   const element = document.querySelector('[data-section="single-search"]');
                   element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className={HEADER_ACTION_BTN}
               >
-                <MapPin className="w-4 h-4 inline mr-2" />
+                <MapPin />
                 Single Search
               </button>
               <button 
@@ -123,56 +130,56 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                   const element = document.querySelector('[data-section="batch-processing"]');
                   element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className={HEADER_ACTION_BTN}
               >
-                <BarChart3 className="w-4 h-4 inline mr-2" />
+                <BarChart3 />
                 Batch Processing
               </button>
               <button 
                 onClick={onViewDataSources}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className={HEADER_ACTION_BTN}
               >
-                <Globe className="w-4 h-4 inline mr-2" />
+                <Globe />
                 Data Sources
               </button>
               <button 
                 onClick={() => setShowAddSource(true)}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className={HEADER_ACTION_BTN}
               >
-                <Plus className="w-4 h-4 inline mr-2" />
+                <Plus />
                 Add a source
               </button>
               <button 
                 onClick={handleResetApp}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className={HEADER_ACTION_BTN}
               >
-                <RefreshCw className="w-4 h-4 inline mr-2" />
+                <RefreshCw />
                 Reset app
               </button>
             </nav>
 
-            <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-6">
+            <div className="flex items-center flex-wrap justify-end gap-1.5 sm:gap-2 md:gap-2 flex-shrink-0 ml-auto">
               <button
                 type="button"
                 onClick={() => setShowContact(true)}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+                className={HEADER_ACTION_BTN}
               >
-                <Mail className="w-4 h-4 inline mr-2" />
+                <Mail />
                 <span className="hidden sm:inline">Contact me</span>
                 <span className="sm:hidden">Contact</span>
               </button>
               <button 
                 onClick={() => setShowDocs(true)}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer hidden md:inline-flex items-center"
+                className={HEADER_ACTION_BTN_MD}
               >
-                <BookOpen className="w-4 h-4 inline mr-2" />
+                <BookOpen />
                 <span>Documentation</span>
               </button>
               <button 
                 onClick={() => setShowDonate(true)}
-                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer hidden md:inline-flex items-center"
+                className={HEADER_ACTION_BTN_MD}
               >
-                <Heart className="w-4 h-4 inline mr-2" />
+                <Heart />
                 Donate
               </button>
             </div>

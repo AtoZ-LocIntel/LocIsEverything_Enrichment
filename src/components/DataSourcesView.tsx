@@ -1707,6 +1707,30 @@ export const getDataSources = (): DataSourceCategory[] => {
           url: "https://cartowfs.nationalmap.gov/arcgis/rest/services/selectable_polygons/MapServer/14"
         },
         {
+          name: "BLM PLSS — Township (CadNSDI)",
+          description: "Bureau of Land Management National PLSS CadNSDI — PLSS Township (layer 1). Public Land Survey System townships; point-in-polygon and proximity queries up to 100 miles.",
+          coverage: "United States (PLSS coverage)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/1"
+        },
+        {
+          name: "BLM PLSS — Section (CadNSDI)",
+          description: "BLM National PLSS CadNSDI — PLSS Section (layer 2). Section polygons; point-in-polygon and proximity queries up to 100 miles.",
+          coverage: "United States (PLSS coverage)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/2"
+        },
+        {
+          name: "BLM PLSS — Intersected (CadNSDI)",
+          description: "BLM National PLSS CadNSDI — PLSS Intersected (layer 3). Intersected PLSS features; point-in-polygon and proximity queries up to 100 miles.",
+          coverage: "United States (PLSS coverage)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3"
+        },
+        {
           name: "USGS WBD - WBDLine",
           description: "USGS Watershed Boundary Dataset - WBDLine boundaries (proximity queries up to 25 miles)",
           coverage: "United States, Puerto Rico, U.S. Virgin Islands",
@@ -2405,6 +2429,62 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://gis.ngdc.noaa.gov/arcgis/rest/services/climatology/WorldOceanAtlas_WaterTemperature/MapServer"
+        },
+        {
+          name: "Marine Cadastre — AIS Vessel Transit Counts 2024",
+          description: "Annual vessel transit counts on a 100 m grid (U.S. and international waters), U.S. Coast Guard AIS — NOAA Basemap thematic layer; query enrichment uses raster identify at the search point and cardinal samples at your selected radius (up to 250 miles)",
+          coverage: "United States and international waters (AIS coverage)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/AISVesselTransitCounts2024/MapServer"
+        },
+        {
+          name: "NOAA Marine Cadastre — Marine Place Names",
+          description: "Coastal and ocean labeled place-name points from NOAA Marine Cadastre (proximity queries up to 250 miles for query enrichment; also available as NOAA Basemap thematic overlay)",
+          coverage: "United States and adjacent marine waters (per service extent)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/MarinePlaceNames/MapServer"
+        },
+        {
+          name: "NOAA Marine Cadastre — Undersea Feature Place Names",
+          description: "Undersea feature labeled points (proximity queries up to 100 miles)",
+          coverage: "United States and adjacent marine waters (per service extent)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/UnderseaFeaturePlaceNames/MapServer"
+        },
+        {
+          name: "NOAA Marine Cadastre — Seagrasses",
+          description: "Aquatic vascular vegetation / seagrass bed polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States coastal waters (per source coverage)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/Seagrasses/MapServer"
+        },
+        {
+          name: "NOAA Marine Cadastre — Coastal Wetlands",
+          description: "Coastal wetlands (NWI) polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States coastal waters (per source coverage)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer"
+        },
+        {
+          name: "NOAA Marine Cadastre — US State Submerged Lands",
+          description: "US state submerged lands boundary polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States coastal waters",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/USStateSubmergedLands/MapServer"
+        },
+        {
+          name: "NOAA Marine Cadastre — IOOS Regions",
+          description: "Integrated Ocean Observing System (IOOS) region polygons (point-in-polygon and proximity queries up to 100 miles)",
+          coverage: "United States and territories (per service extent)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/IOOSRegions/MapServer"
         }
       ]
     },

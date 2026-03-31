@@ -83,6 +83,12 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
       if (key.includes('poi_nps_all_crashes_all')) {
         return `${value.length} crash record(s) found (see CSV for details)`;
       }
+      if (
+        (key.includes('noaa_marine_') || key.includes('noaa_marinecadastre_')) &&
+        key.includes('_all')
+      ) {
+        return `${value.length} marine cadastre record(s) found (see CSV for details)`;
+      }
       
       // Skip geometry arrays (arrays of coordinates or geometry objects)
       // Check if this is a geometry array by looking at the structure
@@ -553,6 +559,17 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
           });
         }
         
+        // BLM PLSS CadNSDI (USGS National Map) — usgs_nationalmap_plss_*
+        if (key.includes('usgs_nationalmap_plss_')) {
+          return selectedEnrichments.some((selected) => {
+            if (selected.startsWith('usgs_nationalmap_plss_')) {
+              const layerType = selected.replace('usgs_nationalmap_plss_', '');
+              return key.includes(`usgs_nationalmap_plss_${layerType}`);
+            }
+            return false;
+          });
+        }
+        
         // TNM Structures fields
         if (key.includes('tnm_structures')) {
           return selectedEnrichments.includes('tnm_structures');
@@ -862,7 +879,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Air Quality';
       } else if (key.includes('tiger_')) {
         category = 'TIGER Data';
-      } else if (key.includes('usgs_transportation_') || key.includes('usgs_geonames_') || key.includes('usgs_selectable_polygons_') || key.includes('usgs_wbd_') || key.includes('usgs_contours_') || key.includes('us_national_grid_') || key.includes('us_historical_cultural_political_points') || key.includes('us_historical_hydrographic_points') || key.includes('us_historical_physical_points') || (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) || key.includes('usgs_gov_') || key.includes('tnm_structures') || key.includes('usgs_trails')) {
+      } else if (key.includes('usgs_transportation_') || key.includes('usgs_geonames_') || key.includes('usgs_selectable_polygons_') || key.includes('usgs_nationalmap_plss_') || key.includes('usgs_wbd_') || key.includes('usgs_contours_') || key.includes('us_national_grid_') || key.includes('us_historical_cultural_political_points') || key.includes('us_historical_hydrographic_points') || key.includes('us_historical_physical_points') || (key.includes('hurricane_evacuation_routes') && !key.includes('hurricane_evacuation_routes_hazards')) || key.includes('usgs_gov_') || key.includes('tnm_structures') || key.includes('usgs_trails')) {
         category = 'USGS National Map';
       } else if (key.startsWith('dc_utc_') || key.startsWith('dc_urban_tree_canopy_') || key === 'dc_trees' || key === 'dc_ufa_street_trees' || key === 'dc_arborists_zone' || key.startsWith('dc_bike_') || key.startsWith('dc_property_')) {
         category = 'District of Columbia';

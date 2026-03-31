@@ -45,6 +45,28 @@ export const LAYER_SOURCE_URL_EXACT: Record<string, string> = {
   spillovers_port_impact: 'https://portwatch.imf.org/',
   hurricane_evacuation_routes_hazards:
     'https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Hurricane_Evacuation_Routes/FeatureServer',
+  noaa_marinecadastre_ais_vessel_transit_counts_2024:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/AISVesselTransitCounts2024/MapServer',
+  noaa_marine_place_names:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/MarinePlaceNames/MapServer',
+  noaa_marinecadastre_marine_place_names:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/MarinePlaceNames/MapServer',
+  noaa_marine_undersea_feature_place_names:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/UnderseaFeaturePlaceNames/MapServer',
+  noaa_marine_seagrasses:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/Seagrasses/MapServer',
+  noaa_marine_coastal_wetlands:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer',
+  noaa_marine_us_state_submerged_lands:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/USStateSubmergedLands/MapServer',
+  noaa_marine_ioos_regions:
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/IOOSRegions/MapServer',
+  usgs_nationalmap_plss_township:
+    'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/1',
+  usgs_nationalmap_plss_section:
+    'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/2',
+  usgs_nationalmap_plss_intersected:
+    'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3',
 };
 
 type Rule = { test: (key: string) => boolean; url: string };
