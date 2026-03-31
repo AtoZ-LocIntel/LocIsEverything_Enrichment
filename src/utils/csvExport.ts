@@ -1219,6 +1219,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'la_county_street_inventory_all' || // Skip LA County Hazards arrays (handled separately)
         key === 'national_seismic_hazard_2023_all' || // Skip seismic hazard array (handled separately)
         key === 'tornado_tracks_1950_2017_all' || // Skip tornado tracks array (handled separately)
+        key === 'poi_nps_all_crashes_all' || // Skip NPS crashes array (handled separately)
         key === 'la_county_fire_hazards_all' ||
         key === 'la_county_fire_hazard_responsibility_areas_all' ||
         key === 'la_county_fire_hazard_severity_zones_all' ||
@@ -1980,6 +1981,50 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           '',
           attributesJson,
           'ArcGIS FeatureServer'
+        ]);
+      });
+      return;
+    }
+
+    // National Parks All Crashes (ArcGIS point layer)
+    if (key === 'poi_nps_all_crashes_all' && Array.isArray(value)) {
+      value.forEach((row: any) => {
+        const attrs = row?.attributes || row || {};
+        const objectId = attrs.FID ?? attrs.OBJECTID ?? row.objectId ?? 'Unknown';
+        const incid = attrs.INCID_NO ?? attrs.incid_no ?? '';
+        const park = attrs.Park ?? attrs.park ?? '';
+        const rgn = attrs.RGN ?? attrs.rgn ?? '';
+        const crashDate = attrs.CRASH_DATE != null ? String(attrs.CRASH_DATE) : '';
+        const dist =
+          row.distance_miles != null
+            ? Number(row.distance_miles).toFixed(4)
+            : row.distance != null
+              ? Number(row.distance).toFixed(4)
+              : '';
+        const latStr = row.lat != null ? String(row.lat) : String(attrs.LATITUDE ?? '');
+        const lonStr = row.lon != null ? String(row.lon) : String(attrs.LONGITUDE ?? '');
+        const name = incid ? `NPS Crash ${incid}` : `NPS Crash (ID ${objectId})`;
+        const details = [park && `Park: ${park}`, rgn && `Region: ${rgn}`, crashDate && `Date: ${crashDate}`]
+          .filter(Boolean)
+          .join(' | ');
+        const attributesJson = JSON.stringify(attrs);
+
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'ArcGIS NPS All_Crashes FeatureServer',
+          (location.confidence || 'N/A').toString(),
+          'NPS_ALL_CRASHES',
+          name,
+          latStr,
+          lonStr,
+          dist,
+          'Natural Hazards',
+          details,
+          '',
+          attributesJson,
+          'ArcGIS FeatureServer',
         ]);
       });
       return;

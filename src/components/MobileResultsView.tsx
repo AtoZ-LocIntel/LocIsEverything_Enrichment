@@ -118,6 +118,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     if (Array.isArray(value)) {
       if (value.length === 0) return 'None found';
+
+      if (key.includes('poi_nps_all_crashes_all')) {
+        return `${value.length} crash record(s) found (see CSV for details)`;
+      }
       
       // Skip geometry arrays (arrays of coordinates or geometry objects)
       // Check if this is a geometry array by looking at the structure
@@ -306,7 +310,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     }
     
     // Natural Hazards layers - check early to catch all Natural Hazards layers (including all FEMA NFHL layers)
-    if (key.includes('fema_nfhl_') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions') || key.includes('hurricane_evacuation_routes_hazards')) {
+    if (key.includes('fema_nfhl_') || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_nps_all_crashes') || key.includes('hurricane_evacuation_routes_hazards')) {
       return 'Natural Hazards';
     }
 
@@ -488,7 +492,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'FWS Species & Wildlife';
     }
     
-    if (key.includes('fema_nfhl_') || key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || key.includes('poi_animal_vehicle_collisions') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
+    if (key.includes('fema_nfhl_') || key.includes('wildfire') || (key.includes('usda_') && !key.includes('poi_usda_')) || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_wildfires') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_nps_all_crashes') || (key.includes('poi_') && key.includes('count') && key.includes('wildfire')) || key.includes('national_seismic_hazard') || key.includes('tornado_tracks') || key.includes('hurricane_evacuation_routes_hazards')) {
       return 'Natural Hazards';
     }
     

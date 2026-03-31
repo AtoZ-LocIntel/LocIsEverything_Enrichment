@@ -384,6 +384,11 @@ import { getFemaNFHLData } from '../adapters/femaNFHL';
 import { getNationalSeismicHazardData } from '../adapters/nationalSeismicHazard';
 import { getTornadoTracksData } from '../adapters/tornadoTracks';
 import {
+  getNpsAllCrashesData,
+  summarizeNpsCrashes,
+  NPS_ALL_CRASHES_MAX_RADIUS_MILES,
+} from '../adapters/npsAllCrashes';
+import {
   getNRICountyHurricaneAnnualizedFrequency,
   getNRICensusTractHurricaneAnnualizedFrequency,
   getNRICountyHailAnnualizedFrequency,
@@ -6275,6 +6280,10 @@ export class EnrichmentService {
       // Tornado Tracks 1950-2017 (polyline, proximity up to 50 miles)
       case 'tornado_tracks_1950_2017':
         return await this.getTornadoTracks(lat, lon, enrichmentId, radius, 'Tornado Tracks 1950-2017');
+
+      // National Parks All Crashes (ArcGIS points, proximity up to 100 miles)
+      case 'poi_nps_all_crashes':
+        return await this.getNpsAllCrashes(lat, lon, enrichmentId, radius, 'National Parks All Crashes');
 
       // National Risk Index (NRI) - Annualized Frequency Hurricane (polygons)
       case 'nri_hurricane_annualized_frequency_county': {
@@ -21693,6 +21702,46 @@ out center tags;`;
     }
 
     return result;
+  }
+
+  private async getNpsAllCrashes(
+    lat: number,
+    lon: number,
+    enrichmentId: string,
+    radius?: number,
+    layerName = 'National Parks All Crashes'
+  ): Promise<Record<string, any>> {
+    const cappedRadius =
+      radius != null && radius > 0
+        ? Math.min(radius, NPS_ALL_CRASHES_MAX_RADIUS_MILES)
+        : Math.min(25, NPS_ALL_CRASHES_MAX_RADIUS_MILES);
+    const records = await getNpsAllCrashesData(lat, lon, cappedRadius);
+    const stats = summarizeNpsCrashes(records);
+
+    const all = records.map((r) => ({
+      objectId: r.objectId,
+      lat: r.lat,
+      lon: r.lon,
+      distance_miles: r.distance_miles,
+      distance: r.distance_miles,
+      attributes: r.attributes,
+      geometry: r.geometry,
+    }));
+
+    const summary =
+      records.length === 0
+        ? `No National Parks crash records found within ${cappedRadius} miles (${layerName}).`
+        : `Found ${records.length} National Parks crash record(s) within ${cappedRadius} miles. Fatalities (sum): ${stats.fatalities}. Injuries (sum): ${stats.injuries}. Nearest crash: ${stats.nearest_miles != null ? `${stats.nearest_miles.toFixed(2)} mi` : 'N/A'}.`;
+
+    return {
+      [`${enrichmentId}_count`]: records.length,
+      [`${enrichmentId}_all`]: all,
+      [`${enrichmentId}_summary`]: summary,
+      [`${enrichmentId}_proximity_distance_miles`]: cappedRadius,
+      [`${enrichmentId}_fatalities_total`]: stats.fatalities,
+      [`${enrichmentId}_injuries_total`]: stats.injuries,
+      [`${enrichmentId}_nearest_miles`]: stats.nearest_miles,
+    };
   }
 
 

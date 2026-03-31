@@ -4853,6 +4853,7 @@ const createExportMapTileLayer = (mapServerUrl: string, layerId: number, options
 // POI Category Icons and Colors
 const POI_ICONS: Record<string, { icon: string; color: string; title: string }> = {
   'poi_animal_vehicle_collisions': { icon: '🦌', color: '#dc2626', title: 'Animal-Vehicle Impact (AVI)' },
+  'poi_nps_all_crashes': { icon: '🏞️', color: '#b45309', title: 'National Parks All Crashes' },
   'poi_wildfires': { icon: '🔥', color: '#ff4500', title: 'Current Wildfires' },
   'poi_restaurants': { icon: '🍽️', color: '#ef4444', title: 'Restaurants' },
   'poi_hotels': { icon: '🏨', color: '#3b82f6', title: 'Hotels' },
@@ -5764,6 +5765,173 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       return addMappingLinks(content, name);
     }
 
+    // National Parks All Crashes (ArcGIS All_Crashes — rich attribute set)
+    if (key === 'poi_nps_all_crashes') {
+      const attrs = (poi.attributes && typeof poi.attributes === 'object' ? poi.attributes : poi) as Record<string, unknown>;
+      const esc = (v: unknown) =>
+        String(v ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      const num = (v: unknown): number | null => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      };
+      const fmtDate = (v: unknown): string => {
+        if (v == null || v === '') return '';
+        if (typeof v === 'number') {
+          const d = new Date(v);
+          return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString();
+        }
+        return String(v);
+      };
+      const incid = attrs.INCID_NO ?? attrs.incid_no;
+      const fid = attrs.FID ?? attrs.OBJECTID;
+      const title =
+        (incid != null && String(incid).trim() !== '')
+          ? `Crash — ${esc(incid)}`
+          : fid != null
+            ? `Crash (FID ${esc(fid)})`
+            : 'National Parks crash';
+      const park = attrs.Park ?? attrs.park;
+      const rgn = attrs.RGN ?? attrs.rgn;
+      const crashDate = fmtDate(attrs.CRASH_DATE);
+      const crashTime = attrs.CRASH_TIME != null ? esc(attrs.CRASH_TIME) : '';
+      const crashYear = attrs.CRASH_YEAR != null ? esc(attrs.CRASH_YEAR) : '';
+      const dbSrc = attrs.database_ ?? attrs.database;
+      const dist =
+        typeof poi.distance_miles === 'number' && !Number.isNaN(poi.distance_miles)
+          ? poi.distance_miles.toFixed(2)
+          : poi.distance != null
+            ? Number(poi.distance).toFixed(2)
+            : '—';
+      const numOcc = num(attrs.NUM_OCC);
+      const numFatal = num(attrs.Num_Fatali) ?? num(attrs.Fatality);
+      const numInj = num(attrs.Num_Injuri);
+      const mphFields: { label: string; field: string }[] = [
+        { label: '5 mph', field: 'F5_mph' },
+        { label: '10 mph', field: 'F10_mph' },
+        { label: '15 mph', field: 'F15_mph' },
+        { label: '20 mph', field: 'F20_mph' },
+        { label: '25 mph', field: 'F25_mph' },
+        { label: '30 mph', field: 'F30_mph' },
+        { label: '35 mph', field: 'F35_mph' },
+        { label: '40 mph', field: 'F40_mph' },
+        { label: '45 mph', field: 'F45_mph' },
+        { label: '50 mph', field: 'F50_mph' },
+        { label: '55 mph', field: 'F55_mph' },
+        { label: '60 mph', field: 'F60_mph' },
+        { label: '65 mph', field: 'F65_mph' },
+        { label: '70 mph', field: 'F70_mph' },
+        { label: '75 mph', field: 'F75_mph' },
+      ];
+      const mphParts: string[] = mphFields
+        .map(({ label, field }) => {
+          const n = num(attrs[field]);
+          return n != null && n > 0 ? `${label}: ${n}` : null;
+        })
+        .filter((x): x is string => x != null);
+      const noPosted = num(attrs.no_posted_);
+      if (noPosted != null && noPosted > 0) mphParts.push(`No posted: ${noPosted}`);
+
+      const injFlags: { label: string; field: string }[] = [
+        { label: 'No injury', field: 'No_Injury' },
+        { label: 'Possible injury', field: 'Possible_I' },
+        { label: 'Non-incap.', field: 'Non_incapa' },
+        { label: 'Incapacitating', field: 'Incapacita' },
+        { label: 'Fatality', field: 'Fatality' },
+        { label: 'Unknown injury', field: 'Unknown_In' },
+      ];
+      const injParts = injFlags
+        .map(({ label, field }) => {
+          const n = num(attrs[field]);
+          return n != null && n > 0 ? `${label}: ${n}` : null;
+        })
+        .filter(Boolean);
+
+      const animalFields: { label: string; field: string }[] = [
+        { label: 'Deer', field: 'Deer' },
+        { label: 'Elk', field: 'Elk' },
+        { label: 'Moose', field: 'Moose' },
+        { label: 'Bear', field: 'Bear' },
+        { label: 'Buffalo', field: 'Buffalo' },
+        { label: 'Cow', field: 'Cow' },
+        { label: 'Horse/llama', field: 'HorseLlama' },
+        { label: 'Antelope', field: 'Antelope' },
+        { label: 'Sheep/goats', field: 'SheepGoats' },
+        { label: 'Other wild', field: 'OtherWild' },
+        { label: 'Other domestic', field: 'OtherDomes' },
+      ];
+      const animalParts = animalFields
+        .map(({ label, field }) => {
+          const n = num(attrs[field]);
+          return n != null && n > 0 ? `${label}: ${n}` : null;
+        })
+        .filter(Boolean);
+
+      const ped = num(attrs.Pedestrian);
+      const bike = num(attrs.Bicycle);
+      const pedacycle = num(attrs.Pedacycle);
+      const vru = num(attrs.VRU);
+      const cross = num(attrs.Crosswalk);
+      const outside = num(attrs.Outside_a_); // Outside area (truncated field name in service)
+      const involving = num(attrs.Involving_);
+
+      const vruParts: string[] = [];
+      if (ped != null && ped > 0) vruParts.push(`Pedestrian: ${ped}`);
+      if (bike != null && bike > 0) vruParts.push(`Bicycle: ${bike}`);
+      if (pedacycle != null && pedacycle > 0) vruParts.push(`Pedacycle: ${pedacycle}`);
+      if (vru != null && vru > 0) vruParts.push(`VRU flag: ${vru}`);
+      if (cross != null && cross > 0) vruParts.push(`Crosswalk: ${cross}`);
+      if (outside != null && outside > 0) vruParts.push(`Outside (flag): ${outside}`);
+      if (involving != null && involving > 0) vruParts.push(`Involving: ${involving}`);
+
+      const row = (label: string, val: string) =>
+        val
+          ? `<div style="display:flex; justify-content:space-between; gap:8px; margin:2px 0;"><span style="color:#6b7280;">${label}</span><span style="text-align:right; font-weight:500; color:#374151;">${val}</span></div>`
+          : '';
+
+      let content = `
+        <div style="min-width: 280px; max-width: 380px;">
+          <div style="font-weight: 700; font-size: 14px; color: #1f2937; margin-bottom: 6px;">🏞️ ${title}</div>
+          ${row('Distance', `${dist} mi`)}
+          ${park != null && String(park).trim() !== '' ? row('Park', esc(park)) : ''}
+          ${rgn != null && String(rgn).trim() !== '' ? row('Region (RGN)', esc(rgn)) : ''}
+          ${crashDate ? row('Crash date', esc(crashDate)) : ''}
+          ${crashTime ? row('Crash time', crashTime) : ''}
+          ${crashYear ? row('Crash year', crashYear) : ''}
+          ${dbSrc != null && String(dbSrc).trim() !== '' ? row('Database', esc(dbSrc)) : ''}
+          ${numOcc != null && numOcc > 0 ? row('Occupants / vehicles', esc(numOcc)) : ''}
+          <div style="margin-top:8px; padding-top:6px; border-top:1px solid #e5e7eb; font-size:11px; font-weight:600; color:#374151;">Casualties</div>
+          ${numFatal != null && numFatal > 0 ? row('Fatalities (count)', esc(numFatal)) : ''}
+          ${numInj != null && numInj > 0 ? row('Injuries (count)', esc(numInj)) : ''}
+          ${attrs.Injury_or_ != null && String(attrs.Injury_or_).trim() !== '' ? row('Injury code', esc(attrs.Injury_or_)) : ''}
+          ${
+            injParts.length
+              ? `<div style="font-size:11px; color:#4b5563; margin-top:4px;">${injParts.map(esc).join(' · ')}</div>`
+              : ''
+          }
+          ${
+            mphParts.length
+              ? `<div style="margin-top:8px; padding-top:6px; border-top:1px solid #e5e7eb; font-size:11px; font-weight:600; color:#374151;">Posted speed (involvement counts)</div><div style="font-size:11px; color:#4b5563; margin-top:4px; line-height:1.35;">${mphParts.map(esc).join(' · ')}</div>`
+              : ''
+          }
+          ${
+            vruParts.length
+              ? `<div style="margin-top:8px; padding-top:6px; border-top:1px solid #e5e7eb; font-size:11px; font-weight:600; color:#374151;">VRU / mode</div><div style="font-size:11px; color:#4b5563; margin-top:4px;">${vruParts.map(esc).join(' · ')}</div>`
+              : ''
+          }
+          ${
+            animalParts.length
+              ? `<div style="margin-top:8px; padding-top:6px; border-top:1px solid #e5e7eb; font-size:11px; font-weight:600; color:#374151;">Animal involvement</div><div style="font-size:11px; color:#4b5563; margin-top:4px; line-height:1.35;">${animalParts.map(esc).join(' · ')}</div>`
+              : ''
+          }
+        </div>
+      `;
+      return addMappingLinks(content, typeof incid === 'string' || typeof incid === 'number' ? String(incid) : title);
+    }
+
     if (key === 'ebird_recent_observations') {
       const speciesName = poi.species_common_name || poi.comName || poi.name || 'Bird Observation';
       const scientificName = poi.species_scientific_name || poi.sciName || null;
@@ -6431,7 +6599,7 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     if (key.includes('crime') || key.includes('safety')) return 'Safety & Crime';
     if (key.includes('transport') || key.includes('transit')) return 'Transportation';
     if (key.includes('poi_') && key.includes('count') && !key.includes('wildfire')) return 'Points of Interest Nearby';
-    if (key.includes('fema_nfhl_') || key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions')) return 'Natural Hazards';
+    if (key.includes('fema_nfhl_') || key.includes('wildfire') || key.includes('usda_') || key.includes('poi_fema_flood_zones') || key.includes('poi_wetlands') || key.includes('poi_earthquakes') || key.includes('poi_volcanoes') || key.includes('poi_flood_reference_points') || key.includes('poi_animal_vehicle_collisions') || key.includes('poi_nps_all_crashes')) return 'Natural Hazards';
     if (key.includes('poi_epa_') || key.includes('epa_') || key.includes('tri_')) return 'Human Caused Hazards';
     if (key.includes('padus_')) return 'Public Lands & Protected Areas';
     if (key.includes('walkability')) return 'Livability & Walkability';

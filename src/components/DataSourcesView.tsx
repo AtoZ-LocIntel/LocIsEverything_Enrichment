@@ -1396,6 +1396,14 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://waterwatch.usgs.gov/"
+        },
+        {
+          name: "National Parks All Crashes",
+          description: "National Park Service crash incident points (ArcGIS All_Crashes layer); proximity queries up to 100 miles",
+          coverage: "United States (National Park units in dataset)",
+          accuracy: "Variable",
+          cost: "Free",
+          url: "https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/All_Crashes/FeatureServer/0"
         }
       ]
     },

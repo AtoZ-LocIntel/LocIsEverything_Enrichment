@@ -1085,6 +1085,7 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
 
   // Human Caused Hazards (man-made environmental hazards)
   { id: 'poi_animal_vehicle_collisions', label: 'Animal-Vehicle Impacts (AVIs)', description: 'The Location Is Everything Company preview data for CA (CA CROS), TX (DOT), ID (Fish&Wildlife), IA (DOT), NH (DOT), and FARS.', isPOI: true, defaultRadius: 5, category: 'wildfire', section: 'wildfire' },
+  { id: 'poi_nps_all_crashes', label: 'National Parks All Crashes', description: 'NPS crash incidents (ArcGIS All_Crashes FeatureServer). Proximity up to 100 miles.', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'wildfire', section: 'wildfire' },
   { id: 'national_seismic_hazard_2023', label: '2023 National Seismic Hazard Model', description: 'USGS 2023 National Seismic Hazard Model (point-in-polygon)', isPOI: false, defaultRadius: 0, maxRadius: 0, category: 'wildfire', section: 'wildfire', subCategory: '', csvMapping: { hazard_zone: 'MMI', modified_mercalli_intensity: 'low_c', range: 'range_cont', low: 'low_cont', high: 'high_cont', valley: 'valley' } },
   { id: 'tornado_tracks_1950_2017', label: 'Tornado Tracks 1950-2017', description: 'Tornado tracks polyline dataset (proximity up to 50 miles)', isPOI: true, defaultRadius: 25, maxRadius: 50, category: 'wildfire', section: 'wildfire', subCategory: '' },
   
