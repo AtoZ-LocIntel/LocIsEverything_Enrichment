@@ -13,6 +13,7 @@ import {
   exportMapElementAsPdf,
 } from '../utils/mapViewExport';
 import { poiConfigManager } from '../lib/poiConfig';
+import { getLayerSourceUrl } from '../lib/layerSourceUrls';
 import { Copy, FileImage, FileText, ImageDown, Info, RotateCcw, Ruler, X } from 'lucide-react';
 
 interface MapViewProps {
@@ -52303,6 +52304,7 @@ const MapView: React.FC<MapViewProps> = ({
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Map Legend</h4>
             <div className="space-y-3">
               {legendItems.map((item, index) => {
+                const sourceUrl = getLayerSourceUrl(item.key);
                 // Check if this is a polyline feature (no icon or empty icon) - show line symbol instead
                 const isPolyline = !item.icon || item.icon === '' || 
                   item.title?.includes('Bike') || 
@@ -52368,7 +52370,21 @@ const MapView: React.FC<MapViewProps> = ({
                           {item.icon}
                         </div>
                       )}
-                      <span className={`text-gray-700 font-medium flex-1 ${isHidden ? 'opacity-60 line-through' : ''}`}>{item.title}</span>
+                      {sourceUrl ? (
+                        <a
+                          href={sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`text-blue-700 hover:text-blue-900 hover:underline font-medium flex-1 min-w-0 ${isHidden ? 'opacity-60 line-through' : ''}`}
+                          title="Click to go to source (opens in new tab)"
+                          aria-label={`Open data source for ${item.title} (opens in new tab)`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {item.title}
+                        </a>
+                      ) : (
+                        <span className={`text-gray-700 font-medium flex-1 min-w-0 ${isHidden ? 'opacity-60 line-through' : ''}`}>{item.title}</span>
+                      )}
                       <div className="flex items-center gap-2 ml-auto">
                         <span className="text-gray-600 font-semibold">{item.count || 0}</span>
                         {(item.radiusDisplay || (item.radius !== undefined && item.radius > 0)) && (

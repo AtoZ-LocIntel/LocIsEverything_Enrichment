@@ -10,6 +10,8 @@ export interface POIConfig {
   subCategory?: string; // For organizing layers within a section (e.g., LA County categories)
   csvMapping?: Record<string, string>;
   csvData?: any[];
+  /** Optional public data / service URL (Map legend link + Data Sources alignment) */
+  sourceUrl?: string;
 }
 
 export interface POISection {
