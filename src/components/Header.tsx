@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus, Heart, Mail } from 'lucide-react';
+import { MapPin, Globe, BarChart3, X, BookOpen, CheckCircle, Zap, Map, Database, Search, FileText, Building2, Truck, Clock, RefreshCw, Bus, Heart, Mail, Plus } from 'lucide-react';
 import AddSourceForm from './AddSourceForm';
 import DonateModal from './DonateModal';
 import ContactModal from './ContactModal';
@@ -137,43 +137,43 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
               </button>
               <button 
                 onClick={() => setShowAddSource(true)}
-                className="text-blue-600 hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-blue-600 hover:border-blue-700"
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
-                <span className="mr-2">➕</span>
-                ADD A SOURCE
+                <Plus className="w-4 h-4 inline mr-2" />
+                Add a source
               </button>
               <button 
-                onClick={() => setShowDonate(true)}
-                className="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer border border-red-600 hover:border-red-700 flex items-center"
+                onClick={handleResetApp}
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
-                <Heart className="w-4 h-4 mr-2" />
-                Donate
+                <RefreshCw className="w-4 h-4 inline mr-2" />
+                Reset app
               </button>
             </nav>
 
-            <div className="flex items-center space-x-4 sm:space-x-6">
+            <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-6">
               <button
                 type="button"
                 onClick={() => setShowContact(true)}
-                className="btn btn-outline text-sm flex items-center space-x-2 text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
               >
-                <Mail className="w-4 h-4" />
-                <span className="hidden sm:inline">Contact Me</span>
+                <Mail className="w-4 h-4 inline mr-2" />
+                <span className="hidden sm:inline">Contact me</span>
                 <span className="sm:hidden">Contact</span>
               </button>
               <button 
                 onClick={() => setShowDocs(true)}
-                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer hidden md:inline-flex items-center"
               >
-                <BookOpen className="w-4 h-4" />
+                <BookOpen className="w-4 h-4 inline mr-2" />
                 <span>Documentation</span>
               </button>
               <button 
-                onClick={handleResetApp}
-                className="btn btn-outline text-sm flex items-center space-x-2 hidden md:flex text-gray-700 border-gray-400 hover:text-black hover:border-gray-600"
+                onClick={() => setShowDonate(true)}
+                className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer hidden md:inline-flex items-center"
               >
-                <RefreshCw className="w-4 h-4" />
-                <span>Reset App</span>
+                <Heart className="w-4 h-4 inline mr-2" />
+                Donate
               </button>
             </div>
           </div>
