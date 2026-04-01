@@ -56,7 +56,7 @@ export const LAYER_SOURCE_URL_EXACT: Record<string, string> = {
   noaa_marine_seagrasses:
     'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/Seagrasses/MapServer',
   noaa_marine_coastal_wetlands:
-    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer',
+    'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer/0',
   noaa_marine_us_state_submerged_lands:
     'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/USStateSubmergedLands/MapServer',
   noaa_marine_ioos_regions:

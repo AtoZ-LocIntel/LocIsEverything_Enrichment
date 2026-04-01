@@ -33630,6 +33630,11 @@ out center tags;`;
         result[`${prefix}_count`] = 0;
         result[`${prefix}_summary`] = `No ${shortLabel} features found within search radius`;
         result[`${prefix}_all`] = [];
+        if (enrichmentId === 'noaa_marine_coastal_wetlands') {
+          result[`${prefix}_point_in_polygon_count`] = 0;
+          result[`${prefix}_proximity_only_count`] = 0;
+          result[`${prefix}_nwi_class_breakdown`] = '—';
+        }
       } else {
         const nearest = features[0];
         const label = displayMarineCadastreQueryLabel(nearest.attributes) || 'Unnamed';
@@ -33648,6 +33653,24 @@ out center tags;`;
           isContaining: feature.isContaining,
           geometry: feature.geometry,
         }));
+
+        if (enrichmentId === 'noaa_marine_coastal_wetlands') {
+          const proximityOnlyCount = features.filter((f) => !f.isContaining).length;
+          const nwiCounts: Record<string, number> = {};
+          for (const f of features) {
+            const cls = String(f.attributes?.NWIClass ?? 'Unknown').trim() || 'Unknown';
+            nwiCounts[cls] = (nwiCounts[cls] ?? 0) + 1;
+          }
+          const nwiBreakdown = Object.entries(nwiCounts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([k, v]) => `${k}: ${v}`)
+            .join('; ');
+          result[`${prefix}_point_in_polygon_count`] = containingCount;
+          result[`${prefix}_proximity_only_count`] = proximityOnlyCount;
+          result[`${prefix}_nwi_class_breakdown`] = nwiBreakdown;
+          result[`${prefix}_summary`] =
+            `Point in polygon: ${containingCount}; proximity only (within buffer): ${proximityOnlyCount}; total: ${features.length}. NWI classes: ${nwiBreakdown}. Nearest: ${label} (${nearest.distance_miles.toFixed(2)} mi)`;
+        }
       }
 
       return result;

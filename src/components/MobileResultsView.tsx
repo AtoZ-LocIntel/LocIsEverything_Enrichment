@@ -20,6 +20,15 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   const { location, enrichments } = result;
 
   const formatFieldName = (key: string): string => {
+    if (key === 'noaa_marine_coastal_wetlands_point_in_polygon_count') {
+      return 'Coastal Wetlands — Point in polygon (count)';
+    }
+    if (key === 'noaa_marine_coastal_wetlands_proximity_only_count') {
+      return 'Coastal Wetlands — Proximity only (count)';
+    }
+    if (key === 'noaa_marine_coastal_wetlands_nwi_class_breakdown') {
+      return 'Coastal Wetlands — NWI class breakdown';
+    }
     // Special case for Lake County Building Footprints count
     if (key === 'lake_county_building_footprints_count') {
       return 'Lake County Buildings Nearby';

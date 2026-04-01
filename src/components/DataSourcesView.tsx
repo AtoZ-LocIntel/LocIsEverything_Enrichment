@@ -2464,11 +2464,12 @@ export const getDataSources = (): DataSourceCategory[] => {
         },
         {
           name: "NOAA Marine Cadastre — Coastal Wetlands",
-          description: "Coastal wetlands (NWI) polygons (point-in-polygon and proximity queries up to 100 miles)",
+          description:
+            "Coastal Wetlands (NWI class polygons; display field NWIClass). Point-in-polygon and proximity queries up to 2 miles. Summary output includes point-in-polygon count, proximity-only count, and NWI class breakdown; geometries and attributes export to map/legend and CSV.",
           coverage: "United States coastal waters (per source coverage)",
           accuracy: "High",
           cost: "Free",
-          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer"
+          url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer/0",
         },
         {
           name: "NOAA Marine Cadastre — US State Submerged Lands",

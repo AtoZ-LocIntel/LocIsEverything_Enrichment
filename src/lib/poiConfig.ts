@@ -770,7 +770,19 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'noaa_marine_place_names', label: 'NOAA Marine Cadastre — Marine Place Names', description: 'Marine Cadastre labeled point features (proximity queries up to 250 miles)', isPOI: true, defaultRadius: 25, maxRadius: 250, category: 'noaamaritime', section: 'noaa' },
   { id: 'noaa_marine_undersea_feature_place_names', label: 'NOAA Marine Cadastre — Undersea Feature Place Names', description: 'Undersea feature labeled points (proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
   { id: 'noaa_marine_seagrasses', label: 'NOAA Marine Cadastre — Seagrasses', description: 'Seagrass polygons (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
-  { id: 'noaa_marine_coastal_wetlands', label: 'NOAA Marine Cadastre — Coastal Wetlands', description: 'Coastal wetlands polygons (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
+  {
+    id: 'noaa_marine_coastal_wetlands',
+    label: 'NOAA Marine Cadastre — Coastal Wetlands',
+    description:
+      'Coastal Wetlands (NWI class polygons) — point-in-polygon and proximity queries up to 2 miles',
+    isPOI: true,
+    defaultRadius: 1,
+    maxRadius: 2,
+    category: 'noaamaritime',
+    section: 'noaa',
+    sourceUrl:
+      'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/CoastalWetlands/MapServer/0',
+  },
   { id: 'noaa_marine_us_state_submerged_lands', label: 'NOAA Marine Cadastre — US State Submerged Lands', description: 'US state submerged lands boundaries (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
   { id: 'noaa_marine_ioos_regions', label: 'NOAA Marine Cadastre — IOOS Regions', description: 'Integrated Ocean Observing System (IOOS) region polygons (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
   

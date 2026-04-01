@@ -6,6 +6,8 @@
 const MARINE_CADASTRE_BASE = 'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre';
 
 export const NOAA_MARINE_CADASTRE_QUERY_MAX_RADIUS_MILES = 100;
+/** Proximity search cap for Coastal Wetlands (layer is coastal-scale; 2 mi buffer matches product UX). */
+export const NOAA_MARINE_COASTAL_WETLANDS_MAX_RADIUS_MILES = 2;
 const BATCH_SIZE = 2000;
 
 function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -151,7 +153,9 @@ export async function queryMarineCadastreLayerById(
   radiusMiles: number
 ): Promise<MarineCadastreQueryFeature[]> {
   const cfg = MARINE_CADASTRE_QUERY_LAYERS[enrichmentId];
-  const capped = Math.min(Math.max(radiusMiles, 0), NOAA_MARINE_CADASTRE_QUERY_MAX_RADIUS_MILES);
+  const layerMax =
+    (cfg as { maxRadiusMiles?: number }).maxRadiusMiles ?? NOAA_MARINE_CADASTRE_QUERY_MAX_RADIUS_MILES;
+  const capped = Math.min(Math.max(radiusMiles, 0), layerMax);
   if (capped <= 0) return [];
 
   const radiusMeters = capped * 1609.34;
