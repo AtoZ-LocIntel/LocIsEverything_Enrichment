@@ -4,7 +4,7 @@ import { debugScroll } from './utils/scrollDebug';
 
 import Header from './components/Header';
 import SingleSearch from './components/SingleSearch';
-import BatchProcessing from './components/BatchProcessing';
+import BatchProcessing, { createEmptyBatchFileState } from './components/BatchProcessing';
 import MapView from './components/MapView';
 import MobileResultsView from './components/MobileResultsView';
 import DesktopResultsView from './components/DesktopResultsView';
@@ -45,6 +45,7 @@ function App() {
   const [showDonate, setShowDonate] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [totalLayersCount, setTotalLayersCount] = useState(0);
+  const [batchFileState, setBatchFileState] = useState(createEmptyBatchFileState);
 
   // Detect mobile device and ensure desktop scrolling works
   useEffect(() => {
@@ -619,8 +620,10 @@ function App() {
               </div>
               {!isMobile && (
                 <div data-section="batch-processing">
-                  <BatchProcessing 
-                    onComplete={handleBatchComplete} 
+                  <BatchProcessing
+                    batchFile={batchFileState}
+                    onBatchFileChange={setBatchFileState}
+                    onComplete={handleBatchComplete}
                     selectedEnrichments={selectedEnrichments}
                     poiRadii={poiRadii}
                     onLoadingChange={setIsLoading}

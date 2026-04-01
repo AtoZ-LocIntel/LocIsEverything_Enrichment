@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { Upload, AlertTriangle, Clock, Zap, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import Papa from 'papaparse';
 
@@ -7,6 +7,9 @@ interface BatchProcessingProps {
   selectedEnrichments: string[];
   poiRadii: Record<string, number>;
   onLoadingChange?: (isLoading: boolean) => void;
+  /** Persisted in App — survives leaving the config view to choose enrichments */
+  batchFile: BatchFilePersistedState;
+  onBatchFileChange: Dispatch<SetStateAction<BatchFilePersistedState>>;
 }
 
 /** Matches public/geocoder.html batch behavior */
@@ -15,7 +18,7 @@ const WARN_BATCH_ROWS = 500;
 
 type AddressMode = 'single' | 'component';
 
-interface FieldMapping {
+export interface FieldMapping {
   mode: AddressMode;
   singleColumn: string;
   street: string;
@@ -25,7 +28,7 @@ interface FieldMapping {
   country: string;
 }
 
-const defaultMapping = (): FieldMapping => ({
+export const defaultMapping = (): FieldMapping => ({
   mode: 'single',
   singleColumn: '',
   street: '',
@@ -34,6 +37,27 @@ const defaultMapping = (): FieldMapping => ({
   zip: '',
   country: '',
 });
+
+/** CSV + mapping state lifted to App so it survives navigation (e.g. enrichment category). */
+export interface BatchFilePersistedState {
+  csvRows: Record<string, unknown>[];
+  csvHeaders: string[];
+  csvFileName: string;
+  mapping: FieldMapping;
+  rowLimitInput: string;
+  isExpanded: boolean;
+}
+
+export function createEmptyBatchFileState(): BatchFilePersistedState {
+  return {
+    csvRows: [],
+    csvHeaders: [],
+    csvFileName: '',
+    mapping: defaultMapping(),
+    rowLimitInput: '',
+    isExpanded: false,
+  };
+}
 
 function guessDefaultSingleColumn(headers: string[]): string {
   if (!headers.length) return '';
@@ -179,6 +203,8 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
   selectedEnrichments,
   poiRadii,
   onLoadingChange,
+  batchFile,
+  onBatchFileChange,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -186,13 +212,12 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
   const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState(0);
   const [totalAddresses, setTotalAddresses] = useState(0);
   const [showRateLimitInfo, setShowRateLimitInfo] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
-  const [csvRows, setCsvRows] = useState<Record<string, unknown>[]>([]);
-  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
-  const [csvFileName, setCsvFileName] = useState('');
-  const [mapping, setMapping] = useState<FieldMapping>(defaultMapping);
-  const [rowLimitInput, setRowLimitInput] = useState('');
+  const { csvRows, csvHeaders, csvFileName, mapping, rowLimitInput, isExpanded } = batchFile;
+  const patchBatch = (patch: Partial<BatchFilePersistedState>) => {
+    onBatchFileChange((prev) => ({ ...prev, ...patch }));
+  };
+
   const [parseError, setParseError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -226,12 +251,15 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
           return;
         }
         const { fields, rows } = normalizeCsvDataset(fieldsRaw, raw);
-        setCsvHeaders(fields);
-        setCsvRows(rows);
-        setCsvFileName(file.name);
-        setMapping(inferColumnMapping(fields));
-        setRowLimitInput('');
-        setIsExpanded(true);
+        onBatchFileChange((prev) => ({
+          ...prev,
+          csvHeaders: fields,
+          csvRows: rows,
+          csvFileName: file.name,
+          mapping: inferColumnMapping(fields),
+          rowLimitInput: '',
+          isExpanded: true,
+        }));
         event.target.value = '';
       },
       error: (err) => {
@@ -243,11 +271,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
   };
 
   const clearCsv = () => {
-    setCsvRows([]);
-    setCsvHeaders([]);
-    setCsvFileName('');
-    setMapping(defaultMapping());
-    setRowLimitInput('');
+    onBatchFileChange(() => createEmptyBatchFileState());
     setParseError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -371,7 +395,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
     <div id="batch-processing-section" className="batch-processing card">
       <div
         className="card-header cursor-pointer hover:bg-gray-700 transition-colors duration-200"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => patchBatch({ isExpanded: !isExpanded })}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -493,7 +517,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
                           type="radio"
                           name="addrMode"
                           checked={mapping.mode === 'single'}
-                          onChange={() => setMapping((m) => ({ ...m, mode: 'single' }))}
+                          onChange={() => patchBatch({ mapping: { ...mapping, mode: 'single' } })}
                         />
                         Option A: Single address column
                       </label>
@@ -502,7 +526,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
                           type="radio"
                           name="addrMode"
                           checked={mapping.mode === 'component'}
-                          onChange={() => setMapping((m) => ({ ...m, mode: 'component' }))}
+                          onChange={() => patchBatch({ mapping: { ...mapping, mode: 'component' } })}
                         />
                         Option B: Street / city / state / ZIP / country
                       </label>
@@ -514,7 +538,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
                         <select
                           className={selectClass}
                           value={mapping.singleColumn}
-                          onChange={(e) => setMapping((m) => ({ ...m, singleColumn: e.target.value }))}
+                          onChange={(e) => patchBatch({ mapping: { ...mapping, singleColumn: e.target.value } })}
                         >
                           <option value="">— Select column —</option>
                           {csvHeaders.map((h) => (
@@ -546,7 +570,11 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
                             <select
                               className={selectClass}
                               value={mapping[key]}
-                              onChange={(e) => setMapping((m) => ({ ...m, [key]: e.target.value }))}
+                              onChange={(e) =>
+                                patchBatch({
+                                  mapping: { ...mapping, [key]: e.target.value },
+                                })
+                              }
                             >
                               <option value="">— None —</option>
                               {csvHeaders.map((h) => (
@@ -567,7 +595,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
                         min={1}
                         placeholder={`All ${csvRows.length} rows`}
                         value={rowLimitInput}
-                        onChange={(e) => setRowLimitInput(e.target.value)}
+                        onChange={(e) => patchBatch({ rowLimitInput: e.target.value })}
                         className="w-full max-w-xs mt-1 px-3 py-2 rounded-md bg-gray-900 border border-gray-600 text-white text-sm"
                       />
                       <p className="text-xs text-gray-500 mt-1">Process only the first N rows of the file.</p>
