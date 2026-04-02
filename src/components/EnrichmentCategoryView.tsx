@@ -317,8 +317,8 @@ const EnrichmentCategoryView: React.FC<EnrichmentCategoryViewProps> = ({
               // Generate options dynamically based on maxRadius
               // Special handling for Global Risk layers - always include 500 and 1000 miles options
               const enrichmentConfig = poiConfigManager.getPOIType(enrichment.id);
-              if (enrichmentConfig?.section === 'global_risk' || enrichmentConfig?.section === 'event_theme') {
-                // Global Risk / Event Theme layers: include options up to maxRadius, always include 500 and 1000 if maxRadius allows
+              if (enrichmentConfig?.section === 'global_risk') {
+                // Global Risk layers: include options up to maxRadius, always include 500 and 1000 if maxRadius allows
                 const baseOptions = [1, 5, 10, 25, 50, 100, 250];
                 radiusOptions = [...baseOptions];
                 

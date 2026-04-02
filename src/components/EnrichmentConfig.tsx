@@ -50,7 +50,6 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   core: <Settings className="w-5 h-5" />,
   global_risk: <img src="/assets/global_risk.webp" alt="Global Risk" className="w-5 h-5" />,
   nws: <img src="/assets/NWS.webp" alt="National Weather Service Watches and Warnings" className="w-5 h-5" />,
-  event_theme: <span className="text-xl" title="Event Theme">🚢</span>,
   hazards: <img src="/assets/human_hazards.webp" alt="Human Caused Hazards" className="w-8 h-8" />,
   mobility: <img src="/assets/Mobility.webp" alt="Mobility" className="w-5 h-5" />,
   fish_wildlife: <img src="/assets/fishwildlife.webp" alt="Fish and Wildlife" className="w-5 h-5" />,
@@ -1820,7 +1819,6 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   const getIconFileName = (categoryId: string): string => {
     const iconMap: { [key: string]: string } = {
       'nws': 'NWS',
-      'event_theme': 'global_risk',
       'hazards': 'hazards_risk',
       'mobility': 'Mobility',
       'fish_wildlife': 'fishwildlife',
