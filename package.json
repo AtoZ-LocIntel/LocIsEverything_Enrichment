@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test:ais-ws": "node scripts/test-ais-ws.mjs"
   },
   "dependencies": {
     "@mapbox/vector-tile": "^2.0.4",

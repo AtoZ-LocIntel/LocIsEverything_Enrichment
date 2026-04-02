@@ -46,9 +46,19 @@ export interface AISStreamFeature {
   distance_miles?: number;
 }
 
+/** AIS class A (Message 1/2/3) + Class B (18/19) — many vessels only emit Standard/Extended Class B. */
+function extractPositionPayload(msg: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (!msg) return undefined;
+  return (msg.PositionReport ||
+    msg.StandardClassBPositionReport ||
+    msg.ExtendedClassBPositionReport ||
+    msg.positionreport ||
+    msg.standardclassbpositionreport) as Record<string, unknown> | undefined;
+}
+
 function parsePositionMessage(raw: Record<string, unknown>): AISStreamFeature | null {
   const msg = raw.Message as Record<string, unknown> | undefined;
-  const pr = (msg?.PositionReport || msg?.positionreport) as Record<string, unknown> | undefined;
+  const pr = extractPositionPayload(msg);
   if (!pr) return null;
 
   const lat = pr.Latitude ?? pr.latitude;
@@ -117,7 +127,8 @@ function collectSnapshot(
       const subscription = {
         APIKey: apiKey,
         BoundingBoxes: boundingBoxes,
-        FilterMessageTypes: ['PositionReport'],
+        // Class A uses PositionReport; most recreational / smaller vessels use Class B (18/19).
+        FilterMessageTypes: ['PositionReport', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport'],
       };
       ws.send(JSON.stringify(subscription));
     });
@@ -198,7 +209,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const boundingBoxes: number[][][] = [[[maxLat, minLon], [minLat, maxLon]]];
 
-  const collectMs = Math.min(12000, Math.max(4000, parseInt(String(req.query.collectMs ?? '8000'), 10) || 8000));
+  const collectMs = Math.min(15000, Math.max(4000, parseInt(String(req.query.collectMs ?? '12000'), 10) || 12000));
 
   try {
     const features = await collectSnapshot(apiKey, boundingBoxes, collectMs, 4000);

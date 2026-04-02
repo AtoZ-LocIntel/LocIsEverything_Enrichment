@@ -8972,7 +8972,10 @@ const MapView: React.FC<MapViewProps> = ({
 
         setAisToggleLoading(true);
         const { fetchAISLivePositionReports } = await import('../adapters/aisStreamLive');
-        const { features } = await fetchAISLivePositionReports(lat, lon, radiusMiles);
+        const { features, error: aisErr, hint: aisHint } = await fetchAISLivePositionReports(lat, lon, radiusMiles);
+        if (aisErr) {
+          console.warn('AIS toggle:', aisErr, aisHint || '');
+        }
 
         clearMarkers();
 

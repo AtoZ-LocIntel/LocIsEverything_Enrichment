@@ -29,6 +29,14 @@ export async function fetchAISLivePositionReports(
     radiusMiles: String(radiusMiles),
   });
   const res = await fetch(`/api/aisstream/snapshot?${params}`);
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    return {
+      features: [],
+      error: 'AIS snapshot returned non-JSON (local dev: run against Vercel build or set VITE_AIS_PROXY_TARGET to your deployed site in .env)',
+    };
+  }
+
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
 
   if (!res.ok) {

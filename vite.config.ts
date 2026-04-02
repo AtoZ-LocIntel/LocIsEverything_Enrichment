@@ -206,6 +206,16 @@ export default defineConfig({
           });
         },
       },
+      // AIS Stream runs only on Vercel serverless; proxy to production so `npm run dev` can load ships.
+      ...(process.env.VITE_AIS_PROXY_TARGET
+        ? {
+            '/api/aisstream': {
+              target: process.env.VITE_AIS_PROXY_TARGET.replace(/\/$/, ''),
+              changeOrigin: true,
+              secure: true,
+            },
+          }
+        : {}),
     }
   },
   build: {
