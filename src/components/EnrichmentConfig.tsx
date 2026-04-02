@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, Settings, TreePine, Check, ArrowLeft } from 'lucide-react';
 import { poiConfigManager } from '../lib/poiConfig';
+import { BLM_LANDS_MAX_RADIUS_MILES } from '../adapters/blmLands';
+import { BLM_PFYC_MAX_RADIUS_MILES } from '../adapters/blmPfycGeologicFormations';
 import { BASEMAP_CONFIGS } from './MapView';
 
 interface EnrichmentConfigProps {
@@ -69,6 +71,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   public_lands: <span className="text-xl">🏞️</span>,
   tiger: <img src="/assets/TIGERweb.webp" alt="US Census TIGER Data" className="w-5 h-5" />,
   noaa: <img src="/assets/NOAA.webp" alt="NOAA" className="w-5 h-5" />,
+  blm: <img src="/assets/BLM.webp" alt="Bureau of Land Management" className="w-5 h-5" />,
   nasa: <img src="/assets/NASA.webp" alt="NASA" className="w-5 h-5" />,
   nationalmap: <img src="/assets/nationalmap.webp" alt="The National Map" className="w-5 h-5" />,
   wri: <img src="/assets/WRI.webp" alt="World Resources Institute" className="w-5 h-5" />,
@@ -1894,6 +1897,7 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
       'guam': 'Guam',
       'tiger': 'TIGERweb',
       'noaa': 'NOAA',
+      'blm': 'BLM',
       'nasa': 'NASA',
       'nationalmap': 'nationalmap',
       'wri': 'WRI',
@@ -1916,12 +1920,21 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
   };
 
   const getMaxRadius = (enrichmentId: string): number => {
+    if (enrichmentId === 'blm_lands') {
+      return BLM_LANDS_MAX_RADIUS_MILES;
+    }
+    if (enrichmentId === 'blm_pfyc_geologic_formations') {
+      return BLM_PFYC_MAX_RADIUS_MILES;
+    }
     // Get max radius from POI config, with fallback to hardcoded values for special cases
     const poiConfig = poiConfigManager.getPOIType(enrichmentId);
-    if (poiConfig?.maxRadius) {
-      return poiConfig.maxRadius;
+    if (poiConfig?.maxRadius != null) {
+      const parsed = Number(poiConfig.maxRadius);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
     }
-    
+
     // Fallback to hardcoded values for special cases not in POI config
     if (enrichmentId === 'poi_earthquakes') {
       return 25; // Earthquakes can go up to 25 miles
@@ -4072,10 +4085,13 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
                               if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
                               if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
-                          if (enrichment.id === 'nh_parcels') return '0.3 miles';
-                          if (enrichment.id === 'nj_parcels') return '0.3 miles';
-                          if (enrichment.id === 'ma_parcels') return '0.3 miles';
-                          if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
+                              if (enrichment.id === 'blm_lands') return '250 miles (BLM Lands)';
+                              if (enrichment.id === 'blm_pfyc_geologic_formations')
+                                return '100 miles (BLM PFYC geologic formations)';
+                              if (enrichment.id === 'nh_parcels') return '0.3 miles';
+                              if (enrichment.id === 'nj_parcels') return '0.3 miles';
+                              if (enrichment.id === 'ma_parcels') return '0.3 miles';
+                              if (enrichment.id === 'ct_building_footprints') return '0.3 miles';
                               return '5 miles';
                             })();
 
@@ -4288,6 +4304,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                                       if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
                                       if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
                                       if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                                      if (enrichment.id === 'blm_lands') return '250 miles (BLM Lands)';
+                                      if (enrichment.id === 'blm_pfyc_geologic_formations')
+                                        return '100 miles (BLM PFYC geologic formations)';
                                       if (enrichment.id === 'nh_parcels') return '0.3 miles';
                                       if (enrichment.id === 'nj_parcels') return '0.3 miles';
                                       if (enrichment.id === 'ma_parcels') return '0.3 miles';
@@ -4456,6 +4475,9 @@ const EnrichmentConfig: React.FC<EnrichmentConfigProps> = ({
                               if (enrichment.id === 'poi_wildfires') return '50 miles (wildfires)';
                               if (enrichment.id === 'poi_flood_reference_points') return '25 miles (flood reference points)';
                               if (enrichment.id === 'poi_aurora_viewing_sites') return '100 miles (aurora viewing sites)';
+                              if (enrichment.id === 'blm_lands') return '250 miles (BLM Lands)';
+                              if (enrichment.id === 'blm_pfyc_geologic_formations')
+                                return '100 miles (BLM PFYC geologic formations)';
                               if (enrichment.id === 'nh_parcels') return '0.3 miles';
                               if (enrichment.id === 'nj_parcels') return '0.3 miles';
                               if (enrichment.id === 'ma_parcels') return '0.3 miles';

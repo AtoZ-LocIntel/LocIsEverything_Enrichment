@@ -14,6 +14,8 @@ import {
 } from '../utils/mapViewExport';
 import { poiConfigManager } from '../lib/poiConfig';
 import { getLayerSourceUrl } from '../lib/layerSourceUrls';
+import { esriRingsToLeafletPolygonLatLngs } from '../utils/esriPolygonRings';
+import { OCM_CRITICAL_FACILITIES_SLR_FIPSSTCO_CATEGORY } from '../adapters/noaaCountySnapshotsCriticalFacilities10ftSlr';
 import { Copy, FileImage, FileText, ImageDown, Info, RotateCcw, Ruler, X } from 'lucide-react';
 
 interface MapViewProps {
@@ -49,6 +51,33 @@ const BATCH_LOCATION_COLORS = [
   '#0891b2',
   '#db2777',
 ];
+
+/** Enrichment keys that are scalars/summaries — not layer array payloads (avoid tagging layers from popup reads). */
+const ENRICHMENT_SCALAR_KEYS = new Set<string>([
+  'elevation_ft',
+  'acs_population',
+  'acs_median_income',
+  'fips_state',
+  'fips_county',
+  'padus_public_access_summary',
+  'padus_protection_status_summary',
+  'fws_species_count',
+  'fws_search_radius_miles',
+  'weather_summary',
+  'weather_current',
+  'poi_wildfires_count',
+  'poi_wildfires_proximity_distance',
+  'usda_wildfire_hazard_potential',
+  'usda_wildfire_hazard_potential_label',
+  'nh_source_water_protection_area_geometry',
+]);
+
+/** Map enrichment property name to legend key (aligned with generic handler baseKey stripping). */
+function enrichmentPropToLegendKey(prop: string): string | null {
+  if (typeof prop !== 'string' || prop === 'length' || prop === 'constructor') return null;
+  if (ENRICHMENT_SCALAR_KEYS.has(prop)) return null;
+  return prop.replace(/_(detailed|elements|features|facilities|all_pois|all|articles)$/i, '');
+}
 
 function buildLocationMarkerIcon(isMobile: boolean, color: string, labelNumber: number | null): L.DivIcon {
   const showNum = labelNumber != null;
@@ -4918,6 +4947,7 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'climate_risks': { icon: '🌍', color: '#10b981', title: 'Climate Risks' },
   'spillovers_port_impact': { icon: '🌊', color: '#3b82f6', title: 'Spillovers Port Impact' },
   'portwatch_ports': { icon: '⚓', color: '#3b82f6', title: 'Port Watch Ports' },
+  'mdb_gtfs_feeds': { icon: '🚌', color: '#059669', title: 'Mobility Database — GTFS feeds' },
   'usgs_earthquakes': { icon: '🌍', color: '#dc2626', title: 'USGS Earthquakes' },
   'maritime_boundaries': { icon: '🌊', color: '#06b6d4', title: "World's Maritime Boundaries" },
   'global_data_centers_osm': { icon: '🖥️', color: '#0d9488', title: 'Global Data Centers (OSM)' },
@@ -4949,6 +4979,21 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'noaa_marine_coastal_wetlands': { icon: '🏞️', color: '#16a34a', title: 'NOAA Marine Cadastre — Coastal Wetlands' },
   'noaa_marine_us_state_submerged_lands': { icon: '🗺️', color: '#ca8a04', title: 'NOAA Marine Cadastre — US State Submerged Lands' },
   'noaa_marine_ioos_regions': { icon: '🛰️', color: '#6366f1', title: 'NOAA Marine Cadastre — IOOS Regions' },
+  'noaa_county_snapshots_slr10ft_facilities_inside': {
+    icon: '🏥',
+    color: '#dc2626',
+    title: 'NOAA OCM — Critical Facilities (10 ft SLR) — Facilities Inside',
+  },
+  'noaa_county_snapshots_slr10ft_inside_inundation': {
+    icon: '🌊',
+    color: '#0284c7',
+    title: 'NOAA OCM — Critical Facilities (10 ft SLR) — Inside Inundation',
+  },
+  'noaa_county_snapshots_slr10ft_outside_inundation': {
+    icon: '📍',
+    color: '#ca8a04',
+    title: 'NOAA OCM — Critical Facilities (10 ft SLR) — Outside Inundation',
+  },
   'poi_tnm_trails': { icon: '🥾', color: '#059669', title: 'Trails' },
   'poi_mountain_biking': { icon: '🚵', color: '#10b981', title: 'Mountain Biking & Biking Trails' },
   'poi_wikipedia': { icon: '📖', color: '#1d4ed8', title: 'Wikipedia Articles' },
@@ -5313,6 +5358,8 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'dc_property_alley_street_changes_dimensions': { icon: '🛣️', color: '#3b82f6', title: 'DC Alley Street Changes (Dimensions)' },
   'dc_property_vacant_and_blighted_building_footprints': { icon: '🏚️', color: '#8b5cf6', title: 'DC Vacant and Blighted Building Footprints' },
   'dc_property_vacant_and_blighted_building_addresses': { icon: '📍', color: '#3b82f6', title: 'DC Vacant and Blighted Building Addresses' },
+  'blm_lands': { icon: '🗺️', color: '#0ea5e9', title: 'BLM Lands (Administrative Units)' },
+  'blm_pfyc_geologic_formations': { icon: '🦴', color: '#b45309', title: 'BLM PFYC — Geologic Formation Boundaries' },
   'blm_national_trails': { icon: '🥾', color: '#059669', title: 'BLM National GTLF Public Managed Trails' },
   'blm_national_motorized_trails': { icon: '🏍️', color: '#dc2626', title: 'BLM National GTLF Public Motorized Trails' },
   'blm_national_nonmotorized_trails': { icon: '🚶', color: '#10b981', title: 'BLM National GTLF Public Nonmotorized Trails' },
@@ -6147,6 +6194,8 @@ const buildPopupSections = (enrichments: Record<string, any>): Array<{ category:
     key === 'blm_national_nonmotorized_trails_all' || // Skip BLM National Nonmotorized Trails array (handled separately for map drawing)
     key === 'blm_national_limited_motorized_roads_all' || // Skip BLM National Limited Motorized Roads array (handled separately for map drawing)
     key === 'blm_national_public_motorized_roads_all' || // Skip BLM National Public Motorized Roads array (handled separately for map drawing)
+    key === 'blm_lands_all' || // Skip BLM Lands array (handled separately for map drawing)
+    key === 'blm_pfyc_geologic_formations_all' || // Skip BLM PFYC geologic formations array (handled separately for map drawing)
     key === 'blm_national_grazing_pastures_all' || // Skip BLM National Grazing Pastures array (handled separately for map drawing)
     key === 'blm_national_acec_all' || // Skip BLM National ACEC array (handled separately for map drawing)
     key === 'blm_national_sheep_goat_grazing_all' || // Skip BLM National Sheep/Goat Billed Grazing Allotments array (handled separately for map drawing)
@@ -7089,6 +7138,11 @@ const MapView: React.FC<MapViewProps> = ({
           summaryKey = 'portwatch_chokepoints_summary';
           allKey = 'portwatch_chokepoints_all';
           break;
+        case 'mdb_gtfs_feeds':
+          countKey = 'mdb_gtfs_feeds_count';
+          summaryKey = 'mdb_gtfs_feeds_summary';
+          allKey = 'mdb_gtfs_feeds_all';
+          break;
         case 'climate_risks':
           countKey = 'climate_risks_count';
           summaryKey = 'climate_risks_summary';
@@ -7231,6 +7285,12 @@ const MapView: React.FC<MapViewProps> = ({
             countKey = 'portwatch_chokepoints_count';
             summaryKey = 'portwatch_chokepoints_summary';
             allKey = 'portwatch_chokepoints_all';
+            break;
+          case 'mdb_gtfs_feeds':
+            countKey = 'mdb_gtfs_feeds_count';
+            summaryKey = 'mdb_gtfs_feeds_summary';
+            allKey = 'mdb_gtfs_feeds_all';
+            data = [];
             break;
           case 'climate_risks':
             const { getAllClimateRisksData } = await import('../adapters/climateRisks');
@@ -10723,17 +10783,39 @@ const MapView: React.FC<MapViewProps> = ({
         let totalFunctionalClassificationCount = 0;
         const laneCountStats: Record<number, number> = {}; // Track lane count distribution for legend
         const funclassStats: Record<string, number> = {}; // Track functional class distribution for legend
-        
+
+        let mapDrawLegendKey: string | null = null;
+        const origLayerAddTo = L.Layer.prototype.addTo;
+        L.Layer.prototype.addTo = function (this: L.Layer, map: L.Map | L.LayerGroup) {
+          const lk = mapDrawLegendKey;
+          if (lk && !(this as any).__legendKey && !(this as any).__layerType) {
+            (this as any).__legendKey = lk;
+          }
+          return origLayerAddTo.call(this, map);
+        };
+
+        try {
     results.forEach((result) => {
       const { location } = result;
       if (!location) {
         return;
       }
 
+      mapDrawLegendKey = null;
+
       // Global Risk mode: merge API enrichments (AIS Live, OpenSky, etc.) with toggle-driven globalRisk ref
-      const enrichments = isGlobalRiskMode
+      const rawEnrichments = isGlobalRiskMode
         ? { ...(result.enrichments || {}), ...globalRiskEnrichmentsRef.current }
         : result.enrichments;
+      const enrichments = new Proxy(rawEnrichments || {}, {
+        get(target, prop, receiver) {
+          if (typeof prop === 'string') {
+            const lk = enrichmentPropToLegendKey(prop);
+            if (lk) mapDrawLegendKey = lk;
+          }
+          return Reflect.get(target, prop, receiver);
+        },
+      });
 
       const latLng = L.latLng(location.lat, location.lon);
       if (!(location.lat === 0 && location.lon === 0)) {
@@ -13121,6 +13203,89 @@ const MapView: React.FC<MapViewProps> = ({
           }
         });
       }
+
+      // NOAA OCM County Snapshots — Critical Facilities 10 ft SLR (MultiPoint → pins per vertex)
+      const countySnapshotsSlr10ftLayers = [
+        {
+          key: 'noaa_county_snapshots_slr10ft_facilities_inside',
+          icon: '🏥',
+          color: '#dc2626',
+        },
+        {
+          key: 'noaa_county_snapshots_slr10ft_inside_inundation',
+          icon: '🌊',
+          color: '#0284c7',
+        },
+        {
+          key: 'noaa_county_snapshots_slr10ft_outside_inundation',
+          icon: '📍',
+          color: '#ca8a04',
+        },
+      ];
+      countySnapshotsSlr10ftLayers.forEach((layer) => {
+        const slrKey = layer.key;
+        const slrAll = `${slrKey}_all`;
+        if (enrichments[slrAll] && Array.isArray(enrichments[slrAll])) {
+          enrichments[slrAll].forEach((place: any) => {
+            if (place.lat != null && place.lon != null) {
+              try {
+                const placeLat = place.lat;
+                const placeLon = place.lon;
+                const fipsStcoCode =
+                  place.FIPSSTCO != null || place.fipsstco != null
+                    ? String(place.FIPSSTCO ?? place.fipsstco).trim()
+                    : '';
+                const thematicFromCode =
+                  fipsStcoCode !== '' ? OCM_CRITICAL_FACILITIES_SLR_FIPSSTCO_CATEGORY[fipsStcoCode] : undefined;
+                const placeName =
+                  place.FACILITY_NAME ||
+                  place.NAME ||
+                  place.FACILITY ||
+                  place.Name ||
+                  place.thematic_category_label ||
+                  thematicFromCode ||
+                  (fipsStcoCode !== '' ? fipsStcoCode : null) ||
+                  `OBJECTID ${place.objectid ?? '—'}`;
+                const icon = createPOIIcon(layer.icon, layer.color, isMobile);
+                const marker = L.marker([placeLat, placeLon], { icon });
+                const distance = place.distance_miles;
+                let popupContent = `
+                  <div style="min-width: 250px; max-width: 400px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                      ${layer.icon} ${POI_ICONS[slrKey]?.title || 'County Snapshots SLR'}
+                    </h3>
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                      <div><strong>Feature:</strong> ${placeName}</div>
+                      ${place.pointIndex != null ? `<div><strong>Multipoint index:</strong> ${place.pointIndex}</div>` : ''}
+                      ${distance !== null && distance !== undefined ? `<div><strong>Distance:</strong> ${Number(distance).toFixed(2)} miles</div>` : ''}
+                    </div>
+                  </div>
+                `;
+                popupContent = addMappingLinksToPopup(popupContent, placeLat, placeLon, String(placeName));
+                marker.bindPopup(popupContent, { maxWidth: 400 });
+                (marker as any).__legendKey = slrKey;
+                marker.addTo(poi);
+                bounds.extend([placeLat, placeLon]);
+                if (!legendAccumulator[slrKey]) {
+                  const radius = getRadiusForLegendKey(slrKey);
+                  const radiusDisplay = formatRadiusDisplay(slrKey, radius);
+                  legendAccumulator[slrKey] = {
+                    icon: POI_ICONS[slrKey]?.icon || layer.icon,
+                    color: layer.color,
+                    title: POI_ICONS[slrKey]?.title || slrKey,
+                    count: 0,
+                    radius,
+                    radiusDisplay,
+                  };
+                }
+                legendAccumulator[slrKey].count += 1;
+              } catch (error) {
+                console.error(`Error drawing NOAA County Snapshots SLR marker (${slrKey}):`, error);
+              }
+            }
+          });
+        }
+      });
 
       // NOAA Marine Cadastre — polygon query layers
       const noaaMarineCadastrePolygonLayers = [
@@ -16927,6 +17092,82 @@ const MapView: React.FC<MapViewProps> = ({
             };
           } else {
             legendAccumulator[legendKey].count = chokepointFeatureCount || enrichments.portwatch_chokepoints_count || 0;
+            if (radius !== undefined) {
+              legendAccumulator[legendKey].radius = radius;
+              legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
+            }
+          }
+        }
+      }
+
+      // Mobility Database — GTFS feeds (catalog points at dataset bbox center)
+      if (enrichments.mdb_gtfs_feeds_all && Array.isArray(enrichments.mdb_gtfs_feeds_all)) {
+        let mdbGtfsFeatureCount = 0;
+        const mdbColor = '#059669';
+        const mdbIcon = '🚌';
+
+        enrichments.mdb_gtfs_feeds_all.forEach((feed: any) => {
+          const plat = feed.lat;
+          const plon = feed.lon;
+          if (plat == null || plon == null) return;
+          try {
+            const marker = L.marker([plat, plon], {
+              icon: L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="background-color: ${mdbColor}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6],
+              }),
+            });
+            const title = feed.feed_name || feed.provider || 'GTFS feed';
+            const dist =
+              feed.distance_miles != null ? Number(feed.distance_miles).toFixed(2) : 'N/A';
+            const popupContent = `
+                <div style="min-width: 260px; max-width: 420px;">
+                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                    ${mdbIcon} ${title}
+                  </h3>
+                  <div style="font-size: 12px; color: #6b7280;">
+                    <div><strong>Feed ID:</strong> ${feed.id || 'N/A'}</div>
+                    <div><strong>Provider:</strong> ${feed.provider || 'N/A'}</div>
+                    <div><strong>Distance (center):</strong> ${dist} mi</div>
+                    ${feed.status ? `<div><strong>Status:</strong> ${feed.status}</div>` : ''}
+                    ${feed.official === true ? '<div><strong>Official:</strong> yes</div>' : ''}
+                    ${feed.country_code ? `<div><strong>Country:</strong> ${feed.country_code}</div>` : ''}
+                    ${feed.subdivision_name ? `<div><strong>Region:</strong> ${feed.subdivision_name}</div>` : ''}
+                    ${feed.municipality ? `<div><strong>Municipality:</strong> ${feed.municipality}</div>` : ''}
+                    ${feed.producer_url ? `<div><a href="${feed.producer_url}" target="_blank" rel="noopener noreferrer">Producer URL</a></div>` : ''}
+                    ${feed.hosted_url ? `<div><a href="${feed.hosted_url}" target="_blank" rel="noopener noreferrer">Dataset (ZIP)</a></div>` : ''}
+                  </div>
+                </div>
+              `;
+            marker.bindPopup(popupContent, { maxWidth: 440 });
+            marker.addTo(primary);
+            (marker as any).__layerType = 'mdb_gtfs_feeds';
+            (marker as any).__layerTitle = 'Mobility Database — GTFS feeds';
+            bounds.extend([plat, plon]);
+            mdbGtfsFeatureCount++;
+          } catch (e) {
+            console.error('Error drawing Mobility Database GTFS feed marker:', e);
+          }
+        });
+
+        if (mdbGtfsFeatureCount > 0 || enrichments.mdb_gtfs_feeds_count !== undefined) {
+          const legendKey = 'mdb_gtfs_feeds';
+          const radius = getRadiusForLegendKey(legendKey);
+          const radiusDisplay = formatRadiusDisplay(legendKey, radius);
+          if (!legendAccumulator[legendKey]) {
+            legendAccumulator[legendKey] = {
+              icon: mdbIcon,
+              color: mdbColor,
+              title: 'Mobility Database — GTFS feeds',
+              count: mdbGtfsFeatureCount || enrichments.mdb_gtfs_feeds_count || 0,
+              radius: radius,
+              radiusDisplay: radiusDisplay,
+            };
+          } else {
+            legendAccumulator[legendKey].count =
+              mdbGtfsFeatureCount || enrichments.mdb_gtfs_feeds_count || 0;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
@@ -35386,6 +35627,163 @@ const MapView: React.FC<MapViewProps> = ({
         console.error('Error processing BLM National Public Motorized Roads:', error);
       }
 
+      // Draw BLM Lands administrative polygons (point-in-polygon and/or proximity)
+      try {
+        if (enrichments.blm_lands_all && Array.isArray(enrichments.blm_lands_all)) {
+          let blmLandsCount = 0;
+          enrichments.blm_lands_all.forEach((unit: any) => {
+            if (unit.geometry && unit.geometry.rings && Array.isArray(unit.geometry.rings)) {
+              try {
+                const rings = unit.geometry.rings;
+                if (rings && rings.length > 0) {
+                  const latlngs = esriRingsToLeafletPolygonLatLngs(rings);
+                  if (!latlngs) {
+                    console.warn('BLM Lands: no drawable rings after multipart parse, skipping');
+                    return;
+                  }
+                  const isContaining = unit.isContaining;
+                  const color = isContaining ? '#0369a1' : '#0ea5e9';
+                  const weight = isContaining ? 3 : 2;
+                  const opacity = isContaining ? 0.85 : 0.55;
+                  const polygon = L.polygon(latlngs, {
+                    color,
+                    weight,
+                    opacity,
+                    fillColor: color,
+                    fillOpacity: 0.22,
+                  });
+                  const unitName =
+                    unit.unitName || unit.unit_name || unit.Unit_Name || 'BLM Lands unit';
+                  const oid = unit.objectId || unit.OBJECTID || unit.objectid || '';
+                  const distance =
+                    unit.distance_miles !== null && unit.distance_miles !== undefined
+                      ? unit.distance_miles
+                      : 0;
+                  let popupContent = `
+                    <div style="min-width: 240px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🗺️ ${unitName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280;">
+                        ${oid ? `<div><strong>OBJECTID:</strong> ${oid}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Point inside polygon</div>' : ''}
+                        ${!isContaining && distance > 0 ? `<div><strong>Distance to boundary:</strong> ${Number(distance).toFixed(2)} mi</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  polygon.bindPopup(popupContent, { maxWidth: 400 });
+                  polygon.addTo(primary);
+                  bounds.extend(polygon.getBounds());
+                  blmLandsCount++;
+                }
+              } catch (err) {
+                console.error('Error drawing BLM Lands polygon:', err);
+              }
+            }
+          });
+          if (blmLandsCount > 0) {
+            if (!legendAccumulator['blm_lands']) {
+              legendAccumulator['blm_lands'] = {
+                icon: '🗺️',
+                color: '#0ea5e9',
+                title: 'BLM Lands (Administrative Units)',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_lands'].count += blmLandsCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM Lands:', error);
+      }
+
+      // BLM PFYC geologic formation polygons (point-in-polygon and/or proximity)
+      try {
+        if (
+          enrichments.blm_pfyc_geologic_formations_all &&
+          Array.isArray(enrichments.blm_pfyc_geologic_formations_all)
+        ) {
+          let pfycCount = 0;
+          const pfycFill = (cls: string, containing: boolean): string => {
+            const palette: Record<string, string> = {
+              '1': '#fef08a',
+              '2': '#fde047',
+              '3': '#facc15',
+              '4': '#f97316',
+              '5': '#b91c1c',
+              I: '#e5e7eb',
+              U: '#9ca3af',
+              W: '#7dd3fc',
+            };
+            const key = (cls || '').toString().toUpperCase();
+            return palette[key] || (containing ? '#92400e' : '#ca8a04');
+          };
+          enrichments.blm_pfyc_geologic_formations_all.forEach((unit: any) => {
+            if (unit.geometry && unit.geometry.rings && Array.isArray(unit.geometry.rings)) {
+              try {
+                const rings = unit.geometry.rings;
+                const latlngs = esriRingsToLeafletPolygonLatLngs(rings);
+                if (!latlngs) {
+                  console.warn('BLM PFYC: no drawable rings after multipart parse, skipping');
+                  return;
+                }
+                const isContaining = unit.isContaining;
+                const cls = (unit.PFYC_CLASS_CD ?? unit.pfycClassCd ?? '').toString();
+                const fillColor = pfycFill(cls, !!isContaining);
+                const weight = isContaining ? 3 : 2;
+                const opacity = isContaining ? 0.88 : 0.55;
+                const polygon = L.polygon(latlngs, {
+                  color: fillColor,
+                  weight,
+                  opacity,
+                  fillColor,
+                  fillOpacity: 0.22,
+                });
+                const geoName = unit.GEO_UNIT_NM || unit.geoUnitName || 'Geologic unit';
+                const oid = unit.objectId || unit.OBJECTID || unit.objectid || '';
+                const pfycLabel = cls ? `PFYC class ${cls}` : 'PFYC';
+                const distance =
+                  unit.distance_miles !== null && unit.distance_miles !== undefined
+                    ? unit.distance_miles
+                    : 0;
+                let popupContent = `
+                    <div style="min-width: 240px; max-width: 400px;">
+                      <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
+                        🦴 ${geoName}
+                      </h3>
+                      <div style="font-size: 12px; color: #6b7280;">
+                        <div><strong>PFYC:</strong> ${pfycLabel}</div>
+                        ${oid ? `<div><strong>OBJECTID:</strong> ${oid}</div>` : ''}
+                        ${isContaining ? '<div><strong>Status:</strong> Point inside polygon</div>' : ''}
+                        ${!isContaining && distance > 0 ? `<div><strong>Distance to boundary:</strong> ${Number(distance).toFixed(2)} mi</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                polygon.bindPopup(popupContent, { maxWidth: 400 });
+                polygon.addTo(primary);
+                bounds.extend(polygon.getBounds());
+                pfycCount++;
+              } catch (err) {
+                console.error('Error drawing BLM PFYC polygon:', err);
+              }
+            }
+          });
+          if (pfycCount > 0) {
+            if (!legendAccumulator['blm_pfyc_geologic_formations']) {
+              legendAccumulator['blm_pfyc_geologic_formations'] = {
+                icon: '🦴',
+                color: '#b45309',
+                title: 'BLM PFYC — Geologic Formation Boundaries',
+                count: 0,
+              };
+            }
+            legendAccumulator['blm_pfyc_geologic_formations'].count += pfycCount;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing BLM PFYC geologic formations:', error);
+      }
+
       // Draw BLM National Grazing Pasture Polygons as polygons on the map
       try {
         if (enrichments.blm_national_grazing_pastures_all && Array.isArray(enrichments.blm_national_grazing_pastures_all)) {
@@ -49537,6 +49935,10 @@ const MapView: React.FC<MapViewProps> = ({
           return;
         }
 
+        if (key === 'mdb_gtfs_feeds_all') {
+          return;
+        }
+
         // Skip ACLED - handled separately with event markers
         if (key === 'acled_all') {
           return;
@@ -49816,6 +50218,9 @@ const MapView: React.FC<MapViewProps> = ({
         }
       });
     }); // Close results.forEach
+        } finally {
+          L.Layer.prototype.addTo = origLayerAddTo;
+        }
 
         // Set Miami schools and businesses legend items AFTER all results are processed, using total unique counts
         if (totalPublicSchoolCount > 0) {
@@ -52580,16 +52985,40 @@ const MapView: React.FC<MapViewProps> = ({
                         </button>
                       ) : null}
                       {isPolyline ? (
-                        // Show line symbol for polylines
-                        <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                          <div 
-                            className={`w-full h-1 rounded transition-opacity ${isHidden ? 'opacity-40' : ''}`}
-                            style={{ backgroundColor: item.color }}
-                          />
-                        </div>
+                        hasToggle ? (
+                          <button
+                            type="button"
+                            onClick={toggleLayer}
+                            className="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded hover:bg-gray-100 transition-opacity cursor-pointer"
+                            title={isHidden ? 'Show layer' : 'Hide layer'}
+                            aria-label={isHidden ? 'Show layer' : 'Hide layer'}
+                          >
+                            <div
+                              className={`w-full h-1 rounded transition-opacity ${isHidden ? 'opacity-40' : ''}`}
+                              style={{ backgroundColor: item.color }}
+                            />
+                          </button>
+                        ) : (
+                          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                            <div
+                              className={`w-full h-1 rounded transition-opacity ${isHidden ? 'opacity-40' : ''}`}
+                              style={{ backgroundColor: item.color }}
+                            />
+                          </div>
+                        )
+                      ) : hasToggle ? (
+                        <button
+                          type="button"
+                          onClick={toggleLayer}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0 transition-opacity cursor-pointer hover:ring-2 hover:ring-gray-300 ${isHidden ? 'opacity-40' : ''}`}
+                          style={{ backgroundColor: item.color }}
+                          title={isHidden ? 'Show layer' : 'Hide layer'}
+                          aria-label={isHidden ? 'Show layer' : 'Hide layer'}
+                        >
+                          {item.icon}
+                        </button>
                       ) : (
-                        // Show icon in circle for points
-                        <div 
+                        <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0 transition-opacity ${isHidden ? 'opacity-40' : ''}`}
                           style={{ backgroundColor: item.color }}
                         >

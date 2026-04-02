@@ -39,6 +39,7 @@ export const LAYER_SOURCE_URL_EXACT: Record<string, string> = {
   portwatch_disruptions: 'https://portwatch.imf.org/',
   portwatch_chokepoints: 'https://portwatch.imf.org/',
   portwatch_ports: 'https://portwatch.imf.org/',
+  mdb_gtfs_feeds: 'https://mobilitydatabase.org/',
   usgs_earthquakes: 'https://earthquake.usgs.gov/earthquakes/feed/',
   climate_risks: 'https://www.climate.gov/',
   acled: 'https://acleddata.com/',
@@ -61,12 +62,22 @@ export const LAYER_SOURCE_URL_EXACT: Record<string, string> = {
     'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/USStateSubmergedLands/MapServer',
   noaa_marine_ioos_regions:
     'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/IOOSRegions/MapServer',
+  noaa_county_snapshots_slr10ft_facilities_inside:
+    'https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/0',
+  noaa_county_snapshots_slr10ft_inside_inundation:
+    'https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/1',
+  noaa_county_snapshots_slr10ft_outside_inundation:
+    'https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/2',
   usgs_nationalmap_plss_township:
     'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/1',
   usgs_nationalmap_plss_section:
     'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/2',
   usgs_nationalmap_plss_intersected:
     'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3',
+  blm_lands:
+    'https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/BLM_Lands/FeatureServer/0',
+  blm_pfyc_geologic_formations:
+    'https://gis.blm.gov/arcgis/rest/services/geophysical/BLM_Natl_PFYC_GeologicFormations_Cached/MapServer/0',
 };
 
 type Rule = { test: (key: string) => boolean; url: string };

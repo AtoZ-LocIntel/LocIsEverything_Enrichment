@@ -389,6 +389,12 @@ const EnrichmentCategoryPage: React.FC<EnrichmentCategoryPageProps> = ({
                     radiusOptions = [...baseOptions, 25, 50];
                     if (maxRadius >= 75) radiusOptions.push(75);
                     if (maxRadius >= 100) radiusOptions.push(100);
+                    if (maxRadius > 100) {
+                      [125, 150, 175, 200, 225, 250, 300, 400, 500].forEach((r) => {
+                        if (maxRadius >= r && !radiusOptions.includes(r)) radiusOptions.push(r);
+                      });
+                      if (!radiusOptions.includes(maxRadius)) radiusOptions.push(maxRadius);
+                    }
                   } else {
                     radiusOptions = [...baseOptions, 25, maxRadius];
                   }

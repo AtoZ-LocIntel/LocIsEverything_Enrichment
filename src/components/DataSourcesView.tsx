@@ -2486,6 +2486,33 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "High",
           cost: "Free",
           url: "https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/IOOSRegions/MapServer"
+        },
+        {
+          name: "NOAA OCM County Snapshots — Critical Facilities (10 ft SLR), layer 0 — Facilities Inside Inundation",
+          description:
+            "Office for Coastal Management County Snapshots — MultiPoint facilities inside sea-level rise inundation. Proximity queries up to 100 miles; per-vertex results in summary, map, and CSV.",
+          coverage: "United States coastal counties (per service extent)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/0"
+        },
+        {
+          name: "NOAA OCM County Snapshots — Critical Facilities (10 ft SLR), layer 1 — Inside SLR Inundation",
+          description:
+            "MultiPoint layer for areas inside SLR inundation (10 ft scenario). Proximity queries up to 100 miles.",
+          coverage: "United States coastal counties (per service extent)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/1"
+        },
+        {
+          name: "NOAA OCM County Snapshots — Critical Facilities (10 ft SLR), layer 2 — Outside SLR Inundation",
+          description:
+            "MultiPoint layer for areas outside SLR inundation (10 ft scenario). Proximity queries up to 100 miles.",
+          coverage: "United States coastal counties (per service extent)",
+          accuracy: "High",
+          cost: "Free",
+          url: "https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/2"
         }
       ]
     },
@@ -2499,6 +2526,24 @@ export const getDataSources = (): DataSourceCategory[] => {
           accuracy: "Very High",
           cost: "Free",
           url: "https://services.arcgis.com/v01gqwM5QqNysAAi/ArcGIS/rest/services/PADUS_Public_Access/FeatureServer"
+        },
+        {
+          name: "BLM Lands (Administrative Units)",
+          description:
+            "ArcGIS BLM_Lands polygon layer — BLM administrative land units (unit_name). Point-in-polygon and proximity buffer queries up to 250 miles.",
+          coverage: "United States (CONUS, AK, HI, territories per service extent)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/BLM_Lands/FeatureServer/0"
+        },
+        {
+          name: "BLM PFYC — Geologic Formation Boundaries (cached)",
+          description:
+            "Potential Fossil Yield Classification (PFYC) geologic formation polygons — ranks potential for scientifically significant fossils (PFYC class, justification, unit name, ages). Point-in-polygon and proximity queries up to 100 miles; map and CSV include geometries and attributes.",
+          coverage: "United States (per BLM geophysical service extent)",
+          accuracy: "Very High",
+          cost: "Free",
+          url: "https://gis.blm.gov/arcgis/rest/services/geophysical/BLM_Natl_PFYC_GeologicFormations_Cached/MapServer/0"
         },
         {
           name: "BLM National GTLF Public Managed Trails",

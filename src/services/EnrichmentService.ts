@@ -209,6 +209,14 @@ import {
   type MarineCadastreQueryLayerId,
 } from '../adapters/noaaMarineCadastreQueryLayers';
 import {
+  queryCountySnapshotsSlr10ftLayer,
+  displayCountySnapshotsSlrLabel,
+  COUNTY_SNAPSHOTS_SLR10FT_LAYERS,
+  NOAA_COUNTY_SNAPSHOTS_SLR10FT_MAX_RADIUS_MILES,
+  OCM_CRITICAL_FACILITIES_SLR_FIPSSTCO_CATEGORY,
+  type CountySnapshotsSlr10ftLayerId,
+} from '../adapters/noaaCountySnapshotsCriticalFacilities10ftSlr';
+import {
   getNOAOWaterTemperatureJanuary,
   getNOAOWaterTemperatureFebruary,
   getNOAOWaterTemperatureMarch,
@@ -341,6 +349,7 @@ import { getUSHistoricalHydrographicPointsData } from '../adapters/usHistoricalH
 import { getUSHistoricalPhysicalPointsData } from '../adapters/usHistoricalPhysicalPoints';
 import { getPortWatchDisruptionsData } from '../adapters/portWatchDisruptions';
 import { getPortWatchChokepointsData } from '../adapters/portWatchChokepoints';
+import { getMobilityDatabaseGtfsFeedsData } from '../adapters/mobilityDatabaseGtfsFeeds';
 import { getAllOpenSkyAircraftStates } from '../adapters/openSkyNetwork';
 import { getACLEDData } from '../adapters/acled';
 import { getClimateRisksData } from '../adapters/climateRisks';
@@ -571,6 +580,11 @@ import { getBLMNationalWildHorseBurroHerdAreasData } from '../adapters/blmNation
 import { getBLMNationalRecreationSitesData } from '../adapters/blmNationalRecreationSites';
 import { getBLMNationalFirePerimetersData } from '../adapters/blmNationalFirePerimeters';
 import { getBLMNationalLWCFData } from '../adapters/blmNationalLWCF';
+import { getBLMLandsData, BLM_LANDS_MAX_RADIUS_MILES } from '../adapters/blmLands';
+import {
+  getBLMPfycGeologicFormationsData,
+  BLM_PFYC_MAX_RADIUS_MILES,
+} from '../adapters/blmPfycGeologicFormations';
 import { getUSFSForestBoundariesData } from '../adapters/usfsForestBoundaries';
 import { getUSFSWildernessAreasData } from '../adapters/usfsWildernessAreas';
 import { getChinookSalmonRangesData } from '../adapters/chinookSalmonRanges';
@@ -824,7 +838,9 @@ const DIRECT_API_PATTERNS = [
   /api\.open-meteo\.com/,
   /api\.weather\.gov/,
   /overpass-api\.de/,
-  /lz4\.overpass-api\.de/
+  /lz4\.overpass-api\.de/,
+  // NOAA OCM ArcGIS — CORS OK; avoid proxies (long query strings + large multipoint JSON).
+  /coast\.noaa\.gov\/arcgis\/rest\//,
 ];
 
 function proxied(url: string, which: number = 0): string {
@@ -866,7 +882,15 @@ export async function fetchJSONSmart(url: string, opts: RequestInit = {}, backof
     url.includes('nominatim.openstreetmap.org') ||
     url.includes('geocoding.geo.census.gov') ||
     url.includes('api.postcodes.io');
-  const REQUEST_TIMEOUT_MS = isOverpassAPI ? 30000 : isGeocodingUrl ? 15000 : 5000;
+  const isNoaaArcgis =
+    url.includes('coast.noaa.gov') && url.includes('/arcgis/rest/');
+  const REQUEST_TIMEOUT_MS = isOverpassAPI
+    ? 30000
+    : isGeocodingUrl
+      ? 15000
+      : isNoaaArcgis
+        ? 120000
+        : 5000;
   
   for (let i = 0; i < attempts.length; i++) {
     const proxyKey = getProxyKey(url, i);
@@ -2727,6 +2751,40 @@ export class EnrichmentService {
       };
     }
   }
+
+  private async getMobilityDatabaseGtfsFeeds(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
+    try {
+      const feeds = await getMobilityDatabaseGtfsFeedsData(lat, lon, radiusMiles);
+      if (!feeds || feeds.length === 0) {
+        return {
+          mdb_gtfs_feeds_count: 0,
+          mdb_gtfs_feeds_summary: `No GTFS feeds found whose dataset coverage intersects your search area within ${radiusMiles} miles`,
+          mdb_gtfs_feeds_all: [],
+          mdb_gtfs_feeds_proximity_distance: radiusMiles,
+        };
+      }
+      const summary = `Found ${feeds.length} GTFS feed${feeds.length !== 1 ? 's' : ''} (Mobility Database) within ${radiusMiles} miles (by dataset bbox)`;
+      return {
+        mdb_gtfs_feeds_count: feeds.length,
+        mdb_gtfs_feeds_summary: summary,
+        mdb_gtfs_feeds_proximity_distance: radiusMiles,
+        mdb_gtfs_feeds_all: feeds.map((f) => ({ ...f })),
+      };
+    } catch (error: any) {
+      console.error('Error in Mobility Database GTFS feeds query:', error);
+      const msg = error?.message || String(error);
+      const tokenHint =
+        msg.includes('503') || msg.includes('not configured') || msg.includes('token')
+          ? ' Configure MOBILITY_DATABASE_API_TOKEN (MobilityData API bearer) on the server and in local .env for dev.'
+          : '';
+      return {
+        mdb_gtfs_feeds_count: 0,
+        mdb_gtfs_feeds_summary: `Mobility Database GTFS feeds: ${msg}.${tokenHint}`,
+        mdb_gtfs_feeds_all: [],
+        mdb_gtfs_feeds_proximity_distance: radiusMiles,
+      };
+    }
+  }
   
   private async getEarthquakes(lat: number, lon: number, radiusMiles: number): Promise<Record<string, any>> {
     try {
@@ -3573,10 +3631,12 @@ export class EnrichmentService {
     
     console.log(`🔍 DEBUG EnrichmentService.runSingleEnrichment: enrichmentId=${enrichmentId}, poiConfig=${poiConfig ? JSON.stringify({ maxRadius: poiConfig.maxRadius }) : 'null'}`);
     
-    if (poiConfig?.maxRadius) {
-      // Use maxRadius from POI config if specified
-      maxRadius = poiConfig.maxRadius;
-      console.log(`🔍 DEBUG EnrichmentService: Using maxRadius=${maxRadius} from poiConfig for ${enrichmentId}`);
+    if (poiConfig?.maxRadius != null) {
+      const parsedMax = Number(poiConfig.maxRadius);
+      if (!Number.isNaN(parsedMax) && parsedMax > 0) {
+        maxRadius = parsedMax;
+        console.log(`🔍 DEBUG EnrichmentService: Using maxRadius=${maxRadius} from poiConfig for ${enrichmentId}`);
+      }
     } else if (enrichmentId === 'poi_wildfires') {
       maxRadius = 50; // Wildfires can be up to 50 miles for risk assessment
     } else if (enrichmentId === 'poi_volcanoes') {
@@ -3587,7 +3647,15 @@ export class EnrichmentService {
       // For all other POI types, allow up to 25 miles (user's selection)
       maxRadius = 25;
     }
-    
+
+    // BLM Lands: always allow full service cap (250 mi); do not inherit mistaken 100 mi caps from config drift
+    if (enrichmentId === 'blm_lands') {
+      maxRadius = BLM_LANDS_MAX_RADIUS_MILES;
+    }
+    if (enrichmentId === 'blm_pfyc_geologic_formations') {
+      maxRadius = BLM_PFYC_MAX_RADIUS_MILES;
+    }
+
     const requestedRadius = poiRadii[enrichmentId] || this.getDefaultRadius(enrichmentId);
     const radius = Math.min(requestedRadius, maxRadius);
     console.log(`🔍 DEBUG EnrichmentService: requestedRadius=${requestedRadius}, maxRadius=${maxRadius}, final radius=${radius} for ${enrichmentId}`);
@@ -3765,6 +3833,10 @@ export class EnrichmentService {
       // Global Risk - Port Watch Chokepoints
       case 'portwatch_chokepoints':
         return await this.getPortWatchChokepoints(lat, lon, radius);
+
+      // Mobility — Mobility Database Catalog (GTFS feeds)
+      case 'mdb_gtfs_feeds':
+        return await this.getMobilityDatabaseGtfsFeeds(lat, lon, radius);
       
       // Global Risk - ACLED Conflict Events
       case 'acled':
@@ -4629,7 +4701,28 @@ export class EnrichmentService {
         return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_us_state_submerged_lands', lat, lon, radius);
       case 'noaa_marine_ioos_regions':
         return await this.getNOAAMarineCadastreQueryLayerById('noaa_marine_ioos_regions', lat, lon, radius);
-      
+      case 'noaa_county_snapshots_slr10ft_facilities_inside':
+        return await this.getNOAACountySnapshotsSlr10ftLayer(
+          'noaa_county_snapshots_slr10ft_facilities_inside',
+          lat,
+          lon,
+          radius
+        );
+      case 'noaa_county_snapshots_slr10ft_inside_inundation':
+        return await this.getNOAACountySnapshotsSlr10ftLayer(
+          'noaa_county_snapshots_slr10ft_inside_inundation',
+          lat,
+          lon,
+          radius
+        );
+      case 'noaa_county_snapshots_slr10ft_outside_inundation':
+        return await this.getNOAACountySnapshotsSlr10ftLayer(
+          'noaa_county_snapshots_slr10ft_outside_inundation',
+          lat,
+          lon,
+          radius
+        );
+
       // NOAA West Coast Essential Fish Habitat (EFH) Layers
       case 'noaa_west_coast_efh_hapc':
         return await this.getNOAAWestCoastEFHHAPC(lat, lon, radius);
@@ -9159,6 +9252,13 @@ export class EnrichmentService {
         return await this.getNationalMarineSanctuaries(lat, lon, radius);
       
       // BLM National GTLF Public Managed Trails - Proximity query only (max 50 miles)
+      // BLM Lands — administrative unit polygons (point-in-polygon + proximity up to 250 mi)
+      case 'blm_lands':
+        return await this.getBLMLands(lat, lon, radius);
+
+      case 'blm_pfyc_geologic_formations':
+        return await this.getBLMPfycGeologicFormations(lat, lon, radius);
+
       case 'blm_national_trails':
         return await this.getBLMNationalTrails(lat, lon, radius);
       
@@ -23471,6 +23571,195 @@ out center tags;`;
     }
   }
 
+  private async getBLMLands(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    try {
+      const cappedRadius = radius != null ? Math.min(radius, BLM_LANDS_MAX_RADIUS_MILES) : BLM_LANDS_MAX_RADIUS_MILES;
+      console.log(
+        `🗺️ Fetching BLM Lands data for [${lat}, ${lon}] within ${cappedRadius} mi (max ${BLM_LANDS_MAX_RADIUS_MILES})`
+      );
+
+      const features = await getBLMLandsData(lat, lon, cappedRadius);
+      const result: Record<string, any> = {
+        blm_lands_search_radius_miles: cappedRadius,
+      };
+
+      const containing = features.filter((f) => f.isContaining);
+      const proximityOnly = features.filter((f) => !f.isContaining);
+      const nearestNonContaining = proximityOnly.length
+        ? proximityOnly.reduce((a, b) =>
+            (a.distance_miles ?? Infinity) <= (b.distance_miles ?? Infinity) ? a : b
+          )
+        : null;
+
+      result.blm_lands_summary_stats = {
+        search_radius_miles: cappedRadius,
+        total_features_returned: features.length,
+        containing_count: containing.length,
+        proximity_only_count: proximityOnly.length,
+        nearest_distance_miles:
+          nearestNonContaining != null ? nearestNonContaining.distance_miles ?? null : null,
+      };
+
+      if (features.length === 0) {
+        result.blm_lands_containing = null;
+        result.blm_lands_containing_message = 'No BLM land unit contains this location.';
+        result.blm_lands_count = 0;
+        result.blm_lands_all = [];
+        result.blm_lands_summary =
+          `No BLM Lands polygons within ${cappedRadius} miles (point-in-polygon and proximity).`;
+        return result;
+      }
+
+      const firstContaining = containing[0];
+      if (firstContaining) {
+        const label = firstContaining.unitName || 'BLM land';
+        result.blm_lands_containing = label;
+        result.blm_lands_containing_message = `Location is within BLM Lands unit: ${label}`;
+      } else {
+        result.blm_lands_containing = null;
+        result.blm_lands_containing_message = 'No BLM land unit contains this location.';
+      }
+
+      result.blm_lands_count = features.length;
+      result.blm_lands_all = features.map((f) => ({
+        ...f.attributes,
+        objectId: f.objectId,
+        unitName: f.unitName,
+        unit_name: f.unitName,
+        geometry: f.geometry,
+        distance_miles: f.distance_miles,
+        isContaining: f.isContaining,
+      }));
+
+      const parts: string[] = [];
+      parts.push(
+        `BLM Lands: ${features.length} unit(s) within ${cappedRadius} mi search (${containing.length} containing, ${proximityOnly.length} proximity-only).`
+      );
+      if (firstContaining?.unitName) {
+        parts.push(`Containing unit: ${firstContaining.unitName}.`);
+      }
+      if (nearestNonContaining && !firstContaining) {
+        parts.push(`Nearest unit: ${nearestNonContaining.unitName || 'Unknown'} (~${(nearestNonContaining.distance_miles ?? 0).toFixed(2)} mi).`);
+      }
+      result.blm_lands_summary = parts.join(' ');
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM Lands data:', error);
+      return {
+        blm_lands_search_radius_miles: radius != null ? Math.min(radius, BLM_LANDS_MAX_RADIUS_MILES) : BLM_LANDS_MAX_RADIUS_MILES,
+        blm_lands_containing: null,
+        blm_lands_containing_message: 'Error querying BLM Lands',
+        blm_lands_count: 0,
+        blm_lands_all: [],
+        blm_lands_summary: 'Error querying BLM Lands',
+        blm_lands_summary_stats: null,
+      };
+    }
+  }
+
+  private async getBLMPfycGeologicFormations(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
+    const prefix = 'blm_pfyc_geologic_formations';
+    try {
+      const cappedRadius =
+        radius != null ? Math.min(radius, BLM_PFYC_MAX_RADIUS_MILES) : BLM_PFYC_MAX_RADIUS_MILES;
+      console.log(
+        `🦴 Fetching BLM PFYC Geologic Formations for [${lat}, ${lon}] within ${cappedRadius} mi (max ${BLM_PFYC_MAX_RADIUS_MILES})`
+      );
+
+      const features = await getBLMPfycGeologicFormationsData(lat, lon, cappedRadius);
+      const result: Record<string, any> = {
+        [`${prefix}_search_radius_miles`]: cappedRadius,
+      };
+
+      const containing = features.filter((f) => f.isContaining);
+      const proximityOnly = features.filter((f) => !f.isContaining);
+      const nearestNonContaining = proximityOnly.length
+        ? proximityOnly.reduce((a, b) =>
+            (a.distance_miles ?? Infinity) <= (b.distance_miles ?? Infinity) ? a : b
+          )
+        : null;
+
+      const pfycClassCounts: Record<string, number> = {};
+      for (const f of features) {
+        const code = f.pfycClassCd ?? 'unknown';
+        pfycClassCounts[code] = (pfycClassCounts[code] ?? 0) + 1;
+      }
+
+      result[`${prefix}_summary_stats`] = {
+        search_radius_miles: cappedRadius,
+        total_features_returned: features.length,
+        containing_count: containing.length,
+        proximity_only_count: proximityOnly.length,
+        nearest_distance_miles:
+          nearestNonContaining != null ? nearestNonContaining.distance_miles ?? null : null,
+        pfyc_class_counts: pfycClassCounts,
+      };
+
+      if (features.length === 0) {
+        result[`${prefix}_containing`] = null;
+        result[`${prefix}_containing_message`] = 'No PFYC geologic formation polygon contains this location.';
+        result[`${prefix}_count`] = 0;
+        result[`${prefix}_all`] = [];
+        result[`${prefix}_summary`] =
+          `No PFYC geologic formation polygons within ${cappedRadius} miles (point-in-polygon and proximity).`;
+        return result;
+      }
+
+      const firstContaining = containing[0];
+      if (firstContaining) {
+        const label =
+          firstContaining.geoUnitName ||
+          (firstContaining.pfycClassCd ? `PFYC class ${firstContaining.pfycClassCd}` : 'PFYC formation');
+        result[`${prefix}_containing`] = label;
+        result[`${prefix}_containing_message`] = `Location is within PFYC geologic formation: ${label}`;
+      } else {
+        result[`${prefix}_containing`] = null;
+        result[`${prefix}_containing_message`] =
+          'No PFYC geologic formation polygon contains this location.';
+      }
+
+      result[`${prefix}_count`] = features.length;
+      result[`${prefix}_all`] = features.map((f) => ({
+        ...f.attributes,
+        objectId: f.objectId,
+        PFYC_CLASS_CD: f.pfycClassCd ?? f.attributes.PFYC_CLASS_CD,
+        GEO_UNIT_NM: f.geoUnitName ?? f.attributes.GEO_UNIT_NM,
+        geometry: f.geometry,
+        distance_miles: f.distance_miles,
+        isContaining: f.isContaining,
+      }));
+
+      const parts: string[] = [];
+      parts.push(
+        `BLM PFYC: ${features.length} formation(s) within ${cappedRadius} mi (${containing.length} containing, ${proximityOnly.length} proximity-only).`
+      );
+      if (firstContaining?.geoUnitName) {
+        parts.push(`Containing unit: ${firstContaining.geoUnitName}.`);
+      }
+      if (nearestNonContaining && !firstContaining) {
+        parts.push(
+          `Nearest formation: ${nearestNonContaining.geoUnitName || 'Unknown'} (~${(nearestNonContaining.distance_miles ?? 0).toFixed(2)} mi).`
+        );
+      }
+      result[`${prefix}_summary`] = parts.join(' ');
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching BLM PFYC geologic formations:', error);
+      return {
+        [`${prefix}_search_radius_miles`]:
+          radius != null ? Math.min(radius, BLM_PFYC_MAX_RADIUS_MILES) : BLM_PFYC_MAX_RADIUS_MILES,
+        [`${prefix}_containing`]: null,
+        [`${prefix}_containing_message`]: 'Error querying PFYC geologic formations',
+        [`${prefix}_count`]: 0,
+        [`${prefix}_all`]: [],
+        [`${prefix}_summary`]: 'Error querying PFYC geologic formations',
+        [`${prefix}_summary_stats`]: null,
+      };
+    }
+  }
+
   private async getBLMNationalTrails(lat: number, lon: number, radius?: number): Promise<Record<string, any>> {
     try {
       console.log(`🥾 Fetching BLM National GTLF Public Managed Trails data for [${lat}, ${lon}]${radius ? ` with radius ${radius} miles` : ''}`);
@@ -33678,6 +33967,82 @@ out center tags;`;
       console.error(`❌ Error fetching NOAA ${shortLabel} data:`, error);
       return {
         [`${enrichmentId}_count`]: 0,
+        [`${enrichmentId}_summary`]: `Error fetching NOAA ${shortLabel} data`,
+        [`${enrichmentId}_all`]: [],
+      };
+    }
+  }
+
+  private async getNOAACountySnapshotsSlr10ftLayer(
+    enrichmentId: CountySnapshotsSlr10ftLayerId,
+    lat: number,
+    lon: number,
+    radius?: number
+  ): Promise<Record<string, any>> {
+    const cfg = COUNTY_SNAPSHOTS_SLR10FT_LAYERS[enrichmentId];
+    const shortLabel = cfg.shortLabel;
+    const prefix = enrichmentId;
+    const radiusUsed = Math.min(
+      radius ?? 25,
+      NOAA_COUNTY_SNAPSHOTS_SLR10FT_MAX_RADIUS_MILES
+    );
+    try {
+      const features = await queryCountySnapshotsSlr10ftLayer(enrichmentId, lat, lon, radiusUsed);
+      const result: Record<string, any> = {};
+      result[`${prefix}_proximity_search_radius_miles`] = radiusUsed;
+      result[`${prefix}_query_mode`] = 'proximity_buffer';
+
+      if (features.length === 0) {
+        result[`${prefix}_count`] = 0;
+        result[`${prefix}_proximity_point_count`] = 0;
+        result[`${prefix}_proximity_source_feature_count`] = 0;
+        result[`${prefix}_summary_stats`] = `Buffer ≤${radiusUsed} mi · 0 vertices · 0 source features`;
+        result[`${prefix}_summary`] =
+          `No multipoint vertices from “${shortLabel}” fall within a ${radiusUsed} mi search buffer. These OCM layers use a few nationwide MultiPoint features (facility-type rows, not per-county lists); the 10 ft SLR dataset is sparse—try a larger radius or a coastal area where inundation points exist. Buffer intersection only (not point-in-polygon).`;
+        result[`${prefix}_all`] = [];
+      } else {
+        const oids = features.map((f) => f.objectid).filter((id): id is number => id != null);
+        const uniqueFeatureCount = oids.length ? new Set(oids).size : features.length;
+        const nearest = features[0];
+        const farthest = features[features.length - 1];
+        const sumDist = features.reduce((s, f) => s + f.distance_miles, 0);
+        const meanDist = sumDist / features.length;
+        const label = displayCountySnapshotsSlrLabel(nearest.attributes) || 'Unnamed';
+        result[`${prefix}_count`] = features.length;
+        result[`${prefix}_proximity_point_count`] = features.length;
+        result[`${prefix}_proximity_source_feature_count`] = uniqueFeatureCount;
+        result[`${prefix}_summary_stats`] =
+          `Buffer ≤${radiusUsed} mi · ${features.length} vertex location(s) · ${uniqueFeatureCount} source MultiPoint feature(s) · distance min ${nearest.distance_miles.toFixed(2)} mi · max ${farthest.distance_miles.toFixed(2)} mi · mean ${meanDist.toFixed(2)} mi`;
+        result[`${prefix}_summary`] =
+          `Proximity search (≤${radiusUsed} mi buffer): ${features.length} vertex location(s) within range from ${uniqueFeatureCount} source MultiPoint feature(s) (national rows). Nearest: ${label} (${nearest.distance_miles.toFixed(2)} mi). Buffer proximity only—not point-in-polygon.`;
+        result[`${prefix}_all`] = features.map((feature) => {
+          const code = feature.attributes?.FIPSSTCO ?? feature.attributes?.fipsstco;
+          const codeStr = code != null ? String(code).trim() : '';
+          const thematic =
+            codeStr !== '' ? OCM_CRITICAL_FACILITIES_SLR_FIPSSTCO_CATEGORY[codeStr] : undefined;
+          return {
+            ...feature.attributes,
+            thematic_category_label: thematic ?? null,
+            objectid: feature.objectid,
+            pointIndex: feature.pointIndex,
+            lat: feature.lat,
+            lon: feature.lon,
+            distance_miles: feature.distance_miles,
+            geometry: feature.geometry,
+          };
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Error fetching NOAA County Snapshots ${shortLabel}:`, error);
+      return {
+        [`${enrichmentId}_proximity_search_radius_miles`]: radiusUsed,
+        [`${enrichmentId}_query_mode`]: 'proximity_buffer',
+        [`${enrichmentId}_count`]: 0,
+        [`${enrichmentId}_proximity_point_count`]: 0,
+        [`${enrichmentId}_proximity_source_feature_count`]: 0,
+        [`${enrichmentId}_summary_stats`]: `Error · no stats`,
         [`${enrichmentId}_summary`]: `Error fetching NOAA ${shortLabel} data`,
         [`${enrichmentId}_all`]: [],
       };

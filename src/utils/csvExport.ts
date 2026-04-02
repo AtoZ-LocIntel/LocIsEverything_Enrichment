@@ -288,6 +288,46 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  if (enrichments.mdb_gtfs_feeds_all && Array.isArray(enrichments.mdb_gtfs_feeds_all)) {
+    enrichments.mdb_gtfs_feeds_all.forEach((feed: any) => {
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'Mobility Database',
+        (location.confidence || 'N/A').toString(),
+        'MDB_GTFS_FEEDS',
+        feed.feed_name || feed.provider || 'GTFS feed',
+        (feed.lat ?? location.lat).toString(),
+        (feed.lon ?? location.lon).toString(),
+        (feed.distance_miles ?? 'N/A').toString(),
+        'Mobility',
+        feed.id || '',
+        feed.provider || '',
+        feed.hosted_url || feed.producer_url || '',
+        'Mobility Database Catalog',
+      ]);
+    });
+  } else if (enrichments.mdb_gtfs_feeds_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'Mobility Database',
+      (location.confidence || 'N/A').toString(),
+      'MDB_GTFS_FEEDS',
+      'GTFS feeds (summary)',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.mdb_gtfs_feeds_proximity_distance || 0).toFixed(1),
+      'Mobility',
+      `${enrichments.mdb_gtfs_feeds_count || 0} found`,
+      enrichments.mdb_gtfs_feeds_summary || '',
+      '',
+      'Mobility Database Catalog',
+    ]);
+  }
+
   // Add Climate Risks data
   if (enrichments.climate_risks_all && Array.isArray(enrichments.climate_risks_all)) {
     enrichments.climate_risks_all.forEach((risk: any) => {
@@ -1149,6 +1189,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         key === 'blm_national_nonmotorized_trails_all' ||
         key === 'blm_national_limited_motorized_roads_all' ||
         key === 'blm_national_public_motorized_roads_all' ||
+        key === 'blm_lands_all' ||
+        key === 'blm_pfyc_geologic_formations_all' ||
         key === 'blm_national_grazing_pastures_all' ||
         key === 'blm_national_acec_all' ||
         key === 'blm_national_sheep_goat_grazing_all' ||
@@ -1266,6 +1308,7 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
         (key === 'noaa_weather_radar_impact_zones_all') || // Skip NOAA Weather Radar Impact Zones array (handled separately)
         (key.startsWith('noaa_maritime_') && key.endsWith('_all')) || // Skip NOAA Maritime Limits arrays (handled separately)
         ((key.startsWith('noaa_marine_') || key.startsWith('noaa_marinecadastre_')) && key.endsWith('_all')) || // Skip NOAA Marine Cadastre query layer arrays (handled separately)
+        (key.startsWith('noaa_county_snapshots_slr10ft_') && key.endsWith('_all')) || // Skip NOAA County Snapshots SLR multipoint arrays (handled separately)
         (key.startsWith('noaa_west_coast_efh_') && key.endsWith('_all')) || // Skip NOAA West Coast EFH arrays (handled separately)
         (key.startsWith('noaa_esa_species_ranges_') && key.endsWith('_all')) || // Skip NOAA ESA Species Ranges arrays (handled separately)
         (key.startsWith('noaa_nmfs_critical_habitat_') && key.endsWith('_all')) || // Skip NOAA NMFS Critical Habitat arrays (handled separately)
@@ -2061,6 +2104,70 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           '',
           '',
           'NOAA',
+        ]);
+      });
+      return;
+    }
+
+    // NOAA OCM County Snapshots — Critical Facilities 10 ft SLR (MultiPoint vertices)
+    if (key.startsWith('noaa_county_snapshots_slr10ft_') && key.endsWith('_all') && Array.isArray(value)) {
+      const layerKey = key.replace('_all', '');
+      const slrMeta: Record<string, { poiType: string; category: string }> = {
+        noaa_county_snapshots_slr10ft_facilities_inside: {
+          poiType: 'NOAA_COUNTY_SNAPSHOTS_SLR10FT_FACILITIES_INSIDE',
+          category: 'OCM County Snapshots — SLR 10 ft — Facilities inside inundation',
+        },
+        noaa_county_snapshots_slr10ft_inside_inundation: {
+          poiType: 'NOAA_COUNTY_SNAPSHOTS_SLR10FT_INSIDE_INUNDATION',
+          category: 'OCM County Snapshots — SLR 10 ft — Inside inundation',
+        },
+        noaa_county_snapshots_slr10ft_outside_inundation: {
+          poiType: 'NOAA_COUNTY_SNAPSHOTS_SLR10FT_OUTSIDE_INUNDATION',
+          category: 'OCM County Snapshots — SLR 10 ft — Outside inundation',
+        },
+      };
+      const meta =
+        slrMeta[layerKey] || {
+          poiType: layerKey.replace(/^noaa_county_snapshots_slr10ft_/, 'NOAA_SLR10FT_').toUpperCase(),
+          category: `OCM County Snapshots SLR — ${layerKey.replace(/^noaa_county_snapshots_slr10ft_/, '').replace(/_/g, ' ')}`,
+        };
+
+      value.forEach((row: any) => {
+        const attrs = { ...row };
+        const geomJson = row.geometry != null ? JSON.stringify(row.geometry) : '';
+        delete attrs.geometry;
+        if (geomJson) attrs.geometry_esri_json = geomJson;
+        const placeLabel =
+          row.thematic_category_label ??
+          row.FACILITY_NAME ??
+          row.NAME ??
+          row.FACILITY ??
+          row.Name ??
+          row.name ??
+          row.OBJECTID ??
+          row.objectid ??
+          'Unknown';
+        const dist =
+          row.distance_miles != null ? Number(row.distance_miles).toFixed(4) : '';
+        const latStr = row.lat != null ? String(row.lat) : '';
+        const lonStr = row.lon != null ? String(row.lon) : '';
+        const attributesJson = JSON.stringify(attrs);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'NOAA',
+          (location.confidence || 'N/A').toString(),
+          meta.poiType,
+          String(placeLabel),
+          latStr,
+          lonStr,
+          dist,
+          meta.category,
+          attributesJson,
+          '',
+          '',
+          'NOAA OCM County Snapshots',
         ]);
       });
       return;
@@ -12190,6 +12297,113 @@ const addPOIDataRows = (result: EnrichmentResult, rows: string[][], exportedPriv
           pastureId || 'N/A',
           attributesJson,
           'BLM'
+        ]);
+      });
+    } else if (key === 'blm_lands_all' && Array.isArray(value)) {
+      value.forEach((unit: any) => {
+        const unitName = unit.unitName || unit.unit_name || unit.Unit_Name || 'Unknown BLM unit';
+        const objectId = unit.objectId || unit.OBJECTID || unit.objectid || '';
+        const isContaining = unit.isContaining ? 'Yes' : 'No';
+        const distance =
+          unit.distance_miles !== null && unit.distance_miles !== undefined
+            ? unit.distance_miles.toFixed(2)
+            : unit.isContaining
+              ? '0.00'
+              : '';
+        let lat = '';
+        let lon = '';
+        if (unit.geometry && unit.geometry.rings && unit.geometry.rings.length > 0) {
+          const outerRing = unit.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lon = outerRing[0][0].toString();
+            lat = outerRing[0][1].toString();
+          }
+        }
+        const shapeArea =
+          unit.Shape__Area !== null && unit.Shape__Area !== undefined
+            ? Number(unit.Shape__Area).toFixed(2)
+            : '';
+        const allAttributes = { ...unit };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        delete allAttributes.unitName;
+        delete allAttributes.unit_name;
+        delete allAttributes.Unit_Name;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_Lands',
+          unitName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          'N/A',
+          'N/A',
+          'N/A',
+          shapeArea || 'N/A',
+          'N/A',
+          objectId || 'N/A',
+          attributesJson,
+          'BLM',
+        ]);
+      });
+    } else if (key === 'blm_pfyc_geologic_formations_all' && Array.isArray(value)) {
+      value.forEach((unit: any) => {
+        const geoName = unit.GEO_UNIT_NM || unit.geoUnitName || 'Unknown unit';
+        const pfycClass = unit.PFYC_CLASS_CD ?? unit.pfycClassCd ?? '';
+        const objectId = unit.objectId || unit.OBJECTID || unit.objectid || '';
+        const isContaining = unit.isContaining ? 'Yes' : 'No';
+        const distance =
+          unit.distance_miles !== null && unit.distance_miles !== undefined
+            ? unit.distance_miles.toFixed(2)
+            : unit.isContaining
+              ? '0.00'
+              : '';
+        let lat = '';
+        let lon = '';
+        if (unit.geometry && unit.geometry.rings && unit.geometry.rings.length > 0) {
+          const outerRing = unit.geometry.rings[0];
+          if (outerRing && outerRing.length > 0) {
+            lon = outerRing[0][0].toString();
+            lat = outerRing[0][1].toString();
+          }
+        }
+        const allAttributes = { ...unit };
+        delete allAttributes.geometry;
+        delete allAttributes.distance_miles;
+        delete allAttributes.isContaining;
+        delete allAttributes.objectId;
+        delete allAttributes.OBJECTID;
+        delete allAttributes.objectid;
+        const attributesJson = JSON.stringify(allAttributes);
+        rows.push([
+          location.name,
+          location.lat.toString(),
+          location.lon.toString(),
+          'BLM',
+          (location.confidence || 'N/A').toString(),
+          'BLM_PFYC_Geologic_Formations',
+          geoName,
+          lat,
+          lon,
+          distance,
+          isContaining,
+          pfycClass || 'N/A',
+          'N/A',
+          'N/A',
+          'N/A',
+          objectId || 'N/A',
+          attributesJson,
+          'BLM',
         ]);
       });
     } else if (key === 'blm_national_acec_all' && Array.isArray(value)) {

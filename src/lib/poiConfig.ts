@@ -157,6 +157,12 @@ export const DEFAULT_POI_SECTIONS: POISection[] = [
     icon: 'NOAA.webp'
   },
   {
+    id: 'blm',
+    title: 'BLM',
+    description: 'Bureau of Land Management cadastral, national geospatial, and public lands data',
+    icon: 'BLM.webp'
+  },
+  {
     id: 'nasa',
     title: 'NASA',
     description: 'NASA Earth observation data, satellite imagery, and space-based environmental monitoring',
@@ -585,6 +591,8 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'global_oil_gas_pipelines', label: 'Global Oil and Gas - Pipelines', description: 'Global Oil and Gas Pipelines - Oil and gas pipeline infrastructure worldwide (proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'globaloilgas', section: 'global_risk' },
   { id: 'global_oil_gas_railways', label: 'Global Oil and Gas - Railways', description: 'Global Oil and Gas Railways - Railway infrastructure related to oil and gas transport (proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'globaloilgas', section: 'global_risk' },
   { id: 'global_oil_gas_ports', label: 'Global Oil and Gas - Ports', description: 'Global Oil and Gas Ports - Port facilities related to oil and gas transport (point-in-polygon for polygons, proximity queries up to 1000 miles)', isPOI: true, defaultRadius: 0, maxRadius: 1000, category: 'globaloilgas', section: 'global_risk' },
+  // Mobility — Mobility Database Catalog (requires MOBILITY_DATABASE_API_TOKEN on server / .env for local dev)
+  { id: 'mdb_gtfs_feeds', label: 'Mobility Database — GTFS feeds', description: 'Mobility Database Catalog — static GTFS feeds whose latest dataset bounding box intersects your search area (proximity up to 500 miles). Requires MOBILITY_DATABASE_API_TOKEN (API bearer from mobilitydatabase.org).', isPOI: true, defaultRadius: 25, maxRadius: 500, category: 'mobility', section: 'mobility' },
   // TNM Structures (at top)
   { id: 'tnm_structures', label: 'TNM Structures', description: 'USGS The National Map Structures - Schools, Fire Stations, Hospitals, Post Offices, Campgrounds, Trailheads, Visitor Centers, and more (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'tnmstructures', section: 'nationalmap' },
   { id: 'usgs_trails', label: 'USGS Trails', description: 'USGS National Trails - Terra trails, snow trails, and water trails with national designations (proximity queries up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'usgstrails', section: 'nationalmap' },
@@ -619,10 +627,10 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   { id: 'usgs_selectable_polygons_subregion', label: 'USGS Selectable Polygons - Hydrologic Unit Subregion', description: 'USGS The National Map Selectable Polygons - Hydrologic Unit Subregions (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 0, maxRadius: 25, category: 'usgsselectablepolygons', section: 'nationalmap' },
   { id: 'usgs_selectable_polygons_subbasin', label: 'USGS Selectable Polygons - Hydrologic Unit Subbasin', description: 'USGS The National Map Selectable Polygons - Hydrologic Unit Subbasins (point-in-polygon and proximity queries up to 25 miles)', isPOI: true, defaultRadius: 0, maxRadius: 25, category: 'usgsselectablepolygons', section: 'nationalmap' },
   
-  // BLM PLSS CadNSDI (Public Land Survey System) — USGS National Map section; source: BLM Cadastral MapServer
-  { id: 'usgs_nationalmap_plss_township', label: 'BLM PLSS — Township', description: 'BLM National PLSS CadNSDI — PLSS Township (layer 1). Point-in-polygon and proximity queries up to 100 miles.', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'usgsselectablepolygons', section: 'nationalmap', subCategory: 'BLM PLSS (CadNSDI)', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/1' },
-  { id: 'usgs_nationalmap_plss_section', label: 'BLM PLSS — Section', description: 'BLM National PLSS CadNSDI — PLSS Section (layer 2). Point-in-polygon and proximity queries up to 100 miles.', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'usgsselectablepolygons', section: 'nationalmap', subCategory: 'BLM PLSS (CadNSDI)', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/2' },
-  { id: 'usgs_nationalmap_plss_intersected', label: 'BLM PLSS — Intersected', description: 'BLM National PLSS CadNSDI — PLSS Intersected (layer 3). Point-in-polygon and proximity queries up to 100 miles.', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'usgsselectablepolygons', section: 'nationalmap', subCategory: 'BLM PLSS (CadNSDI)', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3' },
+  // BLM PLSS CadNSDI (Public Land Survey System) — BLM section; source: BLM Cadastral MapServer
+  { id: 'usgs_nationalmap_plss_township', label: 'BLM PLSS — Township', description: 'BLM National PLSS CadNSDI — PLSS Township (layer 1). Point-in-polygon and proximity queries up to 100 miles.', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'usgsselectablepolygons', section: 'blm', subCategory: 'BLM PLSS (CadNSDI)', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/1' },
+  { id: 'usgs_nationalmap_plss_section', label: 'BLM PLSS — Section', description: 'BLM National PLSS CadNSDI — PLSS Section (layer 2). Point-in-polygon and proximity queries up to 100 miles.', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'usgsselectablepolygons', section: 'blm', subCategory: 'BLM PLSS (CadNSDI)', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/2' },
+  { id: 'usgs_nationalmap_plss_intersected', label: 'BLM PLSS — Intersected', description: 'BLM National PLSS CadNSDI — PLSS Intersected (layer 3). Point-in-polygon and proximity queries up to 100 miles.', isPOI: true, defaultRadius: 10, maxRadius: 100, category: 'usgsselectablepolygons', section: 'blm', subCategory: 'BLM PLSS (CadNSDI)', sourceUrl: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer/3' },
   
   // USGS WBD (Watershed Boundary Dataset) Layers
   { id: 'usgs_wbd_line', label: 'USGS WBD - WBDLine', description: 'USGS Watershed Boundary Dataset - WBDLine boundaries (proximity queries up to 25 miles)', isPOI: true, defaultRadius: 5, maxRadius: 25, category: 'usgswbd', section: 'nationalmap' },
@@ -785,7 +793,49 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   },
   { id: 'noaa_marine_us_state_submerged_lands', label: 'NOAA Marine Cadastre — US State Submerged Lands', description: 'US state submerged lands boundaries (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
   { id: 'noaa_marine_ioos_regions', label: 'NOAA Marine Cadastre — IOOS Regions', description: 'Integrated Ocean Observing System (IOOS) region polygons (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaamaritime', section: 'noaa' },
-  
+  {
+    id: 'noaa_county_snapshots_slr10ft_facilities_inside',
+    label: 'NOAA OCM — Critical Facilities (10 ft SLR) — Facilities Inside Inundation',
+    description:
+      'OCM cached MapServer: few nationwide MultiPoint rows (facility-type codes in FIPSSTCO). Proximity buffer up to 100 mi; results only where dataset vertices fall in range—not a full facility finder.',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'noaamaritime',
+    section: 'noaa',
+    subCategory: 'County Snapshots — SLR',
+    sourceUrl:
+      'https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/0',
+  },
+  {
+    id: 'noaa_county_snapshots_slr10ft_inside_inundation',
+    label: 'NOAA OCM — Critical Facilities (10 ft SLR) — Inside SLR Inundation',
+    description:
+      'Inside SLR inundation — few national MultiPoint features (Fire/Hospital/Police/School rows). Sparse 10 ft SLR points; use a large radius or test near coast.',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'noaamaritime',
+    section: 'noaa',
+    subCategory: 'County Snapshots — SLR',
+    sourceUrl:
+      'https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/1',
+  },
+  {
+    id: 'noaa_county_snapshots_slr10ft_outside_inundation',
+    label: 'NOAA OCM — Critical Facilities (10 ft SLR) — Outside SLR Inundation',
+    description:
+      'OCM cached MapServer: nationwide MultiPoint rows for “outside inundation.” Proximity buffer up to 100 mi; sparse data may return no hits in small radii.',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'noaamaritime',
+    section: 'noaa',
+    subCategory: 'County Snapshots — SLR',
+    sourceUrl:
+      'https://coast.noaa.gov/arcgis/rest/services/CountySnapshots/CriticalFacilities_10ftSLR/MapServer/2',
+  },
+
   // NOAA West Coast Essential Fish Habitat (EFH)
   { id: 'noaa_west_coast_efh_hapc', label: 'NOAA West Coast EFH - HAPC', description: 'NOAA West Coast Essential Fish Habitat - HAPC (Habitat Areas of Particular Concern) (point-in-polygon and proximity queries up to 100 miles)', isPOI: true, defaultRadius: 25, maxRadius: 100, category: 'noaawestcoastefh', section: 'noaa' },
   
@@ -1146,20 +1196,46 @@ export const DEFAULT_POI_TYPES: POIConfig[] = [
   // Public Lands & Protected Areas
   { id: 'poi_padus_public_access', label: 'PAD-US Public Access', description: 'USGS Protected Areas Database - public land boundaries, manager info, and access status for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
   { id: 'poi_padus_protection_status', label: 'PAD-US Protection Status', description: 'GAP status codes and IUCN categories for protected areas for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_trails', label: 'BLM National GTLF Public Managed Trails', description: 'BLM National GTLF Public Managed Trails - linear trail network for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_motorized_trails', label: 'BLM National GTLF Public Motorized Trails', description: 'BLM National GTLF Public Motorized Trails - linear motorized trail network for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_nonmotorized_trails', label: 'BLM National GTLF Public Nonmotorized Trails', description: 'BLM National GTLF Public Nonmotorized Trails - linear nonmotorized trail network for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_limited_motorized_roads', label: 'BLM National GTLF Limited Public Motorized Roads', description: 'BLM National GTLF Limited Public Motorized Roads - limited motorized road routes for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_public_motorized_roads', label: 'BLM National GTLF Public Motorized Roads', description: 'BLM National GTLF Public Motorized Roads - public motorized road routes for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_grazing_pastures', label: 'BLM National Grazing Pasture Polygons', description: 'BLM National Grazing Pasture Polygons - grazing allotment and pasture boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_acec', label: 'BLM National Areas of Critical Environmental Concern', description: 'BLM National Areas of Critical Environmental Concern - designated areas requiring special management attention for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_sheep_goat_grazing', label: 'BLM National Sheep and Goat Billed Grazing Allotments', description: 'BLM National Sheep and Goat Billed Grazing Allotments - sheep and goat grazing allotment boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_sheep_goat_authorized_grazing', label: 'BLM National Sheep and Goat Authorized Grazing Allotments', description: 'BLM National Sheep and Goat Authorized Grazing Allotments - authorized sheep and goat grazing allotment boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_nlcs_monuments_ncas', label: 'BLM National NLCS National Monuments and National Conservation Areas', description: 'BLM National NLCS National Monuments and National Conservation Areas - designated monuments and conservation areas for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_wild_horse_burro_herd_areas', label: 'BLM National Wild Horse and Burro Herd Areas', description: 'BLM National Wild Horse and Burro Herd Areas - wild horse and burro herd management areas for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_recreation_sites', label: 'BLM National Recreation Site Polygons', description: 'BLM National Recreation Site Polygons - campgrounds, day use areas, OHV areas, and other recreation sites for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_fire_perimeters', label: 'BLM National Fire Perimeters', description: 'BLM National Fire Perimeters - final fire perimeters (FPER) used for vegetation analysis, habitat suitability, fire planning, and post-fire stabilization activities for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
-  { id: 'blm_national_lwcf', label: 'BLM National Land and Water Conservation Fund (LWCF) Polygons', description: 'BLM National Land and Water Conservation Fund (LWCF) Polygons - federally funded land acquisition projects for recreation and conservation purposes for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
+  {
+    id: 'blm_lands',
+    label: 'BLM Lands (Administrative Units)',
+    description:
+      'BLM Lands administrative unit polygons (ArcGIS BLM_Lands). Point-in-polygon and proximity queries up to 250 miles.',
+    isPOI: true,
+    defaultRadius: 25,
+    maxRadius: 250,
+    category: 'blm',
+    section: 'blm',
+    sourceUrl:
+      'https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/BLM_Lands/FeatureServer/0',
+  },
+  {
+    id: 'blm_pfyc_geologic_formations',
+    label: 'BLM PFYC — Geologic Formation Boundaries',
+    description:
+      'Potential Fossil Yield Classification (PFYC) geologic formation polygons (BLM cached MapServer). Point-in-polygon and proximity queries up to 100 miles.',
+    isPOI: true,
+    defaultRadius: 10,
+    maxRadius: 100,
+    category: 'blm',
+    section: 'blm',
+    sourceUrl:
+      'https://gis.blm.gov/arcgis/rest/services/geophysical/BLM_Natl_PFYC_GeologicFormations_Cached/MapServer/0',
+  },
+  { id: 'blm_national_trails', label: 'BLM National GTLF Public Managed Trails', description: 'BLM National GTLF Public Managed Trails - linear trail network for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_motorized_trails', label: 'BLM National GTLF Public Motorized Trails', description: 'BLM National GTLF Public Motorized Trails - linear motorized trail network for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_nonmotorized_trails', label: 'BLM National GTLF Public Nonmotorized Trails', description: 'BLM National GTLF Public Nonmotorized Trails - linear nonmotorized trail network for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_limited_motorized_roads', label: 'BLM National GTLF Limited Public Motorized Roads', description: 'BLM National GTLF Limited Public Motorized Roads - limited motorized road routes for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_public_motorized_roads', label: 'BLM National GTLF Public Motorized Roads', description: 'BLM National GTLF Public Motorized Roads - public motorized road routes for proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_grazing_pastures', label: 'BLM National Grazing Pasture Polygons', description: 'BLM National Grazing Pasture Polygons - grazing allotment and pasture boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_acec', label: 'BLM National Areas of Critical Environmental Concern', description: 'BLM National Areas of Critical Environmental Concern - designated areas requiring special management attention for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_sheep_goat_grazing', label: 'BLM National Sheep and Goat Billed Grazing Allotments', description: 'BLM National Sheep and Goat Billed Grazing Allotments - sheep and goat grazing allotment boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_sheep_goat_authorized_grazing', label: 'BLM National Sheep and Goat Authorized Grazing Allotments', description: 'BLM National Sheep and Goat Authorized Grazing Allotments - authorized sheep and goat grazing allotment boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_nlcs_monuments_ncas', label: 'BLM National NLCS National Monuments and National Conservation Areas', description: 'BLM National NLCS National Monuments and National Conservation Areas - designated monuments and conservation areas for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_wild_horse_burro_herd_areas', label: 'BLM National Wild Horse and Burro Herd Areas', description: 'BLM National Wild Horse and Burro Herd Areas - wild horse and burro herd management areas for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_recreation_sites', label: 'BLM National Recreation Site Polygons', description: 'BLM National Recreation Site Polygons - campgrounds, day use areas, OHV areas, and other recreation sites for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_fire_perimeters', label: 'BLM National Fire Perimeters', description: 'BLM National Fire Perimeters - final fire perimeters (FPER) used for vegetation analysis, habitat suitability, fire planning, and post-fire stabilization activities for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
+  { id: 'blm_national_lwcf', label: 'BLM National Land and Water Conservation Fund (LWCF) Polygons', description: 'BLM National Land and Water Conservation Fund (LWCF) Polygons - federally funded land acquisition projects for recreation and conservation purposes for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'blm', section: 'blm' },
   { id: 'usfs_forest_boundaries', label: 'USFS Forest Boundaries', description: 'USFS Forest System Boundaries - US Forest Service national forest and grassland boundaries for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
   { id: 'usfs_wilderness_areas', label: 'USFS National Wilderness Areas', description: 'USFS National Wilderness Areas - designated wilderness areas managed by the US Forest Service for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },
   { id: 'usfs_national_grasslands', label: 'USFS National Grassland Units', description: 'USFS National Grassland Units - national grassland units managed by the US Forest Service for point-in-polygon and proximity queries (up to 50 miles)', isPOI: true, defaultRadius: 0.5, maxRadius: 50, category: 'public_lands', section: 'public_lands' },

@@ -29,6 +29,35 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key === 'noaa_marine_coastal_wetlands_nwi_class_breakdown') {
       return 'Coastal Wetlands — NWI class breakdown';
     }
+    if (key.includes('noaa_county_snapshots_slr10ft_') && key.endsWith('_proximity_search_radius_miles')) {
+      return 'SLR (10 ft) — Proximity search radius (miles)';
+    }
+    if (key.includes('noaa_county_snapshots_slr10ft_') && key.endsWith('_query_mode')) {
+      return 'SLR (10 ft) — Query mode';
+    }
+    if (key.includes('noaa_county_snapshots_slr10ft_') && key.endsWith('_proximity_point_count')) {
+      return 'SLR (10 ft) — Points within proximity buffer (count)';
+    }
+    if (key.includes('noaa_county_snapshots_slr10ft_') && key.endsWith('_proximity_source_feature_count')) {
+      return 'SLR (10 ft) — Source MultiPoint features (count)';
+    }
+    if (key.includes('noaa_county_snapshots_slr10ft_') && key.endsWith('_summary_stats')) {
+      return 'SLR (10 ft) — Quick stats (buffer, counts, distances)';
+    }
+    if (
+      key.includes('noaa_county_snapshots_slr10ft_') &&
+      key.endsWith('_summary') &&
+      !key.endsWith('_summary_stats')
+    ) {
+      return 'SLR (10 ft) — Summary';
+    }
+    if (
+      /^noaa_county_snapshots_slr10ft_(facilities_inside|inside_inundation|outside_inundation)_count$/.test(
+        key
+      )
+    ) {
+      return 'SLR (10 ft) — Vertex result count';
+    }
     // Special case for Lake County Building Footprints count
     if (key === 'lake_county_building_footprints_count') {
       return 'Lake County Buildings Nearby';
@@ -36,6 +65,42 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     // Special case for Cook County Building Footprints count
     if (key === 'cook_county_building_footprints_count') {
       return 'Cook County Buildings Nearby';
+    }
+    if (key === 'blm_lands_summary_stats') {
+      return 'BLM Summary — Quick stats';
+    }
+    if (key === 'blm_lands_summary') {
+      return 'BLM Summary — Overview';
+    }
+    if (key === 'blm_lands_containing_message') {
+      return 'BLM Summary — Containing message';
+    }
+    if (key === 'blm_lands_containing') {
+      return 'BLM Summary — Containing unit';
+    }
+    if (key === 'blm_lands_count') {
+      return 'BLM Summary — Feature count';
+    }
+    if (key === 'blm_lands_search_radius_miles') {
+      return 'BLM Summary — Search radius (miles)';
+    }
+    if (key === 'blm_pfyc_geologic_formations_summary_stats') {
+      return 'BLM Summary — PFYC quick stats';
+    }
+    if (key === 'blm_pfyc_geologic_formations_summary') {
+      return 'BLM Summary — PFYC overview';
+    }
+    if (key === 'blm_pfyc_geologic_formations_containing_message') {
+      return 'BLM Summary — PFYC containing message';
+    }
+    if (key === 'blm_pfyc_geologic_formations_containing') {
+      return 'BLM Summary — PFYC containing formation';
+    }
+    if (key === 'blm_pfyc_geologic_formations_count') {
+      return 'BLM Summary — PFYC feature count';
+    }
+    if (key === 'blm_pfyc_geologic_formations_search_radius_miles') {
+      return 'BLM Summary — PFYC search radius (miles)';
     }
     
     // Special case for tornado tracks intersects field
@@ -67,6 +132,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
 
   const formatValue = (value: any, key: string): string => {
     if (value === null || value === undefined) return 'N/A';
+    if (typeof value === 'string' && key.endsWith('_query_mode') && value === 'proximity_buffer') {
+      return 'Proximity buffer (ArcGIS distance query — not point-in-polygon)';
+    }
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (typeof value === 'number') {
       if (key.includes('elevation') || key.includes('elev')) {
@@ -137,6 +205,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       ) {
         return `${value.length} marine cadastre record(s) found (see CSV for details)`;
       }
+      if (key.includes('noaa_county_snapshots_slr10ft_') && key.includes('_all')) {
+        return `${value.length} SLR proximity result(s) (see CSV for details)`;
+      }
       
       // Skip geometry arrays (arrays of coordinates or geometry objects)
       // Check if this is a geometry array by looking at the structure
@@ -178,6 +249,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // Special handling for Port Watch Chokepoints - show count only for _all array
       if (key.includes('portwatch_chokepoints_all')) {
         return 'N/A'; // Skip the _all array (handled separately)
+      }
+
+      if (key.includes('mdb_gtfs_feeds_all')) {
+        return 'N/A';
       }
       
       // Special handling for ACLED - show count only for _all array
@@ -293,6 +368,37 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key === 'usda_wildfire_risk_source') {
       return value || 'USDA Forest Service';
     }
+    if (key === 'blm_lands_summary_stats' && typeof value === 'object' && value !== null) {
+      const s = value as Record<string, unknown>;
+      const parts: string[] = [];
+      if (s.search_radius_miles != null) parts.push(`Search radius: ${s.search_radius_miles} mi`);
+      if (s.total_features_returned != null) parts.push(`Total features: ${s.total_features_returned}`);
+      if (s.containing_count != null) parts.push(`Containing: ${s.containing_count}`);
+      if (s.proximity_only_count != null) parts.push(`Proximity only: ${s.proximity_only_count}`);
+      if (s.nearest_distance_miles != null && s.nearest_distance_miles !== '') {
+        parts.push(`Nearest distance: ${Number(s.nearest_distance_miles).toFixed(2)} mi`);
+      }
+      return parts.join('; ');
+    }
+    if (key === 'blm_pfyc_geologic_formations_summary_stats' && typeof value === 'object' && value !== null) {
+      const s = value as Record<string, unknown>;
+      const parts: string[] = [];
+      if (s.search_radius_miles != null) parts.push(`Search radius: ${s.search_radius_miles} mi`);
+      if (s.total_features_returned != null) parts.push(`Total features: ${s.total_features_returned}`);
+      if (s.containing_count != null) parts.push(`Containing: ${s.containing_count}`);
+      if (s.proximity_only_count != null) parts.push(`Proximity only: ${s.proximity_only_count}`);
+      if (s.nearest_distance_miles != null && s.nearest_distance_miles !== '') {
+        parts.push(`Nearest distance: ${Number(s.nearest_distance_miles).toFixed(2)} mi`);
+      }
+      if (s.pfyc_class_counts != null && typeof s.pfyc_class_counts === 'object') {
+        parts.push(
+          `PFYC class counts: ${Object.entries(s.pfyc_class_counts as Record<string, number>)
+            .map(([k, v]) => `${k}:${v}`)
+            .join(', ')}`
+        );
+      }
+      return parts.join('; ');
+    }
     
     // Handle objects
     if (typeof value === 'object' && value !== null) {
@@ -319,6 +425,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'Natural Hazards';
     }
     
+    if (key.includes('mdb_gtfs_feeds')) {
+      return 'Mobility';
+    }
+
     // Global Risk - check before Natural Hazards
     if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries') || key.includes('global_data_centers_osm') || key.includes('global_desalination_plants_osm')) {
       return 'Global Risk';
@@ -464,9 +574,9 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       return 'USGS National Map';
     }
     
-    // BLM PLSS CadNSDI (USGS National Map — query layers)
+    // BLM PLSS CadNSDI (BLM category)
     if (key.includes('usgs_nationalmap_plss_')) {
-      return 'USGS National Map';
+      return 'BLM';
     }
     
     // USGS WBD - USGS National Map
@@ -595,14 +705,17 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.startsWith('noaa_') || key.includes('noaa_critical_fisheries_habitat') || key.includes('noaa_water_temp_') || key.includes('noaa_west_coast_efh') || key.includes('noaa_esa_species_ranges') || key.includes('noaa_nmfs_critical_habitat') || key.includes('noaa_weather_radar') || key.includes('noaa_ocean_temp')) {
       return 'NOAA';
     }
+    if (key.startsWith('blm_')) {
+      return 'BLM';
+    }
     
     // Colorado Spatial Portal - check BEFORE AT/PCT to avoid false matches
     if (key.includes('co_spatial_portal')) {
       return 'Colorado Spatial Portal';
     }
     
-    // Check BLM, PADUS, and USFS before AT/PCT to avoid false matches
-    if (key.includes('blm_') || key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
+    // Check PADUS and USFS before AT/PCT to avoid false matches (BLM has its own section)
+    if (key.includes('padus_') || key.includes('usfs_') || key.includes('nps_') || key.includes('poi_padus_public_access') || key.includes('poi_padus_protection_status')) {
       return 'Public Lands';
     }
     if (key.startsWith('at_') || (key.includes('at_') && !key.includes('blm_'))) {
@@ -965,6 +1078,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       // Port Watch Chokepoints fields - only show if Port Watch Chokepoints enrichment is selected
       if (key.includes('portwatch_chokepoints')) {
         return selectedEnrichments.includes('portwatch_chokepoints');
+      }
+
+      if (key.includes('mdb_gtfs_feeds')) {
+        return selectedEnrichments.includes('mdb_gtfs_feeds');
       }
       
       // ACLED fields - only show if ACLED enrichment is selected

@@ -189,7 +189,23 @@ export default defineConfig({
             }
           });
         }
-      }
+      },
+      /** Mobility Database Catalog — forwards to /v1/gtfs_feeds with Bearer from .env (MOBILITY_DATABASE_API_TOKEN) */
+      '/api/mobility-database-gtfs-feeds': {
+        target: 'https://api.mobilitydatabase.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/mobility-database-gtfs-feeds/, '/v1/gtfs_feeds'),
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            const token = process.env.MOBILITY_DATABASE_API_TOKEN;
+            if (token) {
+              proxyReq.setHeader('Authorization', `Bearer ${token}`);
+            }
+            proxyReq.setHeader('Accept', 'application/json');
+          });
+        },
+      },
     }
   },
   build: {
