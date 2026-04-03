@@ -230,6 +230,11 @@ body.modal-open {
   z-index: 1 !important;
 }
 
+/* When base basemap is toggled off, replace Leaflet’s default #ddd “paper” with a dark grey */
+.leaflet-container.map-no-basemap {
+  background-color: #374151 !important;
+}
+
 /* Mobile-specific map fixes */
 @media (max-width: 768px) {
   .leaflet-container {
@@ -256,6 +261,11 @@ body.modal-open {
     /* Ensure tiles are visible */
     opacity: 1 !important;
     visibility: visible !important;
+  }
+
+  /* Dark grey when base basemap is off (overrides transparent above) */
+  .leaflet-container.map-no-basemap {
+    background-color: #374151 !important;
   }
   
   /* Ensure Leaflet tiles are visible */

@@ -1,6 +1,6 @@
 // @ts-nocheck
 // MapView is very large; TS2563 (control-flow graph limits) applies until this is split into smaller modules.
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { EnrichmentResult } from '../App';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -33,7 +33,8 @@ interface MapViewProps {
 }
 
 interface LegendItem {
-  key?: string; // Unique ID for layer toggle (added when building final legend from accumulator)
+  /** Stable id for legend links, toggles, and `getLayerSourceUrl` (named `legendKey` — not `key` — so React state never drops it). */
+  legendKey?: string;
   icon: string;
   color: string;
   title: string;
@@ -7006,6 +7007,27 @@ const MapView: React.FC<MapViewProps> = ({
   const overlayLayerRef = useRef<any>(null); // Overlay layer (WMS/tile on top of base)
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [hiddenLegendKeys, setHiddenLegendKeys] = useState<Set<string>>(() => new Set());
+  const hiddenLegendKeysRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    hiddenLegendKeysRef.current = hiddenLegendKeys;
+  }, [hiddenLegendKeys]);
+
+  /** Stable wrappers so map.off / layer.off remove the same listener reference across renders. */
+  const mapClickStableRef = useRef<(e: L.LeafletMouseEvent) => void>(() => {});
+  const featureClickStableRef = useRef<(e: L.LeafletMouseEvent) => void>(() => {});
+  const stableMapClickWrapper = useMemo(
+    () => (e: L.LeafletMouseEvent) => {
+      mapClickStableRef.current(e);
+    },
+    []
+  );
+  const stableFeatureClickWrapper = useMemo(
+    () => (e: L.LeafletMouseEvent) => {
+      featureClickStableRef.current(e);
+    },
+    []
+  );
+
   const legendKeyToLayerGroupRef = useRef<Record<string, { group: L.LayerGroup; parent: L.LayerGroup }>>({});
   const [showBatchSuccess, setShowBatchSuccess] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -48006,6 +48028,7 @@ const MapView: React.FC<MapViewProps> = ({
           color: string;
           feature: any;
           originalRing: Array<{ lat: number; lng: number }>;
+          legendKey: string;
         }> = [];
 
         const nriLayers = [
@@ -48800,6 +48823,7 @@ const MapView: React.FC<MapViewProps> = ({
                 // Store metadata for tabbed popup system (so it can distinguish between different NRI layers)
                 (polygon as any).__layerType = 'nri_annualized_frequency';
                 (polygon as any).__layerTitle = title;
+                (polygon as any).__legendKey = legendKey;
                 
                 nriPopupEntries.push({ 
                   polygon, 
@@ -48807,7 +48831,8 @@ const MapView: React.FC<MapViewProps> = ({
                   icon, 
                   color, 
                   feature: { ...feature, attributes: attrs, distance_miles: distance },
-                  originalRing: originalLatLngs // Store original ring for comparison
+                  originalRing: originalLatLngs, // Store original ring for comparison
+                  legendKey,
                 });
 
                 // Fallback single-feature popup (so clicking still works even if overlap logic fails)
@@ -48824,6 +48849,13 @@ const MapView: React.FC<MapViewProps> = ({
                 polygon.bindPopup(singlePopupContent, { maxWidth: 420 });
 
                 polygon.on('click', (e: any) => {
+                  if (hiddenLegendKeysRef.current.has(legendKey)) {
+                    if (e?.originalEvent) {
+                      e.originalEvent.stopPropagation?.();
+                    }
+                    return;
+                  }
+
                   const clickPoint: L.LatLng = e.latlng;
                   const leafletMap = mapInstanceRef.current;
                   if (!leafletMap) {
@@ -48834,9 +48866,10 @@ const MapView: React.FC<MapViewProps> = ({
 
                   const tabGroupId = `nri-tabs-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-                  // Step 1: Find all entries whose bounds contain the click point
+                  // Step 1: Find all entries whose bounds contain the click point (only layers turned ON in legend)
                   const candidatesWithClickPoint: typeof nriPopupEntries = [];
                   nriPopupEntries.forEach((entry) => {
+                    if (hiddenLegendKeysRef.current.has(entry.legendKey)) return;
                     if (entry.polygon.getBounds().contains(clickPoint)) {
                       candidatesWithClickPoint.push(entry);
                     }
@@ -48853,6 +48886,7 @@ const MapView: React.FC<MapViewProps> = ({
                     // Find all other entries with the same geometry
                     const candidateRing = candidate.originalRing;
                     nriPopupEntries.forEach((entry) => {
+                      if (hiddenLegendKeysRef.current.has(entry.legendKey)) return;
                       if (allMatches.has(entry)) return; // Already included
                       if (entry.originalRing.length !== candidateRing.length) return;
                       
@@ -48866,6 +48900,7 @@ const MapView: React.FC<MapViewProps> = ({
                   // Step 3: If no matches found via geometry comparison, fall back to point-in-polygon
                   if (allMatches.size === 0) {
                     nriPopupEntries.forEach((entry) => {
+                      if (hiddenLegendKeysRef.current.has(entry.legendKey)) return;
                       if (!entry.polygon.getBounds().contains(clickPoint)) return;
                       const ringLatLngs = entry.originalRing.map(ll => new L.LatLng(ll.lat, ll.lng));
                       if (!ringLatLngs || ringLatLngs.length < 3) return;
@@ -48875,7 +48910,14 @@ const MapView: React.FC<MapViewProps> = ({
                     });
                   }
 
-                  const matches = Array.from(allMatches)
+                  const visibleMatches = Array.from(allMatches).filter(
+                    (entry) => !hiddenLegendKeysRef.current.has(entry.legendKey)
+                  );
+                  if (visibleMatches.length === 0) {
+                    return;
+                  }
+
+                  const matches = visibleMatches
                     .map((entry, idx) => {
                       const dist = entry.feature?.distance_miles;
                       const attrs2 = entry.feature?.attributes || {};
@@ -50375,16 +50417,16 @@ const MapView: React.FC<MapViewProps> = ({
         
         const legendEntries = Object.entries(legendAccumulator)
           .filter(([, item]) => item.count > 0)
-          .map(([key, item]) => ({ ...item, key }));
+          .map(([accumulatorKey, item]) => ({ ...item, legendKey: accumulatorKey }));
         const batchLegendItems = legendEntries
-          .filter((e) => e.key?.startsWith('batch_location_'))
+          .filter((e) => e.legendKey?.startsWith('batch_location_'))
           .sort((a, b) => {
-            const ai = parseInt(String(a.key).replace('batch_location_', ''), 10);
-            const bi = parseInt(String(b.key).replace('batch_location_', ''), 10);
+            const ai = parseInt(String(a.legendKey).replace('batch_location_', ''), 10);
+            const bi = parseInt(String(b.legendKey).replace('batch_location_', ''), 10);
             return ai - bi;
           });
         const otherLegendItems = legendEntries
-          .filter((e) => !e.key?.startsWith('batch_location_'))
+          .filter((e) => !e.legendKey?.startsWith('batch_location_'))
           .sort((a, b) => b.count - a.count);
         const finalLegendItems = [...batchLegendItems, ...otherLegendItems];
         
@@ -50485,6 +50527,12 @@ const MapView: React.FC<MapViewProps> = ({
     }
 
 
+  /** Legend toggle: only `__legendKey` is used (per-layer), not generic `__layerType`. */
+  const isLayerHiddenForLegend = (layer: L.Layer): boolean => {
+    const lk = (layer as any).__legendKey as string | undefined;
+    return !!lk && hiddenLegendKeysRef.current.has(lk);
+  };
+
   // Setup tabbed popup handler for overlapping features
   const setupTabbedPopupHandler = () => {
     console.log('🔍 [TABBED POPUP] Setting up handler...');
@@ -50513,79 +50561,52 @@ const MapView: React.FC<MapViewProps> = ({
       return;
     }
     
-    // Remove existing click handlers
-    map.off('click', handleMapClick);
+    // Stable wrapper refs so off() removes the same function identity across renders
+    map.off('click', stableMapClickWrapper);
+    map.on('click', stableMapClickWrapper);
     
-    // Add map click handler (for clicks on empty areas)
-    map.on('click', handleMapClick);
-    
-    // Also intercept clicks on features - prevent default popup and check for overlaps
     let featureHandlerCount = 0;
-    
-    // Set up handlers for primary group
-    primary.eachLayer((layer: L.Layer) => {
-      // Skip geocoded location pin(s) — those use the normal marker popup, not tabbed overlap UI
-      if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
-        return;
-      }
-      
-      // Remove existing click handlers
-      layer.off('click', handleFeatureClick);
-      
-      // Store original popup content before unbinding (we'll use it in our handler)
-      let originalPopupContent = '';
-      if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
-        const popup = (layer as any).getPopup();
-        if (popup) {
-          originalPopupContent = popup.getContent() as string;
+
+    const visitLeafLayers = (group: L.LayerGroup, visit: (layer: L.Layer) => void) => {
+      group.eachLayer((layer: L.Layer) => {
+        if (layer instanceof L.LayerGroup) {
+          visitLeafLayers(layer, visit);
+        } else {
+          visit(layer);
         }
-        // Unbind default popup to prevent it from opening automatically
-        (layer as any).unbindPopup();
-        // Re-bind popup but don't auto-open it
-        if (originalPopupContent) {
-          (layer as any).bindPopup(originalPopupContent, { 
-            autoOpen: false,  // Don't auto-open on click
-            closeOnClick: false 
-          });
+      });
+    };
+
+    const attachLeafHandlers = (group: L.LayerGroup) => {
+      visitLeafLayers(group, (layer: L.Layer) => {
+        if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
+          return;
         }
-      }
-      
-      // Add click handler that checks for overlapping features (with higher priority)
-      layer.on('click', handleFeatureClick);
-      featureHandlerCount++;
-    });
-    
-    // Set up handlers for poi group as well
-    poi.eachLayer((layer: L.Layer) => {
-      if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
-        return;
-      }
-      
-      // Remove existing click handlers
-      layer.off('click', handleFeatureClick);
-      
-      // Store original popup content before unbinding
-      let originalPopupContent = '';
-      if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
-        const popup = (layer as any).getPopup();
-        if (popup) {
-          originalPopupContent = popup.getContent() as string;
+
+        layer.off('click', stableFeatureClickWrapper);
+
+        let originalPopupContent = '';
+        if (layer instanceof L.Marker || layer instanceof L.Polygon || layer instanceof L.Polyline) {
+          const popup = (layer as any).getPopup();
+          if (popup) {
+            originalPopupContent = popup.getContent() as string;
+          }
+          (layer as any).unbindPopup();
+          if (originalPopupContent) {
+            (layer as any).bindPopup(originalPopupContent, {
+              autoOpen: false,
+              closeOnClick: false,
+            });
+          }
         }
-        // Unbind default popup to prevent it from opening automatically
-        (layer as any).unbindPopup();
-        // Re-bind popup but don't auto-open it
-        if (originalPopupContent) {
-          (layer as any).bindPopup(originalPopupContent, { 
-            autoOpen: false,
-            closeOnClick: false 
-          });
-        }
-      }
-      
-      // Add click handler that checks for overlapping features
-      layer.on('click', handleFeatureClick);
-      featureHandlerCount++;
-    });
+
+        layer.on('click', stableFeatureClickWrapper);
+        featureHandlerCount++;
+      });
+    };
+
+    attachLeafHandlers(primary);
+    attachLeafHandlers(poi);
     
     console.log('✅ [TABBED POPUP] Handler set up successfully');
     console.log('🔍 [TABBED POPUP] Attached handlers to', featureHandlerCount, 'features');
@@ -50593,6 +50614,14 @@ const MapView: React.FC<MapViewProps> = ({
   
   // Handle feature click to check for overlapping features
   const handleFeatureClick = (e: L.LeafletMouseEvent) => {
+    const clickedLayerEarly = e.target as L.Layer;
+    if (isLayerHiddenForLegend(clickedLayerEarly)) {
+      if (e.originalEvent) {
+        e.originalEvent.stopPropagation();
+      }
+      return;
+    }
+
     console.log('🔍 [TABBED POPUP] ========== FEATURE CLICK DETECTED ==========');
     console.log('🔍 [TABBED POPUP] Feature click event:', e);
     console.log('🔍 [TABBED POPUP] Clicked layer:', e.target);
@@ -50646,6 +50675,7 @@ const MapView: React.FC<MapViewProps> = ({
       handleMapClick(syntheticEvent);
     }, 50);
   };
+  featureClickStableRef.current = handleFeatureClick;
 
   // Handle map click to show tabbed popup for overlapping features
   const handleMapClick = (e: L.LeafletMouseEvent) => {
@@ -50689,9 +50719,13 @@ const MapView: React.FC<MapViewProps> = ({
     
     console.log('🔍 [TABBED POPUP] Starting to check layers...');
     
-    // Helper function to check layers in a group
+    // Helper function to check layers in a group (recurses into per-legend nested LayerGroups)
     const checkLayerGroup = (layerGroup: L.LayerGroup) => {
       layerGroup.eachLayer((layer: L.Layer) => {
+      if (layer instanceof L.LayerGroup) {
+        checkLayerGroup(layer);
+        return;
+      }
       // Skip if we've already processed this layer
       if (processedLayers.has(layer)) {
         console.log('🔍 [TABBED POPUP] Skipping duplicate layer');
@@ -50701,6 +50735,10 @@ const MapView: React.FC<MapViewProps> = ({
       layerCount++;
       if (layer instanceof L.Marker && (layer as any).__isLocationMarker) {
         console.log('🔍 [TABBED POPUP] Skipping geocoded location marker');
+        return;
+      }
+
+      if (isLayerHiddenForLegend(layer)) {
         return;
       }
       
@@ -51127,6 +51165,7 @@ const MapView: React.FC<MapViewProps> = ({
     }
     console.log('🔍 [TABBED POPUP] ========== HANDLER COMPLETE ==========');
   };
+  mapClickStableRef.current = handleMapClick;
 
   // Helper function to check if point is in polygon
   const isPointInPolygon = (point: L.LatLng, polygon: L.LatLng[]): boolean => {
@@ -51237,25 +51276,31 @@ const MapView: React.FC<MapViewProps> = ({
     return content;
   };
 
-  // Helper function to group features by layer type
+  // Helper function to group overlapping features — one tab per map layer (prefer distinct layer titles, e.g. NRI variants)
   const groupFeaturesByType = (features: Array<{layerType: string; layerTitle: string; popupContent: string}>) => {
     const grouped: Record<string, Array<{layerTitle: string; popupContent: string}>> = {};
     console.log('🔍 [TABBED POPUP] Grouping', features.length, 'features...');
+    const genericTitles = new Set([
+      'Unknown Layer',
+      'Polygon Feature',
+      'Point Feature',
+      'Line Feature',
+    ]);
     features.forEach((feature, index) => {
-      // Use layerTitle as the key if layerType is 'unknown' or not specific enough
-      // This ensures different layers get separate tabs even if type detection fails
-      const key = feature.layerType && feature.layerType !== 'unknown' 
-        ? feature.layerType 
-        : (feature.layerTitle || `feature_${index}`);
-      
+      const title = (feature.layerTitle || '').trim();
+      const useTitle = title && !genericTitles.has(title);
+      const key = useTitle
+        ? title
+        : feature.layerType && feature.layerType !== 'unknown'
+          ? feature.layerType
+          : `feature_${index}`;
+
       console.log(`🔍 [TABBED POPUP] Feature ${index}: type="${feature.layerType}", title="${feature.layerTitle}", key="${key}"`);
-      
-      if (!grouped[key]) {
-        grouped[key] = [];
-      }
+
+      if (!grouped[key]) grouped[key] = [];
       grouped[key].push({
         layerTitle: feature.layerTitle,
-        popupContent: feature.popupContent
+        popupContent: feature.popupContent,
       });
     });
     console.log('🔍 [TABBED POPUP] Grouping result:', Object.keys(grouped).map(k => ({ key: k, count: grouped[k].length })));
@@ -51355,7 +51400,7 @@ const MapView: React.FC<MapViewProps> = ({
         {/* Map Container - Full Screen */}
         <div 
           ref={mapRef} 
-          className="w-full h-full min-h-0 mobile-map-leaflet"
+          className={`w-full h-full min-h-0 mobile-map-leaflet${!showBaseBasemap ? ' map-no-basemap' : ''}`}
           style={{
             height: '100%',
             width: '100%',
@@ -51363,7 +51408,7 @@ const MapView: React.FC<MapViewProps> = ({
             zIndex: 10,
             margin: 0,
             padding: 0,
-            backgroundColor: '#e5e7eb',
+            backgroundColor: !showBaseBasemap ? '#374151' : '#e5e7eb',
             touchAction: 'pan-x pan-y pinch-zoom'
           }}
         />
@@ -51475,7 +51520,7 @@ const MapView: React.FC<MapViewProps> = ({
       >
         <div 
           ref={mapRef} 
-          className="w-full h-full"
+          className={`w-full h-full${!showBaseBasemap ? ' map-no-basemap' : ''}`}
           style={{ 
             height: '100%', 
             width: '100%',
@@ -51483,7 +51528,8 @@ const MapView: React.FC<MapViewProps> = ({
             // With MapLibre basemaps, readiness can lag while WebGL initializes, but the user still needs
             // to pan/zoom and access controls immediately.
             opacity: isMobile ? 1 : (isMapReady ? 1 : 0),
-            transition: 'opacity 0.3s ease-in-out'
+            transition: 'opacity 0.3s ease-in-out',
+            ...( !showBaseBasemap ? { backgroundColor: '#374151' } : {} ),
           }}
         />
 
@@ -52900,7 +52946,7 @@ const MapView: React.FC<MapViewProps> = ({
             <h4 className="text-lg font-semibold text-gray-900 mb-4">Map Legend</h4>
             <div className="space-y-3">
               {legendItems.map((item, index) => {
-                const sourceUrl = getLayerSourceUrl(item.key);
+                const sourceUrl = getLayerSourceUrl(item.legendKey);
                 // Check if this is a polyline feature (no icon or empty icon) - show line symbol instead
                 const isPolyline = !item.icon || item.icon === '' || 
                   item.title?.includes('Bike') || 
@@ -52908,26 +52954,26 @@ const MapView: React.FC<MapViewProps> = ({
                   item.title?.includes('Road') ||
                   item.title?.includes('Route') ||
                   item.title?.includes('Trail');
-                const isHidden = item.key && hiddenLegendKeys.has(item.key);
-                const hasToggle = item.key && legendKeyToLayerGroupRef.current[item.key];
+                const isHidden = item.legendKey && hiddenLegendKeys.has(item.legendKey);
+                const hasToggle = item.legendKey && legendKeyToLayerGroupRef.current[item.legendKey];
                 const toggleLayer = () => {
-                  if (!item.key || !hasToggle) return;
-                  const entry = legendKeyToLayerGroupRef.current[item.key];
+                  if (!item.legendKey || !hasToggle) return;
+                  const entry = legendKeyToLayerGroupRef.current[item.legendKey];
                   if (!entry) return;
                   setHiddenLegendKeys(prev => {
                     const next = new Set(prev);
-                    if (next.has(item.key!)) {
-                      next.delete(item.key!);
+                    if (next.has(item.legendKey!)) {
+                      next.delete(item.legendKey!);
                       entry.group.addTo(entry.parent);
                     } else {
-                      next.add(item.key!);
+                      next.add(item.legendKey!);
                       entry.parent.removeLayer(entry.group);
                     }
                     return next;
                   });
                 };
                 return (
-                  <div key={item.key || index}>
+                  <div key={item.legendKey || index}>
                     <div className="flex items-center space-x-3 text-base">
                       {hasToggle ? (
                         <button

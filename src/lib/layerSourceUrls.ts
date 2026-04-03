@@ -21,6 +21,13 @@ export const USGS_ARCGIS_REST_SERVICES_BASE = 'https://gisdata.usgs.gov/arcgis/r
 export const USGS_HURRICANE_EVACUATION_ROUTES_FEATURE_SERVER =
   'https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Hurricane_Evacuation_Routes_1/FeatureServer';
 
+/**
+ * FEMA National Risk Index (NRI) hazard layers on ArcGIS Online — service directory listing
+ * (matches `nriAnnualizedFrequencyHurricane.ts` and related NRI adapters).
+ */
+export const FEMA_NRI_ARCGIS_SERVICES_BASE =
+  'https://services.arcgis.com/XG15cJAlne2vxtgt/ArcGIS/rest/services';
+
 /** Keys that appear in the legend but should not link anywhere */
 const NO_URL_PREFIXES = ['batch_location_'];
 
@@ -85,13 +92,16 @@ export const LAYER_SOURCE_URL_EXACT: Record<string, string> = {
     'https://services.arcgis.com/xOi1kZaI0eWDREZv/ArcGIS/rest/services/BLM_Lands/FeatureServer/0',
   blm_pfyc_geologic_formations:
     'https://gis.blm.gov/arcgis/rest/services/geophysical/BLM_Natl_PFYC_GeologicFormations_Cached/MapServer/0',
+  /** Nationwide Rivers Inventory — not FEMA National Risk Index; must win over `nri_` prefix rule */
+  nri_rivers:
+    'https://services1.arcgis.com/fBc8EJBxQRMcHlei/arcgis/rest/services/Nationwide_Rivers_Inventory_Official/FeatureServer/0',
 };
 
 type Rule = { test: (key: string) => boolean; url: string };
 
 /** More-specific matchers must appear before broader ones */
 const LAYER_SOURCE_URL_RULES: Rule[] = [
-  { test: (k) => k.startsWith('nri_'), url: 'https://www.fema.gov/data/national-risk-index' },
+  { test: (k) => k.startsWith('nri_'), url: FEMA_NRI_ARCGIS_SERVICES_BASE },
   { test: (k) => k.startsWith('fema_nfhl_'), url: 'https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer' },
   { test: (k) => k.includes('national_seismic_hazard'), url: 'https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/2023_National_Seismic_Hazard_Model/FeatureServer/0' },
   { test: (k) => k.startsWith('tornado_tracks'), url: 'https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Tornado_Tracks_1950_2017_1/FeatureServer/0' },
