@@ -8,6 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { buildFullFeaturePopupHtml } from '../utils/mapFeaturePopup';
+import { buildUSGSEarthquakePopupHtml, normalizeEarthquakeForPopup } from '../utils/usgsEarthquakePopupHtml';
 import {
   exportMapElementAsImage,
   exportMapElementAsPdf,
@@ -9106,30 +9107,11 @@ const MapView: React.FC<MapViewProps> = ({
             const lon = earthquake.lon;
             
             if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
-              // Determine color and size based on magnitude (larger sizes)
-              let earthquakeColor = '#10b981'; // Green for minor (< 4.0)
-              let markerSize = 24; // Base size for minor earthquakes (increased from 16)
-              const magnitude = earthquake.mag || 0;
-              
-              if (magnitude >= 7.0) {
-                earthquakeColor = '#dc2626'; // Red for major (≥ 7.0)
-                markerSize = 48; // Largest for major earthquakes (increased from 32)
-              } else if (magnitude >= 6.0) {
-                earthquakeColor = '#f59e0b'; // Orange for strong (6.0-6.9)
-                markerSize = 40; // Large for strong earthquakes (increased from 28)
-              } else if (magnitude >= 5.0) {
-                earthquakeColor = '#f97316'; // Orange-red for moderate-strong (5.0-5.9)
-                markerSize = 36; // Medium-large for moderate-strong (increased from 24)
-              } else if (magnitude >= 4.0) {
-                earthquakeColor = '#3b82f6'; // Blue for light (4.0-4.9)
-                markerSize = 30; // Medium for light earthquakes (increased from 20)
-              }
-              
-              // Add tsunami indicator
-              const hasTsunami = earthquake.tsunami === 1;
-              const tsunamiIndicator = hasTsunami ? '🌊' : '';
-              const earthquakesIcon = '🌍';
-              
+              // Match Map Legend: same circle + emoji as POI_ICONS.usgs_earthquakes (red 🌍)
+              const eqLegend = POI_ICONS.usgs_earthquakes;
+              const earthquakeColor = eqLegend.color;
+              const earthquakesIcon = eqLegend.icon;
+              const markerSize = 32;
               const iconHtml = `<div style="
                 width: ${markerSize}px;
                 height: ${markerSize}px;
@@ -9140,7 +9122,8 @@ const MapView: React.FC<MapViewProps> = ({
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: ${Math.max(12, markerSize - 8)}px;
+                font-size: 18px;
+                line-height: 1;
               ">${earthquakesIcon}</div>`;
               
               const marker = L.marker([lat, lon], {
@@ -9152,35 +9135,10 @@ const MapView: React.FC<MapViewProps> = ({
                 })
               });
 
-              // Format time
-              const timeStr = earthquake.time 
-                ? new Date(earthquake.time).toLocaleString()
-                : 'Unknown';
-              
-              // Format depth
-              const depthStr = earthquake.depth !== null && earthquake.depth !== undefined
-                ? `${earthquake.depth.toFixed(1)} km`
-                : 'Unknown';
-              
-              let popupContent = `
-                <div style="min-width: 300px; max-width: 500px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    ${earthquakesIcon} ${earthquake.place || earthquake.title || 'Earthquake'}
-                    ${tsunamiIndicator}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${earthquake.mag !== null && earthquake.mag !== undefined ? `<div><strong>Magnitude:</strong> ${earthquake.mag.toFixed(1)} ${earthquake.magType || ''}</div>` : ''}
-                    <div><strong>Time:</strong> ${timeStr}</div>
-                    <div><strong>Depth:</strong> ${depthStr}</div>
-                    ${earthquake.status ? `<div><strong>Status:</strong> ${earthquake.status}</div>` : ''}
-                    ${earthquake.alert ? `<div><strong>Alert:</strong> ${earthquake.alert}</div>` : ''}
-                    ${hasTsunami ? `<div style="color: #dc2626; font-weight: 600;">🌊 Tsunami Event</div>` : ''}
-                  </div>
-                  ${earthquake.url ? `<div style="margin-top: 8px;"><a href="${earthquake.url}" target="_blank" style="color: #3b82f6; text-decoration: underline;">View Details on USGS</a></div>` : ''}
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.bindPopup(
+                buildUSGSEarthquakePopupHtml(normalizeEarthquakeForPopup(earthquake as Record<string, unknown>)),
+                { maxWidth: 560 }
+              );
               marker.addTo(primary);
               (marker as any).__layerType = 'usgs_earthquakes_toggle';
               (marker as any).__layerTitle = 'USGS Earthquakes (Last 48h)';
@@ -17947,40 +17905,43 @@ const MapView: React.FC<MapViewProps> = ({
         }
       }
       
-      // Draw USGS Earthquakes as markers on the map
-      if (enrichments.usgs_earthquakes_all && Array.isArray(enrichments.usgs_earthquakes_all)) {
+      // USGS earthquake markers on primary only — generic *_all POI handler skips these so popups show full USGS attributes (not "Type: POI")
+      const earthquakeLayerDefs: Array<{
+        items: any[] | undefined;
+        layerType: string;
+        legendKey: string;
+        countField: keyof typeof enrichments;
+      }> = [
+        {
+          items: enrichments.usgs_earthquakes_all,
+          layerType: 'usgs_earthquakes',
+          legendKey: 'usgs_earthquakes',
+          countField: 'usgs_earthquakes_count',
+        },
+        {
+          items: enrichments.poi_earthquakes_all,
+          layerType: 'poi_earthquakes',
+          legendKey: 'poi_earthquakes',
+          countField: 'poi_earthquakes_count',
+        },
+      ];
+
+      earthquakeLayerDefs.forEach(({ items, layerType, legendKey, countField }) => {
+        if (!items || !Array.isArray(items) || items.length === 0) return;
+
+        const legendStyle = POI_ICONS[legendKey] || POI_ICONS.usgs_earthquakes;
+        const earthquakeColor = legendStyle.color;
+        const earthquakesIcon = legendStyle.icon;
+        const legendTitle = legendStyle.title;
+        const markerSize = 32;
+
         let earthquakesFeatureCount = 0;
-        const earthquakesIcon = '🌍';
-        
-        enrichments.usgs_earthquakes_all.forEach((earthquake: any) => {
+        items.forEach((earthquake: any) => {
           const lat = earthquake.lat || earthquake.latitude;
           const lon = earthquake.lon || earthquake.longitude;
-          
+
           if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
             try {
-              // Determine color and size based on magnitude (larger sizes)
-              let earthquakeColor = '#10b981'; // Green for minor (< 4.0)
-              let markerSize = 16; // Base size for minor earthquakes
-              const magnitude = earthquake.mag || 0;
-              
-              if (magnitude >= 7.0) {
-                earthquakeColor = '#dc2626'; // Red for major (≥ 7.0)
-                markerSize = 32; // Largest for major earthquakes
-              } else if (magnitude >= 6.0) {
-                earthquakeColor = '#f59e0b'; // Orange for strong (6.0-6.9)
-                markerSize = 28; // Large for strong earthquakes
-              } else if (magnitude >= 5.0) {
-                earthquakeColor = '#f97316'; // Orange-red for moderate-strong (5.0-5.9)
-                markerSize = 24; // Medium-large for moderate-strong
-              } else if (magnitude >= 4.0) {
-                earthquakeColor = '#3b82f6'; // Blue for light (4.0-4.9)
-                markerSize = 20; // Medium for light earthquakes
-              }
-              
-              // Add tsunami indicator
-              const hasTsunami = earthquake.tsunami === 1;
-              const tsunamiIndicator = hasTsunami ? '🌊' : '';
-              
               const iconHtml = `<div style="
                 width: ${markerSize}px;
                 height: ${markerSize}px;
@@ -17991,55 +17952,26 @@ const MapView: React.FC<MapViewProps> = ({
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: ${Math.max(12, markerSize - 8)}px;
+                font-size: 18px;
+                line-height: 1;
               ">${earthquakesIcon}</div>`;
-              
+
               const marker = L.marker([lat, lon], {
                 icon: L.divIcon({
                   className: 'custom-marker',
                   html: iconHtml,
                   iconSize: [markerSize, markerSize],
-                  iconAnchor: [markerSize / 2, markerSize / 2]
-                })
+                  iconAnchor: [markerSize / 2, markerSize / 2],
+                }),
               });
 
-              // Format time
-              const timeStr = earthquake.time 
-                ? new Date(earthquake.time).toLocaleString()
-                : 'Unknown';
-              
-              // Format depth
-              const depthStr = earthquake.depth !== null && earthquake.depth !== undefined
-                ? `${earthquake.depth.toFixed(1)} km`
-                : 'Unknown';
-              
-              const distance = earthquake.distance_miles 
-                ? `${earthquake.distance_miles.toFixed(2)} miles`
-                : 'N/A';
-              
-              let popupContent = `
-                <div style="min-width: 300px; max-width: 500px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    ${earthquakesIcon} ${earthquake.place || earthquake.title || 'Earthquake'}
-                    ${tsunamiIndicator}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    ${earthquake.mag !== null && earthquake.mag !== undefined ? `<div><strong>Magnitude:</strong> ${earthquake.mag.toFixed(1)} ${earthquake.magType || ''}</div>` : ''}
-                    ${distance !== 'N/A' ? `<div><strong>Distance:</strong> ${distance}</div>` : ''}
-                    <div><strong>Time:</strong> ${timeStr}</div>
-                    <div><strong>Depth:</strong> ${depthStr}</div>
-                    ${earthquake.status ? `<div><strong>Status:</strong> ${earthquake.status}</div>` : ''}
-                    ${earthquake.alert ? `<div><strong>Alert:</strong> ${earthquake.alert}</div>` : ''}
-                    ${hasTsunami ? `<div style="color: #dc2626; font-weight: 600;">🌊 Tsunami Event</div>` : ''}
-                  </div>
-                  ${earthquake.url ? `<div style="margin-top: 8px;"><a href="${earthquake.url}" target="_blank" style="color: #3b82f6; text-decoration: underline;">View Details on USGS</a></div>` : ''}
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 500 });
+              marker.bindPopup(
+                buildUSGSEarthquakePopupHtml(normalizeEarthquakeForPopup(earthquake as Record<string, unknown>)),
+                { maxWidth: 560 }
+              );
               marker.addTo(primary);
-              (marker as any).__layerType = 'usgs_earthquakes';
-              (marker as any).__layerTitle = 'USGS Earthquakes';
+              (marker as any).__layerType = layerType;
+              (marker as any).__layerTitle = legendTitle;
               bounds.extend([lat, lon]);
               earthquakesFeatureCount++;
             } catch (error) {
@@ -18047,31 +17979,33 @@ const MapView: React.FC<MapViewProps> = ({
             }
           }
         });
-        
-        // Add to legend
-        if (earthquakesFeatureCount > 0 || enrichments.usgs_earthquakes_count !== undefined) {
-          const legendKey = 'usgs_earthquakes';
+
+        const countFromEnrichment = enrichments[countField];
+        if (earthquakesFeatureCount > 0 || countFromEnrichment !== undefined) {
           const radius = getRadiusForLegendKey(legendKey);
           const radiusDisplay = formatRadiusDisplay(legendKey, radius);
-          
+
           if (!legendAccumulator[legendKey]) {
             legendAccumulator[legendKey] = {
-              icon: earthquakesIcon,
-              color: '#dc2626',
-              title: 'USGS Earthquakes',
-              count: earthquakesFeatureCount || enrichments.usgs_earthquakes_count || 0,
+              icon: legendStyle.icon,
+              color: legendStyle.color,
+              title: legendTitle,
+              count: earthquakesFeatureCount || (typeof countFromEnrichment === 'number' ? countFromEnrichment : 0),
               radius: radius,
               radiusDisplay: radiusDisplay,
             };
           } else {
-            legendAccumulator[legendKey].count = earthquakesFeatureCount || enrichments.usgs_earthquakes_count || 0;
+            legendAccumulator[legendKey].count =
+              earthquakesFeatureCount || (typeof countFromEnrichment === 'number' ? countFromEnrichment : 0);
+            legendAccumulator[legendKey].icon = legendStyle.icon;
+            legendAccumulator[legendKey].color = legendStyle.color;
             if (radius !== undefined) {
               legendAccumulator[legendKey].radius = radius;
               legendAccumulator[legendKey].radiusDisplay = radiusDisplay;
             }
           }
         }
-      }
+      });
 
       // Global Data Centers (OSM / Overpass) — point markers
       if (enrichments.global_data_centers_osm_all && Array.isArray(enrichments.global_data_centers_osm_all)) {
@@ -49961,6 +49895,11 @@ const MapView: React.FC<MapViewProps> = ({
 
         // Skip AIS live shipping - handled separately with vessel markers
         if (key === 'ais_live_shipping_all') {
+          return;
+        }
+
+        // Skip USGS / POI earthquake arrays — drawn on primary with full USGS attribute popups (generic POI path only shows "Type: POI")
+        if (key === 'usgs_earthquakes_all' || key === 'poi_earthquakes_all') {
           return;
         }
 

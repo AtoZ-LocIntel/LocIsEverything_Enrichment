@@ -2472,28 +2472,9 @@ export class EnrichmentService {
         usgs_earthquakes_alerts_count: alerts,
         usgs_earthquakes_places: places,
         usgs_earthquakes_proximity_distance: radiusMiles,
-        usgs_earthquakes_all: earthquakes.map(eq => ({
-          id: eq.id,
-          mag: eq.mag,
-          place: eq.place,
-          time: eq.time,
-          updated: eq.updated,
-          url: eq.url,
-          detail: eq.detail,
-          felt: eq.felt,
-          cdi: eq.cdi,
-          mmi: eq.mmi,
-          alert: eq.alert,
-          status: eq.status,
-          tsunami: eq.tsunami,
-          sig: eq.sig,
-          magType: eq.magType,
-          type: eq.type,
-          title: eq.title,
-          lat: eq.lat,
-          lon: eq.lon,
-          depth: eq.depth,
-          distance_miles: eq.distance
+        usgs_earthquakes_all: earthquakes.map(({ distance, ...eq }) => ({
+          ...eq,
+          distance_miles: distance,
         }))
       };
     } catch (error) {
