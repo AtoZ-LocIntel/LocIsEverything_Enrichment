@@ -10002,8 +10002,8 @@ const MapView: React.FC<MapViewProps> = ({
     // This ensures only one basemap from "Basemaps" section is ever visible
     // CRITICAL: Must remove all layers completely before adding new ones to prevent stacking
     // Remove ALL tile layers that might be basemaps to prevent any stacking
-    // Only do this if we actually need to change the basemap
-    if (basemapLayerRef.current && needsBasemapChange) {
+    // Also remove when "Show Base Basemap" is turned off (needsBasemapChange stays false if selection unchanged)
+    if (basemapLayerRef.current && (needsBasemapChange || !showBaseBasemap)) {
       try {
         const oldLayer = basemapLayerRef.current;
         // For maplibre layers, we need defensive cleanup to prevent stacking
@@ -10464,9 +10464,13 @@ const MapView: React.FC<MapViewProps> = ({
     // This must happen AFTER base layer creation to ensure proper layer order
     if (newBasemapLayer) {
       basemapLayerRef.current = newBasemapLayer;
-    } else {
+    } else if (!showBaseBasemap) {
+      basemapLayerRef.current = null;
+    } else if (needsBasemapChange) {
+      // Wanted a basemap but creation failed (unusual)
       console.warn('Base basemap layer not created for:', selectedBaseBasemap);
     }
+    // else: showBaseBasemap && !needsBasemapChange — keep existing basemapLayerRef / on-map layer
   }, [selectedBaseBasemap, selectedThematicBasemap, showBaseBasemap, isInitialized]);
 
   // Legend toggle for Marine Place Names: hide/show the thematic overlay (labels), not only the empty legend group
