@@ -688,6 +688,10 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     if (key.includes('poi_hotels')) {
       return 'Travel & Accommodations';
     }
+    // Fish & Wildlife eBird copies (check before Quirky so keys containing poi_ebird_hotspots match here first)
+    if (key.includes('poi_ebird_hotspots_fish_wildlife') || key.includes('ebird_recent_observations_fish_wildlife')) {
+      return 'Fish and Wildlife';
+    }
     // Quirky & Fun category - check before other POI categories
     if (key.includes('poi_aurora_viewing_sites') || key.includes('poi_ebird_hotspots') || key.includes('ebird_recent_observations') || key.includes('poi_breweries') || key.includes('poi_wikipedia') || key.includes('orlando_christmas_lights') || key.includes('median_sea_ice_extent_antarctic') || key.includes('median_sea_ice_extent_arctic')) {
       return 'Quirky & Fun';

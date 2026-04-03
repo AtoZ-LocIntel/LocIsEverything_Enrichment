@@ -3721,14 +3721,24 @@ export class EnrichmentService {
         return await this.getUSDrillingPlatforms(lat, lon, radius);
       case 'poi_aurora_viewing_sites':
         return await this.getAuroraViewingSites(lat, lon, radius);
-      case 'poi_ebird_hotspots': {
+      case 'poi_ebird_hotspots':
+      case 'poi_ebird_hotspots_fish_wildlife': {
         const requestedRadiusMiles = radius;
         const distKm = Math.min(requestedRadiusMiles * 1.60934, 50); // eBird max 50km
-        return await this.getEBirdHotspots(lat, lon, distKm, requestedRadiusMiles);
+        const keyPrefix =
+          enrichmentId === 'poi_ebird_hotspots_fish_wildlife'
+            ? 'poi_ebird_hotspots_fish_wildlife'
+            : 'poi_ebird_hotspots';
+        return await this.getEBirdHotspots(lat, lon, distKm, requestedRadiusMiles, keyPrefix);
       }
-      case 'ebird_recent_observations': {
+      case 'ebird_recent_observations':
+      case 'ebird_recent_observations_fish_wildlife': {
         const distKm = Math.min(radius * 1.60934, 50);
-        return await this.getEBirdRecentObservations(lat, lon, distKm, 7);
+        const keyPrefix =
+          enrichmentId === 'ebird_recent_observations_fish_wildlife'
+            ? 'ebird_recent_observations_fish_wildlife'
+            : 'ebird_recent_observations';
+        return await this.getEBirdRecentObservations(lat, lon, distKm, 7, keyPrefix);
       }
       
       case 'poi_museums_historic':
@@ -16889,6 +16899,8 @@ out center tags;`;
        'poi_usda_onfarm_market': 5,
       'poi_aurora_viewing_sites': 100,
       'poi_ebird_hotspots': 25,
+      'poi_ebird_hotspots_fish_wildlife': 25,
+      'ebird_recent_observations_fish_wildlife': 25,
     };
     
     // Get the default radius, with special handling for power plants and other large-radius POIs
@@ -17200,7 +17212,14 @@ out center tags;`;
     }
   }
 
-  private async getEBirdHotspots(lat: number, lon: number, distKm: number, requestedRadiusMiles?: number): Promise<Record<string, any>> {
+  private async getEBirdHotspots(
+    lat: number,
+    lon: number,
+    distKm: number,
+    requestedRadiusMiles?: number,
+    keyPrefix: string = 'poi_ebird_hotspots'
+  ): Promise<Record<string, any>> {
+    const p = keyPrefix;
     try {
       const hotspots = await fetchEBirdHotspots(lat, lon, distKm, 50);
       const hotspotsWithDistance = hotspots.map((spot) => {
@@ -17229,33 +17248,40 @@ out center tags;`;
         : `No birding hotspots found within ${radiusSummaryMiles.toFixed(1)} miles${radiusNote}.`;
 
       return {
-        poi_ebird_hotspots_count: hotspotsWithDistance.length,
-        poi_ebird_hotspots_radius_km: Number(distKm.toFixed(2)),
-        poi_ebird_hotspots_radius_miles: effectiveRadiusMiles,
+        [`${p}_count`]: hotspotsWithDistance.length,
+        [`${p}_radius_km`]: Number(distKm.toFixed(2)),
+        [`${p}_radius_miles`]: effectiveRadiusMiles,
         ...(requestedRadiusMilesRounded !== undefined
-          ? { poi_ebird_hotspots_radius_miles_requested: requestedRadiusMilesRounded }
+          ? { [`${p}_radius_miles_requested`]: requestedRadiusMilesRounded }
           : {}),
-        poi_ebird_hotspots_summary: summary,
-        poi_ebird_hotspots_detailed: hotspotsWithDistance.slice(0, 50),
-        poi_ebird_hotspots_all_pois: hotspotsWithDistance,
-        poi_ebird_hotspots_source: 'eBird (Cornell Lab of Ornithology)',
+        [`${p}_summary`]: summary,
+        [`${p}_detailed`]: hotspotsWithDistance.slice(0, 50),
+        [`${p}_all_pois`]: hotspotsWithDistance,
+        [`${p}_source`]: 'eBird (Cornell Lab of Ornithology)',
         count: hotspotsWithDistance.length,
       };
     } catch (error) {
       console.error('eBird hotspot lookup failed:', error);
       return {
         count: 0,
-        poi_ebird_hotspots_count: 0,
-        poi_ebird_hotspots_detailed: [],
-        poi_ebird_hotspots_all_pois: [],
-        poi_ebird_hotspots_summary: 'Birding hotspot data unavailable.',
-        poi_ebird_hotspots_source: 'eBird (Cornell Lab of Ornithology)',
+        [`${p}_count`]: 0,
+        [`${p}_detailed`]: [],
+        [`${p}_all_pois`]: [],
+        [`${p}_summary`]: 'Birding hotspot data unavailable.',
+        [`${p}_source`]: 'eBird (Cornell Lab of Ornithology)',
         error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
 
-  private async getEBirdRecentObservations(lat: number, lon: number, distKm: number, lookBackDays: number): Promise<Record<string, any>> {
+  private async getEBirdRecentObservations(
+    lat: number,
+    lon: number,
+    distKm: number,
+    lookBackDays: number,
+    keyPrefix: string = 'ebird_recent_observations'
+  ): Promise<Record<string, any>> {
+    const p = keyPrefix;
     try {
       const observations = await fetchEBirdRecentObservations(lat, lon, distKm, lookBackDays);
       const observationsWithDistance = observations
@@ -17300,33 +17326,33 @@ out center tags;`;
         .slice(0, 25);
 
       return {
-        ebird_recent_observations_total_reports: observationsWithDistance.length,
-        ebird_recent_observations_unique_species: speciesMap.size,
-        ebird_recent_observations_top_species: topSpecies,
-        ebird_recent_observations_radius_km: Number(distKm.toFixed(2)),
-        ebird_recent_observations_radius_miles: Number((distKm * 0.621371).toFixed(1)),
-        ebird_recent_observations_lookback_days: lookBackDays,
-        ebird_recent_observations_summary: speciesMap.size
+        [`${p}_total_reports`]: observationsWithDistance.length,
+        [`${p}_unique_species`]: speciesMap.size,
+        [`${p}_top_species`]: topSpecies,
+        [`${p}_radius_km`]: Number(distKm.toFixed(2)),
+        [`${p}_radius_miles`]: Number((distKm * 0.621371).toFixed(1)),
+        [`${p}_lookback_days`]: lookBackDays,
+        [`${p}_summary`]: speciesMap.size
           ? `${speciesMap.size} species reported within the last ${lookBackDays} day${lookBackDays === 1 ? '' : 's'}.`
           : `No species reported within the last ${lookBackDays} day${lookBackDays === 1 ? '' : 's'}.`,
-        ebird_recent_observations_detailed: observationsWithDistance.slice(0, 50),
-        ebird_recent_observations_all: observationsWithDistance.slice(0, 200),
-        ebird_recent_observations_all_pois: observationsWithDistance,
-        ebird_recent_observations_nearest: observationsWithDistance[0] || null,
-        ebird_recent_observations_source: 'eBird (Cornell Lab of Ornithology)',
+        [`${p}_detailed`]: observationsWithDistance.slice(0, 50),
+        [`${p}_all`]: observationsWithDistance.slice(0, 200),
+        [`${p}_all_pois`]: observationsWithDistance,
+        [`${p}_nearest`]: observationsWithDistance[0] || null,
+        [`${p}_source`]: 'eBird (Cornell Lab of Ornithology)',
         count: speciesMap.size,
       };
     } catch (error) {
       console.error('eBird observation lookup failed:', error);
       return {
-        ebird_recent_observations_total_reports: 0,
-        ebird_recent_observations_unique_species: 0,
-        ebird_recent_observations_top_species: [],
-        ebird_recent_observations_detailed: [],
-        ebird_recent_observations_all: [],
-        ebird_recent_observations_all_pois: [],
-        ebird_recent_observations_summary: 'Bird observation data unavailable.',
-        ebird_recent_observations_source: 'eBird (Cornell Lab of Ornithology)',
+        [`${p}_total_reports`]: 0,
+        [`${p}_unique_species`]: 0,
+        [`${p}_top_species`]: [],
+        [`${p}_detailed`]: [],
+        [`${p}_all`]: [],
+        [`${p}_all_pois`]: [],
+        [`${p}_summary`]: 'Bird observation data unavailable.',
+        [`${p}_source`]: 'eBird (Cornell Lab of Ornithology)',
         error: error instanceof Error ? error.message : 'Unknown error',
         count: 0,
       };

@@ -5279,7 +5279,9 @@ const POI_ICONS: Record<string, { icon: string; color: string; title: string }> 
   'poi_mountains_peaks': { icon: '🏔️', color: '#7c2d12', title: 'Mountains & Peaks' },
   'poi_aurora_viewing_sites': { icon: '🌌', color: '#a855f7', title: 'Aurora Viewing Sites' },
   'poi_ebird_hotspots': { icon: '🐦', color: '#1d4ed8', title: 'Birding Hotspots' },
+  'poi_ebird_hotspots_fish_wildlife': { icon: '🐦', color: '#1d4ed8', title: 'Birding Hotspots' },
   'ebird_recent_observations': { icon: '🪶', color: '#f97316', title: 'Recent Bird Observations' },
+  'ebird_recent_observations_fish_wildlife': { icon: '🪶', color: '#f97316', title: 'Recent Bird Observations' },
   
   // Public Lands & Protected Areas
   'poi_padus_public_access': { icon: '🏞️', color: '#22c55e', title: 'Public Lands' },
@@ -5816,7 +5818,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       return addMappingLinks(content, name);
     }
 
-    if (key === 'poi_ebird_hotspots') {
+    if (key === 'poi_ebird_hotspots' || key === 'poi_ebird_hotspots_fish_wildlife') {
       const name = poi.name || poi.locName || legendTitle || 'Birding Hotspot';
       const speciesCount = poi.numSpeciesAllTime;
       const latestObservation = poi.latestObsDt
@@ -6008,7 +6010,7 @@ const createPOIPopupContent = (poi: any, legendTitle: string, key: string): stri
       return addMappingLinks(content, typeof incid === 'string' || typeof incid === 'number' ? String(incid) : title);
     }
 
-    if (key === 'ebird_recent_observations') {
+    if (key === 'ebird_recent_observations' || key === 'ebird_recent_observations_fish_wildlife') {
       const speciesName = poi.species_common_name || poi.comName || poi.name || 'Bird Observation';
       const scientificName = poi.species_scientific_name || poi.sciName || null;
       const count = poi.howMany ?? 1;

@@ -201,7 +201,7 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
                   }
                 }}
                 disabled={isLocationLoading}
-                className="btn btn-secondary w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold"
+                className="btn w-full flex items-center justify-center space-x-2 py-4 text-lg font-semibold bg-orange-800 text-white border border-orange-700/90 hover:bg-orange-700 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-orange-800"
               >
                 {isLocationLoading ? (
                   <>
