@@ -14,6 +14,13 @@ import { poiConfigManager } from './poiConfig';
 export const GLOBAL_OIL_AND_GAS_FEATURE_SERVER_URL =
   'https://services6.arcgis.com/62zavqsrcK71xG8O/ArcGIS/rest/services/Global_Oil_and_Gas_Features/FeatureServer';
 
+/** USGS ArcGIS REST services catalog (National Map / TNM layers use this hub). */
+export const USGS_ARCGIS_REST_SERVICES_BASE = 'https://gisdata.usgs.gov/arcgis/rest/services/';
+
+/** Hurricane evacuation routes — matches `hurricaneEvacuationRoutes.ts` FeatureServer. */
+export const USGS_HURRICANE_EVACUATION_ROUTES_FEATURE_SERVER =
+  'https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Hurricane_Evacuation_Routes_1/FeatureServer';
+
 /** Keys that appear in the legend but should not link anywhere */
 const NO_URL_PREFIXES = ['batch_location_'];
 
@@ -44,8 +51,8 @@ export const LAYER_SOURCE_URL_EXACT: Record<string, string> = {
   climate_risks: 'https://www.climate.gov/',
   acled: 'https://acleddata.com/',
   spillovers_port_impact: 'https://portwatch.imf.org/',
-  hurricane_evacuation_routes_hazards:
-    'https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/Hurricane_Evacuation_Routes/FeatureServer',
+  hurricane_evacuation_routes: USGS_HURRICANE_EVACUATION_ROUTES_FEATURE_SERVER,
+  hurricane_evacuation_routes_hazards: USGS_HURRICANE_EVACUATION_ROUTES_FEATURE_SERVER,
   noaa_marinecadastre_ais_vessel_transit_counts_2024:
     'https://coast.noaa.gov/arcgis/rest/services/MarineCadastre/AISVesselTransitCounts2024/MapServer',
   noaa_marine_place_names:
@@ -101,7 +108,10 @@ const LAYER_SOURCE_URL_RULES: Rule[] = [
   { test: (k) => k.startsWith('dc_'), url: 'https://opendata.dc.gov/' },
   { test: (k) => k.startsWith('poi_epa_') || k.startsWith('tri_'), url: 'https://www.epa.gov/' },
   { test: (k) => k.startsWith('poi_osm_') || k.includes('_osm_'), url: 'https://www.openstreetmap.org/' },
-  { test: (k) => k.startsWith('usgs_'), url: 'https://www.usgs.gov/programs/national-geospatial-program/national-map' },
+  { test: (k) => k.startsWith('tnm_'), url: USGS_ARCGIS_REST_SERVICES_BASE },
+  { test: (k) => k.startsWith('us_national_grid_'), url: USGS_ARCGIS_REST_SERVICES_BASE },
+  { test: (k) => k.startsWith('us_historical_'), url: USGS_ARCGIS_REST_SERVICES_BASE },
+  { test: (k) => k.startsWith('usgs_'), url: USGS_ARCGIS_REST_SERVICES_BASE },
   { test: (k) => k.startsWith('nws_'), url: 'https://www.weather.gov/documentation/services-web-api' },
   { test: (k) => k.startsWith('fws_'), url: 'https://www.fws.gov/' },
   { test: (k) => k.startsWith('blm_'), url: 'https://www.blm.gov/maps' },

@@ -3194,6 +3194,33 @@ export class EnrichmentService {
     };
   }
 
+  /**
+   * Run enrichments for exact coordinates (e.g. map right-click pick) without geocoding.
+   */
+  async enrichSingleLocationFromCoordinates(
+    lat: number,
+    lon: number,
+    selectedEnrichments: string[],
+    poiRadii: Record<string, number>,
+    poiYears?: Record<string, number>
+  ): Promise<EnrichmentResult> {
+    const geocodeResult: GeocodeResult = {
+      source: 'map_pick',
+      lat,
+      lon,
+      name: `Map point (${lat.toFixed(6)}, ${lon.toFixed(6)})`,
+      confidence: 1,
+    };
+    const enrichments = await this.runEnrichments(
+      lat,
+      lon,
+      selectedEnrichments,
+      poiRadii,
+      poiYears
+    );
+    return { location: geocodeResult, enrichments };
+  }
+
   async enrichBatchLocations(
     addresses: string[],
     selectedEnrichments: string[],

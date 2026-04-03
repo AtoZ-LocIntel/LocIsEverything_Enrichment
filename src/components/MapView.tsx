@@ -16,11 +16,13 @@ import { poiConfigManager } from '../lib/poiConfig';
 import { getLayerSourceUrl } from '../lib/layerSourceUrls';
 import { esriRingsToLeafletPolygonLatLngs } from '../utils/esriPolygonRings';
 import { OCM_CRITICAL_FACILITIES_SLR_FIPSSTCO_CATEGORY } from '../adapters/noaaCountySnapshotsCriticalFacilities10ftSlr';
-import { Copy, FileImage, FileText, ImageDown, Info, RotateCcw, Ruler, X } from 'lucide-react';
+import { Copy, FileImage, FileText, ImageDown, Info, MapPin, RotateCcw, Ruler, X } from 'lucide-react';
 
 interface MapViewProps {
   results: EnrichmentResult[];
   onBackToConfig: () => void;
+  /** Right-click → choose to return to home and enrich this exact coordinate (no geocode). */
+  onPickLocationForEnrichment?: (lat: number, lon: number) => void;
   isMobile?: boolean;
   previousViewMode?: string | null;
   initialCenter?: [number, number];
@@ -6912,6 +6914,7 @@ const createPopupContent = (result: EnrichmentResult, isMobile: boolean = false)
 const MapView: React.FC<MapViewProps> = ({
   results,
   onBackToConfig,
+  onPickLocationForEnrichment,
   isMobile = false,
   previousViewMode: _previousViewMode,
   initialCenter,
@@ -51596,6 +51599,20 @@ const MapView: React.FC<MapViewProps> = ({
               <Copy className="w-4 h-4 text-gray-600" />
               Copy coordinates
             </button>
+            {onPickLocationForEnrichment && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPickLocationForEnrichment(contextMenu.lat, contextMenu.lon);
+                  setContextMenu(null);
+                }}
+                className="w-full px-4 py-2.5 text-left text-sm font-medium hover:bg-gray-100 flex items-center gap-2 border-b border-gray-100 text-emerald-800"
+              >
+                <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                Enrich this map point
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {

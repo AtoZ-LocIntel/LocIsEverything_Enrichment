@@ -42,6 +42,8 @@ function App() {
   const [savedScrollPosition, setSavedScrollPosition] = useState<number>(0);
   const [previousViewMode, setPreviousViewMode] = useState<ViewMode | null>(null);
   const [searchInput, setSearchInput] = useState<string>('3050 Coast Rd, Santa Cruz, CA 95060');
+  /** When set, single-location run uses these coordinates without geocoding (from map right-click). */
+  const [mapPickedLocation, setMapPickedLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [showDonate, setShowDonate] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [totalLayersCount, setTotalLayersCount] = useState(0);
@@ -326,12 +328,32 @@ function App() {
     }
   }, []);
 
+  const handleMapPickForEnrichment = (lat: number, lon: number) => {
+    setError(null);
+    setMapPickedLocation({ lat, lon });
+    setSearchInput(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+    setPreviousViewMode(null);
+    setViewMode('config');
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  };
+
   const handleSingleSearch = async (address: string) => {
     try {
       setError(null);
       setIsLoading(true);
       const enrichmentService = new EnrichmentService();
-      const result = await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii, poiYears);
+      const result = mapPickedLocation
+        ? await enrichmentService.enrichSingleLocationFromCoordinates(
+            mapPickedLocation.lat,
+            mapPickedLocation.lon,
+            selectedEnrichments,
+            poiRadii,
+            poiYears
+          )
+        : await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii, poiYears);
+      setMapPickedLocation(null);
       setEnrichmentResults([result]);
       
       // On mobile, show mobile results view; on desktop, show desktop results view
@@ -735,6 +757,7 @@ function App() {
             <MapView
               results={enrichmentResults}
               onBackToConfig={handleBackToConfig}
+              onPickLocationForEnrichment={handleMapPickForEnrichment}
               isMobile={isMobile}
               previousViewMode={previousViewMode}
               initialCenter={

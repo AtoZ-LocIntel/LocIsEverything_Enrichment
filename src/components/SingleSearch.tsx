@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, Lightbulb, X, Map } from 'lucide-react';
+import { Search, Loader2, Lightbulb, X, Map, MapPin } from 'lucide-react';
 
 interface SingleSearchProps {
   onSearch: (address: string) => Promise<void>;
   onLocationSearch?: () => Promise<void>;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
+  /** Pinned coordinates from map right-click; run uses exact coords without geocoding. */
+  mapPickedLocation?: { lat: number; lon: number } | null;
+  onClearMapPick?: () => void;
   onViewProTips?: () => void;
   onViewMap?: () => void;
 }
@@ -15,6 +18,8 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
   onLocationSearch,
   searchInput,
   onSearchInputChange,
+  mapPickedLocation,
+  onClearMapPick,
   onViewProTips,
   onViewMap
 }) => {
@@ -107,6 +112,25 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
         </div>
         
         <div className="card-body">
+          {mapPickedLocation && onClearMapPick && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-emerald-600/50 bg-emerald-950/40 px-3 py-2.5 text-sm text-emerald-100">
+              <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-white">Map point selected</p>
+                <p className="text-emerald-200/90 mt-0.5">
+                  Choose enrichments below, then run a single search to analyze this exact coordinate. Edit the field or clear to use a normal address search instead.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onClearMapPick}
+                className="shrink-0 rounded p-1 text-emerald-300 hover:bg-emerald-900/50 hover:text-white"
+                title="Use address search instead"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="address" className="form-label text-white text-sm sm:text-base">
@@ -148,6 +172,11 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Searching...</span>
+                </>
+              ) : mapPickedLocation ? (
+                <>
+                  <MapPin className="w-5 h-5" />
+                  <span className="text-sm sm:text-base">Run enrichments on map point</span>
                 </>
               ) : (
                 <>
