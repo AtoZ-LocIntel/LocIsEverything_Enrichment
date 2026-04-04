@@ -1,6 +1,11 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+
+/** Directory containing `vite.config.ts` — use for `loadEnv` so `.env` is found even when `cwd` ≠ project root. */
+const viteConfigDir = path.dirname(fileURLToPath(import.meta.url))
 
 /** Local dev: run AIS snapshot in Node (same logic as api/aisstream/snapshot.ts) so /api/aisstream/snapshot returns JSON. */
 function aisSnapshotDevPlugin(mode: string) {
@@ -23,9 +28,13 @@ function aisSnapshotDevPlugin(mode: string) {
             return
           }
           try {
-            const env = loadEnv(mode, process.cwd(), '')
-            if (env.AISSTREAM_API_KEY) process.env.AISSTREAM_API_KEY = env.AISSTREAM_API_KEY
-            if (env.AIS_STREAM_API_KEY) process.env.AIS_STREAM_API_KEY = env.AIS_STREAM_API_KEY
+            const env = loadEnv(mode, viteConfigDir, '')
+            const ais =
+              (env.AISSTREAM_API_KEY && String(env.AISSTREAM_API_KEY).trim()) ||
+              (env.AIS_STREAM_API_KEY && String(env.AIS_STREAM_API_KEY).trim())
+            if (ais) {
+              process.env.AISSTREAM_API_KEY = ais
+            }
             const { runAISStreamSnapshotQuery } = await import('./api/aisstream/snapshotCore.ts')
             const u = new URL(url, 'http://localhost')
             const query: Record<string, string | string[]> = {}
