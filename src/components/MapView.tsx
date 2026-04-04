@@ -6931,6 +6931,8 @@ const MapView: React.FC<MapViewProps> = ({
   const layerGroupsRef = useRef<{ primary: L.LayerGroup; poi: L.LayerGroup } | null>(null);
   const openskyRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const openskyMarkersRef = useRef<L.Marker[]>([]); // Track OpenSky markers for easy removal
+  /** Bumps when Flight Tracker is turned off or a new session starts — stale async fetches must not add markers */
+  const openSkyFlightRequestIdRef = useRef(0);
   const aisLiveMarkersRef = useRef<L.Marker[]>([]); // AIS from enrichment run
   const aisToggleMarkersRef = useRef<L.Marker[]>([]); // AIS from Event Themes map toggle
   const aisToggleRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -7004,6 +7006,8 @@ const MapView: React.FC<MapViewProps> = ({
   };
   // MapLibre GL Leaflet layer instance (plugin adds `L.maplibreGL`, type not in Leaflet typings)
   const basemapLayerRef = useRef<any>(null); // Base map (OpenFreeMap)
+  /** Tracks prior Show Basemap toggle so we can strip orphaned basemap layers and force re-add when turning visible again */
+  const prevShowBaseBasemapRef = useRef(true);
   const overlayLayerRef = useRef<any>(null); // Overlay layer (WMS/tile on top of base)
   const [legendItems, setLegendItems] = useState<LegendItem[]>([]);
   const [hiddenLegendKeys, setHiddenLegendKeys] = useState<Set<string>>(() => new Set());
@@ -8092,6 +8096,7 @@ const MapView: React.FC<MapViewProps> = ({
                     }
                   }, 100);
                   
+                  (overlayLayer as any)._thematicBasemapKey = selectedThematicBasemap;
                   overlayLayerRef.current = overlayLayer;
                 } catch (error) {
                   console.error('❌ Error loading MapLibre vector tile overlay:', error);
@@ -8208,6 +8213,7 @@ const MapView: React.FC<MapViewProps> = ({
             }
             
             if (overlayLayer) {
+              (overlayLayer as any)._thematicBasemapKey = selectedThematicBasemap;
               overlayLayerRef.current = overlayLayer;
             } else {
               overlayLayerRef.current = null;
@@ -8835,6 +8841,7 @@ const MapView: React.FC<MapViewProps> = ({
     }
     
     if (!showFlights) {
+      openSkyFlightRequestIdRef.current += 1; // invalidate any in-flight fetch from previous toggle-on session
       // Clear flights when toggled off
       if (openskyRefreshIntervalRef.current) {
         clearInterval(openskyRefreshIntervalRef.current);
@@ -8851,13 +8858,18 @@ const MapView: React.FC<MapViewProps> = ({
       }
       return;
     }
+
+    openSkyFlightRequestIdRef.current += 1;
+    const flightSessionId = openSkyFlightRequestIdRef.current;
     
     // Function to fetch and display flights
     const fetchAndDisplayFlights = async () => {
+      const requestId = openSkyFlightRequestIdRef.current;
       try {
         console.log('✈️ Fetching OpenSky flights data...');
         const { getAllOpenSkyAircraftStates } = await import('../adapters/openSkyNetwork');
         const newAircraftStates = await getAllOpenSkyAircraftStates();
+        if (requestId !== openSkyFlightRequestIdRef.current) return;
         
         if (newAircraftStates && newAircraftStates.length > 0 && mapInstanceRef.current && layerGroupsRef.current) {
           const { primary } = layerGroupsRef.current;
@@ -8933,7 +8945,7 @@ const MapView: React.FC<MapViewProps> = ({
     
     // Set up refresh interval (15 seconds)
     openskyRefreshIntervalRef.current = setInterval(() => {
-      if (showFlights) {
+      if (openSkyFlightRequestIdRef.current === flightSessionId) {
         fetchAndDisplayFlights();
       }
     }, 15000);
@@ -9979,40 +9991,74 @@ const MapView: React.FC<MapViewProps> = ({
     const needsBasemapChange = !basemapLayerRef.current || 
       currentBasemapKey !== selectedBaseBasemap || 
       !map.hasLayer(basemapLayerRef.current);
-    
-    // Remove old layers FIRST to ensure clean state
-    // This ensures only one basemap from "Basemaps" section is ever visible
-    // CRITICAL: Must remove all layers completely before adding new ones to prevent stacking
-    // Remove ALL tile layers that might be basemaps to prevent any stacking
-    // Also remove when "Show Base Basemap" is turned off (needsBasemapChange stays false if selection unchanged)
-    if (basemapLayerRef.current && (needsBasemapChange || !showBaseBasemap)) {
-      try {
-        const oldLayer = basemapLayerRef.current;
-        // For maplibre layers, we need defensive cleanup to prevent stacking
-        // MapLibre layers create canvas elements that can persist even after layer removal
-        if (oldLayer._maplibreMap || oldLayer.getMaplibreMap || oldLayer._container) {
+
+    const prevShow = prevShowBaseBasemapRef.current;
+    const showJustTurnedOn = showBaseBasemap && !prevShow;
+    // prevShowBaseBasemapRef is updated at the END of this effect so React Strict Mode's
+    // double-invocation doesn't flip showJustTurnedOn false before work runs.
+
+    const findBasemapLayerOnMap = (): any => {
+      let found: any = null;
+      map.eachLayer((layer: any) => {
+        if (layer?._basemapKey === selectedBaseBasemap && map.hasLayer(layer)) {
+          found = layer;
+        }
+      });
+      return found;
+    };
+
+    const removeTaggedBasemapLayers = () => {
+      map.eachLayer((layer: any) => {
+        if (layer?._basemapKey != null && map.hasLayer(layer)) {
           try {
-            // First, try to get the maplibre map instance
-            const mlMap = oldLayer.getMaplibreMap ? oldLayer.getMaplibreMap() : oldLayer._maplibreMap;
-            if (mlMap) {
-              // Clean up maplibre map instance first (this handles most cleanup)
-              if (typeof mlMap.remove === 'function') {
-                try {
-                  mlMap.remove();
-                } catch (e) {
-                  // MapLibre might have already been cleaned up, continue
-                }
-              }
-            }
-          } catch (e) {
-            // Continue with normal removal even if maplibre cleanup fails
+            map.removeLayer(layer);
+          } catch {
+            /* ignore */
           }
         }
-        // Remove the layer from the map
+      });
+      basemapLayerRef.current = null;
+    };
+
+    const stripThematicThemeLayers = () => {
+      map.eachLayer((layer: any) => {
+        if (layer?._thematicBasemapKey != null && map.hasLayer(layer)) {
+          try {
+            map.removeLayer(layer);
+          } catch {
+            /* ignore */
+          }
+        }
+      });
+      if (overlayLayerRef.current) {
+        try {
+          const oldOverlay = overlayLayerRef.current;
+          if (map.hasLayer(oldOverlay)) {
+            map.removeLayer(oldOverlay);
+          }
+          if (map.hasLayer(oldOverlay)) {
+            map.removeLayer(oldOverlay);
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+      overlayLayerRef.current = null;
+    };
+
+    // Remove old base layers FIRST. When basemap is hidden, or when turning visible again after hide,
+    // sweep ALL layers tagged with _basemapKey — not only basemapLayerRef — so we never leave an orphan
+    // MapLibre layer on the map while ref is null (that made shouldAddBaseBasemap false and skipped re-add).
+    if (!showBaseBasemap) {
+      removeTaggedBasemapLayers();
+    } else if (showJustTurnedOn) {
+      removeTaggedBasemapLayers();
+    } else if (basemapLayerRef.current && needsBasemapChange) {
+      try {
+        const oldLayer = basemapLayerRef.current;
         if (map.hasLayer(oldLayer)) {
           map.removeLayer(oldLayer);
         }
-        // Double-check that layer is fully removed (especially important for maplibre)
         if (map.hasLayer(oldLayer)) {
           map.removeLayer(oldLayer);
         }
@@ -10021,38 +10067,37 @@ const MapView: React.FC<MapViewProps> = ({
       }
       basemapLayerRef.current = null;
     }
-    
-    // Remove overlay layer - but preserve the state so it can be recreated
-    // CRITICAL: For MapLibre vector tile overlays (like Alaska theme), we need special cleanup
-    // to prevent them from persisting when switching themes
-    if (overlayLayerRef.current) {
-      try {
-        const oldOverlay = overlayLayerRef.current;
-        // For maplibre layers, we need defensive cleanup to prevent stacking
-        // MapLibre layers create canvas elements that can persist even after layer removal
-        if (oldOverlay._maplibreMap || oldOverlay.getMaplibreMap || oldOverlay._container) {
+
+    // Drop any basemap layer whose key no longer matches selection (handles ref-null orphans)
+    if (showBaseBasemap) {
+      map.eachLayer((layer: any) => {
+        if (
+          layer?._basemapKey != null &&
+          layer._basemapKey !== selectedBaseBasemap &&
+          map.hasLayer(layer)
+        ) {
           try {
-            // First, try to get the maplibre map instance
-            const mlMap = oldOverlay.getMaplibreMap ? oldOverlay.getMaplibreMap() : oldOverlay._maplibreMap;
-            if (mlMap) {
-              // Clean up maplibre map instance first (this handles most cleanup)
-              if (typeof mlMap.remove === 'function') {
-                try {
-                  mlMap.remove();
-                } catch (e) {
-                  // MapLibre might have already been cleaned up, continue
-                }
-              }
-            }
-          } catch (e) {
-            // Continue with normal removal even if maplibre cleanup fails
+            map.removeLayer(layer);
+          } catch {
+            /* ignore */
           }
         }
-        // Remove the layer from the map
+      });
+    }
+
+    // Source of truth is the map, not basemapLayerRef (ref is wrong under Strict Mode / toggle races)
+    const shouldAddBaseBasemap = showBaseBasemap && !findBasemapLayerOnMap();
+    
+    // Remove overlay layer before rebuild. When hiding basemap or restoring after hide, sweep by _thematicBasemapKey
+    // so orphaned thematic layers (ref drift) cannot block Step 2 from re-adding.
+    if (!showBaseBasemap || showJustTurnedOn) {
+      stripThematicThemeLayers();
+    } else if (overlayLayerRef.current) {
+      try {
+        const oldOverlay = overlayLayerRef.current;
         if (map.hasLayer(oldOverlay)) {
           map.removeLayer(oldOverlay);
         }
-        // Double-check that layer is fully removed (especially important for maplibre)
         if (map.hasLayer(oldOverlay)) {
           map.removeLayer(oldOverlay);
         }
@@ -10070,8 +10115,8 @@ const MapView: React.FC<MapViewProps> = ({
     // CRITICAL: Use selectedBaseBasemap exactly as-is - NEVER reset or change it
     
     // Step 1: Add base basemap from "Basemaps" section (if toggle is ON)
-    // Only create new basemap if we need to change it
-    if (showBaseBasemap && needsBasemapChange) {
+    // Only create new basemap if we need to change it (use post-removal state)
+    if (shouldAddBaseBasemap) {
       const baseBasemapConfig = BASEMAP_CONFIGS[selectedBaseBasemap];
       if (!baseBasemapConfig) {
         console.warn('Base basemap config not found for:', selectedBaseBasemap, 'using liberty as fallback');
@@ -10194,7 +10239,7 @@ const MapView: React.FC<MapViewProps> = ({
         (newBasemapLayer as any)._basemapKey = selectedBaseBasemap;
         newBasemapLayer.addTo(map);
       }
-    } else {
+    } else if (!showBaseBasemap) {
       // Base basemap toggle is OFF - no base layer
       newBasemapLayer = null;
     }
@@ -10288,7 +10333,18 @@ const MapView: React.FC<MapViewProps> = ({
                   }, 100);
                 }
                 
+                (newOverlayLayer as any)._thematicBasemapKey = selectedThematicBasemap;
                 overlayLayerRef.current = newOverlayLayer;
+                // Base layer hidden: tilePane/GL needs invalidate + resize or thematic MapLibre stays blank
+                requestAnimationFrame(() => {
+                  try {
+                    map.invalidateSize(false);
+                    const ml = newOverlayLayer.getMaplibreMap?.();
+                    if (ml && typeof ml.resize === 'function') ml.resize();
+                  } catch {
+                    /* ignore */
+                  }
+                });
               } catch (error) {
                 console.error('❌ Error loading MapLibre vector tile overlay:', error);
               }
@@ -10430,15 +10486,15 @@ const MapView: React.FC<MapViewProps> = ({
         // Set overlay reference if we created one
         // CRITICAL: Always recreate thematic overlay when selectedThematicBasemap exists
         if (newOverlayLayer) {
+          (newOverlayLayer as any)._thematicBasemapKey = selectedThematicBasemap;
           overlayLayerRef.current = newOverlayLayer;
-        } else {
-          // If selectedThematicBasemap exists but overlay wasn't created, log for debugging
-          // The state will remain, so it will retry on next render
+        } else if (thematicConfig?.type !== 'maplibre') {
+          // MapLibre thematic is created asynchronously — do not null ref here or we race the async IIFE
           console.warn('Thematic overlay not created for:', selectedThematicBasemap);
           overlayLayerRef.current = null;
         }
       } else {
-        // No thematic selected - clear overlay reference
+        // No thematic selected — clear overlay reference
         overlayLayerRef.current = null;
       }
       
@@ -10448,11 +10504,119 @@ const MapView: React.FC<MapViewProps> = ({
       basemapLayerRef.current = newBasemapLayer;
     } else if (!showBaseBasemap) {
       basemapLayerRef.current = null;
-    } else if (needsBasemapChange) {
+    } else if (shouldAddBaseBasemap) {
       // Wanted a basemap but creation failed (unusual)
       console.warn('Base basemap layer not created for:', selectedBaseBasemap);
+    } else {
+      const onMap = findBasemapLayerOnMap();
+      if (onMap) {
+        basemapLayerRef.current = onMap;
+      }
     }
-    // else: showBaseBasemap && !needsBasemapChange — keep existing basemapLayerRef / on-map layer
+
+    if (selectedThematicBasemap && !overlayLayerRef.current) {
+      map.eachLayer((layer: any) => {
+        if (
+          layer?._thematicBasemapKey === selectedThematicBasemap &&
+          map.hasLayer(layer) &&
+          !overlayLayerRef.current
+        ) {
+          overlayLayerRef.current = layer;
+        }
+      });
+    }
+
+    prevShowBaseBasemapRef.current = showBaseBasemap;
+
+    // Desktop: after any basemap add/replace, sync Leaflet size with the container. MapLibre needs GL resize;
+    // tile/WMS basemaps (e.g. NatGeo, USA Topo) often stay blank after toggling "Show Basemap" off/on without invalidate + redraw.
+    if (!isMobile && newBasemapLayer) {
+      const layer = newBasemapLayer as any;
+      const isMaplibreBasemap = typeof layer.getMaplibreMap === 'function';
+      const syncBasemapLayout = () => {
+        try {
+          map.invalidateSize(false);
+          if (isMaplibreBasemap) {
+            resizeMaplibreBasemap();
+          } else if (typeof layer.redraw === 'function') {
+            layer.redraw();
+          }
+        } catch {
+          /* ignore */
+        }
+      };
+      requestAnimationFrame(() => {
+        syncBasemapLayout();
+        // Raster basemaps sometimes need a second pass after map-no-basemap class / layout settles
+        if (!isMaplibreBasemap) {
+          setTimeout(syncBasemapLayout, 100);
+        }
+      });
+    }
+    // Strict Mode / toggle race: layer already on map so we didn't re-add — still need invalidate + redraw (raster basemaps)
+    if (!isMobile && showBaseBasemap && showJustTurnedOn && !newBasemapLayer) {
+      const existingBase = findBasemapLayerOnMap();
+      if (existingBase) {
+        const layer = existingBase as any;
+        const isMaplibreBasemap = typeof layer.getMaplibreMap === 'function';
+        const syncExistingBaseLayout = () => {
+          try {
+            map.invalidateSize(false);
+            if (isMaplibreBasemap) {
+              resizeMaplibreBasemap();
+            } else if (typeof layer.redraw === 'function') {
+              layer.redraw();
+            }
+          } catch {
+            /* ignore */
+          }
+        };
+        requestAnimationFrame(() => {
+          syncExistingBaseLayout();
+          if (!isMaplibreBasemap) {
+            setTimeout(syncExistingBaseLayout, 100);
+          }
+        });
+      }
+    }
+    // After toggling Show Basemap back on: thematic tile/WMS/MapLibre overlays need the same layout pass as the base layer
+    if (!isMobile && showBaseBasemap && showJustTurnedOn) {
+      const syncThematicAfterShow = () => {
+        try {
+          map.invalidateSize(false);
+          const ov = overlayLayerRef.current as any;
+          if (!ov) return;
+          if (typeof ov.getMaplibreMap === 'function') {
+            const ml = ov.getMaplibreMap?.();
+            if (ml && typeof ml.resize === 'function') ml.resize();
+          } else if (typeof ov.redraw === 'function') {
+            ov.redraw();
+          }
+        } catch {
+          /* ignore */
+        }
+      };
+      requestAnimationFrame(() => {
+        syncThematicAfterShow();
+        setTimeout(syncThematicAfterShow, 100);
+        setTimeout(syncThematicAfterShow, 350);
+      });
+    }
+    // Base layer off: Leaflet/MapLibre still need a layout pass for thematic-only mode (tiles/WMS/GL otherwise invisible)
+    if (!isMobile && !showBaseBasemap) {
+      requestAnimationFrame(() => {
+        try {
+          map.invalidateSize(false);
+          const ov = overlayLayerRef.current as any;
+          if (ov && typeof ov.getMaplibreMap === 'function') {
+            const ml = ov.getMaplibreMap?.();
+            if (ml && typeof ml.resize === 'function') ml.resize();
+          }
+        } catch {
+          /* ignore */
+        }
+      });
+    }
   }, [selectedBaseBasemap, selectedThematicBasemap, showBaseBasemap, isInitialized]);
 
   // Legend toggle for Marine Place Names: hide/show the thematic overlay (labels), not only the empty legend group
@@ -18406,101 +18570,30 @@ const MapView: React.FC<MapViewProps> = ({
       // Render Maritime Boundaries features
       renderGlobalOilAndGasFeatures('maritime_boundaries', '🌊', '#06b6d4', "World's Maritime Boundaries");
       
-      // Draw OpenSky Flight Tracker aircraft as markers on the map
-      if (enrichments.opensky_flights_all && Array.isArray(enrichments.opensky_flights_all)) {
-        let flightFeatureCount = 0;
-        const flightColor = '#3b82f6'; // Blue color for aircraft
+      // OpenSky: live map markers only from Event Themes "Flight Tracker" toggle (useEffect). Enrichment supplies legend/count only — drawing markers here re-added planes after toggle-off when addFeaturesToMap re-ran.
+      if (
+        enrichments.opensky_flights_count !== undefined ||
+        (enrichments.opensky_flights_all && Array.isArray(enrichments.opensky_flights_all) && enrichments.opensky_flights_all.length > 0)
+      ) {
+        const flightColor = '#3b82f6';
         const flightIcon = '✈️';
-        
-        enrichments.opensky_flights_all.forEach((aircraft: any) => {
-          const lat = aircraft.latitude;
-          const lon = aircraft.longitude;
-          
-          if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
-            try {
-              // Create aircraft marker with rotation based on heading
-              const heading = aircraft.heading !== null && aircraft.heading !== undefined ? aircraft.heading : 0;
-              const isInFlight = aircraft.on_ground === false;
-              const altitude = aircraft.baro_altitude !== null ? aircraft.baro_altitude : null;
-              const velocity = aircraft.velocity !== null ? aircraft.velocity : null;
-              const callsign = aircraft.callsign || 'N/A';
-              const originCountry = aircraft.origin_country || 'Unknown';
-              const icao24 = aircraft.icao24 || 'N/A';
-              
-              // Use different icon style for in-flight vs on-ground
-              const iconHtml = isInFlight
-                ? `<div style="
-                    transform: rotate(${heading}deg);
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 16px;
-                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-                  ">✈️</div>`
-                : `<div style="
-                    width: 12px;
-                    height: 12px;
-                    background-color: #6b7280;
-                    border-radius: 50%;
-                    border: 2px solid white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                  "></div>`;
-              
-              const marker = L.marker([lat, lon], {
-                icon: L.divIcon({
-                  className: 'custom-marker',
-                  html: iconHtml,
-                  iconSize: isInFlight ? [20, 20] : [12, 12],
-                  iconAnchor: isInFlight ? [10, 10] : [6, 6]
-                })
-              });
-
-              let popupContent = `
-                <div style="min-width: 250px; max-width: 400px;">
-                  <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                    ${flightIcon} ${callsign !== 'N/A' ? callsign : 'Aircraft'}
-                  </h3>
-                  <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                    <div><strong>ICAO24:</strong> ${icao24}</div>
-                    <div><strong>Origin Country:</strong> ${originCountry}</div>
-                    <div><strong>Status:</strong> ${isInFlight ? 'In Flight' : 'On Ground'}</div>
-                    ${altitude !== null ? `<div><strong>Altitude:</strong> ${Math.round(altitude)}m (${Math.round(altitude * 3.28084)}ft)</div>` : ''}
-                    ${velocity !== null ? `<div><strong>Velocity:</strong> ${Math.round(velocity * 2.237)} mph (${Math.round(velocity * 3.6)} km/h)</div>` : ''}
-                    ${heading !== null && heading !== undefined ? `<div><strong>Heading:</strong> ${Math.round(heading)}°</div>` : ''}
-                    ${aircraft.vertical_rate !== null ? `<div><strong>Vertical Rate:</strong> ${Math.round(aircraft.vertical_rate)} m/s</div>` : ''}
-                    ${aircraft.squawk ? `<div><strong>Squawk:</strong> ${aircraft.squawk}</div>` : ''}
-                  </div>
-                </div>
-              `;
-              
-              marker.bindPopup(popupContent, { maxWidth: 400 });
-              marker.addTo(primary);
-              (marker as any).__layerType = 'opensky_flights';
-              (marker as any).__layerTitle = 'OpenSky Flight Tracker';
-              bounds.extend([lat, lon]);
-              openskyMarkersRef.current.push(marker); // Track for refresh cleanup
-              flightFeatureCount++;
-            } catch (error) {
-              console.error('Error drawing OpenSky aircraft marker:', error);
-            }
-          }
-        });
-        
-        // Add to legend
-        if (flightFeatureCount > 0 || enrichments.opensky_flights_count !== undefined) {
+        const openSkyLegendCount =
+          enrichments.opensky_flights_count !== undefined && enrichments.opensky_flights_count !== null
+            ? enrichments.opensky_flights_count
+            : Array.isArray(enrichments.opensky_flights_all)
+              ? enrichments.opensky_flights_all.length
+              : 0;
+        if (openSkyLegendCount > 0) {
           const legendKey = 'opensky_flights';
-          
           if (!legendAccumulator[legendKey]) {
             legendAccumulator[legendKey] = {
               icon: flightIcon,
               color: flightColor,
               title: 'OpenSky Flight Tracker',
-              count: flightFeatureCount || enrichments.opensky_flights_count || 0,
+              count: openSkyLegendCount,
             };
           } else {
-            legendAccumulator[legendKey].count = flightFeatureCount || enrichments.opensky_flights_count || 0;
+            legendAccumulator[legendKey].count = openSkyLegendCount;
           }
         }
       }
@@ -51794,7 +51887,7 @@ const MapView: React.FC<MapViewProps> = ({
         
         {/* Basemap Dropdown and Weather Radar Toggle + Measure Tool - Desktop only */}
         {!isMobile && (
-          <div className={`absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} flex gap-3 z-10 items-start`}>
+          <div className={`pointer-events-auto absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} flex gap-3 z-[1200] items-start`}>
             <div className="bg-black text-white rounded-lg shadow-lg p-3 space-y-3 flex-shrink-0 border border-zinc-700" style={{ minWidth: '280px', maxWidth: '320px' }}>
             <div>
               <div className="flex items-center justify-between mb-2 relative">
@@ -51823,7 +51916,7 @@ const MapView: React.FC<MapViewProps> = ({
                           <div className="font-bold text-sm mb-1">📌 BASE LAYER (Toggle On/Off)</div>
                           <ul className="list-disc list-inside space-y-1 text-gray-200">
                             <li>One basemap from "Basemaps" section can be shown (toggle enabled by default)</li>
-                            <li>Use "Show Base Basemap" toggle to show/hide the base layer</li>
+                            <li>Use the &quot;Show Basemap&quot; toggle to show or hide the base layer</li>
                             <li>Select any basemap to replace the current one</li>
                             <li>Examples: OpenFreeMap styles, USA Topo Maps, National Geographic</li>
                           </ul>
@@ -52376,7 +52469,7 @@ const MapView: React.FC<MapViewProps> = ({
               </div>
             </div>
             
-            {/* Show/Hide Base Basemap Toggle */}
+            {/* Show/Hide basemap toggle */}
             <div className="border-t border-zinc-600 pt-3">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -52386,7 +52479,7 @@ const MapView: React.FC<MapViewProps> = ({
                   className="w-4 h-4 text-blue-600 border-zinc-500 rounded focus:ring-blue-500"
                 />
                 <span className="text-sm font-semibold text-white">
-                  Show Base Basemap
+                  Show Basemap
                 </span>
               </label>
               <p className="text-xs text-zinc-400 mt-1">

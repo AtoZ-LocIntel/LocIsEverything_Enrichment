@@ -18,7 +18,13 @@ export interface OpenSkyAircraftState {
   last_contact: number | null;
 }
 
-const OPENSKY_API_URL = 'https://opensky-network.org/api/states/all';
+/** Same-origin proxy in dev (Vite) and production (Vercel api/opensky-proxy.ts) — OpenSky blocks browser CORS on other origins. */
+function getOpenSkyStatesUrl(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/api/opensky-proxy`;
+  }
+  return 'https://opensky-network.org/api/states/all';
+}
 
 /**
  * Query OpenSky Network for all aircraft states globally
@@ -27,8 +33,9 @@ const OPENSKY_API_URL = 'https://opensky-network.org/api/states/all';
 export async function getAllOpenSkyAircraftStates(): Promise<OpenSkyAircraftState[]> {
   try {
     console.log(`✈️ Querying OpenSky Network for all aircraft states`);
-    
-    const response = await fetchJSONSmart(OPENSKY_API_URL) as any;
+    const url = getOpenSkyStatesUrl();
+    // Same-origin URL: no CORS; fetchJSONSmart skips public CORS proxies (faster, more reliable).
+    const response = await fetchJSONSmart(url) as any;
     
     if (!response || !response.states || !Array.isArray(response.states)) {
       console.warn('⚠️ OpenSky Network response missing states array');

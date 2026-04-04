@@ -33,7 +33,8 @@ export async function fetchAISLivePositionReports(
   if (!ct.includes('application/json')) {
     return {
       features: [],
-      error: 'AIS snapshot returned non-JSON (local dev: run against Vercel build or set VITE_AIS_PROXY_TARGET to your deployed site in .env)',
+      error:
+        'AIS snapshot response was not JSON (often the SPA HTML). Use `npm run dev` with AISSTREAM_API_KEY in .env, or set VITE_AIS_PROXY_TARGET to your deployed site.',
     };
   }
 

@@ -1,9 +1,66 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import type { IncomingMessage, ServerResponse } from 'node:http'
+
+/** Local dev: run AIS snapshot in Node (same logic as api/aisstream/snapshot.ts) so /api/aisstream/snapshot returns JSON. */
+function aisSnapshotDevPlugin(mode: string) {
+  return {
+    name: 'ais-snapshot-local',
+    configureServer(server: { middlewares: { use: (fn: unknown) => void } }) {
+      server.middlewares.use(
+        async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+          const url = req.url || ''
+          if (!url.startsWith('/api/aisstream/snapshot')) {
+            return next()
+          }
+          if (process.env.VITE_AIS_PROXY_TARGET) {
+            return next()
+          }
+          if (req.method !== 'GET') {
+            res.statusCode = 405
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'Method not allowed' }))
+            return
+          }
+          try {
+            const env = loadEnv(mode, process.cwd(), '')
+            if (env.AISSTREAM_API_KEY) process.env.AISSTREAM_API_KEY = env.AISSTREAM_API_KEY
+            if (env.AIS_STREAM_API_KEY) process.env.AIS_STREAM_API_KEY = env.AIS_STREAM_API_KEY
+            const { runAISStreamSnapshotQuery } = await import('./api/aisstream/snapshotCore.ts')
+            const u = new URL(url, 'http://localhost')
+            const query: Record<string, string | string[]> = {}
+            u.searchParams.forEach((v, k) => {
+              const cur = query[k]
+              if (cur === undefined) {
+                query[k] = v
+              } else if (Array.isArray(cur)) {
+                cur.push(v)
+              } else {
+                query[k] = [cur, v]
+              }
+            })
+            const { status, body } = await runAISStreamSnapshotQuery(query)
+            res.setHeader('Content-Type', 'application/json')
+            if (status === 200) {
+              res.setHeader('Cache-Control', 'no-store')
+            }
+            res.statusCode = status
+            res.end(JSON.stringify(body))
+          } catch (e) {
+            console.error('[vite] AIS snapshot middleware:', e)
+            res.statusCode = 500
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify({ error: 'AIS snapshot dev middleware failed' }))
+          }
+        }
+      )
+    },
+  }
+}
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), aisSnapshotDevPlugin(mode)],
   server: {
     port: 3000,
     open: true,
@@ -23,6 +80,13 @@ export default defineConfig({
             proxyReq.setHeader('Accept', 'application/json');
           });
         },
+      },
+      // OpenSky only allows opensky-network.org in Access-Control-Allow-Origin — browser fetch from localhost needs a dev proxy.
+      '/api/opensky-proxy': {
+        target: 'https://opensky-network.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/opensky-proxy/, '/api/states/all'),
       },
       '/api/acled-token': {
         target: 'https://acleddata.com',
@@ -250,6 +314,12 @@ export default defineConfig({
           });
         },
       },
+      '/api/opensky-proxy': {
+        target: 'https://opensky-network.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/opensky-proxy/, '/api/states/all'),
+      },
     },
   },
-})
+}))
