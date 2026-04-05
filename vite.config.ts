@@ -7,7 +7,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 /** Directory containing `vite.config.ts` — use for `loadEnv` so `.env` is found even when `cwd` ≠ project root. */
 const viteConfigDir = path.dirname(fileURLToPath(import.meta.url))
 
-/** Local dev: run AIS snapshot in Node (same logic as api/aisstream/snapshot.ts) so /api/aisstream/snapshot returns JSON. */
+/** Local dev: run AIS snapshot in Node (same logic as api/ais-snapshot.ts) so /api/ais-snapshot returns JSON. */
 function aisSnapshotDevPlugin(mode: string) {
   return {
     name: 'ais-snapshot-local',
@@ -15,7 +15,7 @@ function aisSnapshotDevPlugin(mode: string) {
       server.middlewares.use(
         async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
           const url = req.url || ''
-          if (!url.startsWith('/api/aisstream/snapshot')) {
+          if (!url.startsWith('/api/ais-snapshot')) {
             return next()
           }
           if (process.env.VITE_AIS_PROXY_TARGET) {
@@ -282,7 +282,7 @@ export default defineConfig(({ mode }) => ({
       // AIS Stream runs only on Vercel serverless; proxy to production so `npm run dev` can load ships.
       ...(process.env.VITE_AIS_PROXY_TARGET
         ? {
-            '/api/aisstream': {
+            '/api/ais-snapshot': {
               target: process.env.VITE_AIS_PROXY_TARGET.replace(/\/$/, ''),
               changeOrigin: true,
               secure: true,

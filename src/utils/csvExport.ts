@@ -549,7 +549,69 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
         vessel.navigationalStatus != null && vessel.navigationalStatus !== ''
           ? String(vessel.navigationalStatus)
           : '';
-      const motion = [sog && `SOG ${sog}`, cog && `COG ${cog}`, th && `Heading ${th}`, nav && `Nav ${nav}`]
+      const aisRep =
+        typeof vessel.aisMessageType === 'string' && vessel.aisMessageType.trim()
+          ? `Report ${vessel.aisMessageType}`
+          : '';
+      const st =
+        typeof vessel.shipType === 'number' && Number.isFinite(vessel.shipType)
+          ? `Type ${vessel.shipType}`
+          : '';
+      const rot =
+        typeof vessel.rateOfTurn === 'number' && Number.isFinite(vessel.rateOfTurn)
+          ? `ROT ${vessel.rateOfTurn}`
+          : '';
+      const dim = vessel.dimension;
+      const dimStr =
+        dim &&
+        typeof dim.a === 'number' &&
+        typeof dim.b === 'number' &&
+        typeof dim.c === 'number' &&
+        typeof dim.d === 'number'
+          ? `LOA~${(dim.a + dim.b).toFixed(0)}m beam~${(dim.c + dim.d).toFixed(0)}m`
+          : '';
+      const staticBits: string[] = [];
+      if (vessel.hasShipStaticData) staticBits.push('static AIS5');
+      if (typeof vessel.callSign === 'string' && vessel.callSign.trim()) {
+        staticBits.push(`CS ${vessel.callSign.trim()}`);
+      }
+      if (typeof vessel.imoNumber === 'number' && Number.isFinite(vessel.imoNumber) && vessel.imoNumber > 0) {
+        staticBits.push(`IMO ${vessel.imoNumber}`);
+      }
+      if (typeof vessel.destination === 'string' && vessel.destination.trim()) {
+        staticBits.push(`Dest ${vessel.destination.trim()}`);
+      }
+      if (typeof vessel.maximumStaticDraught === 'number' && Number.isFinite(vessel.maximumStaticDraught)) {
+        staticBits.push(`Draught ${vessel.maximumStaticDraught.toFixed(1)}m`);
+      }
+      if (typeof vessel.aisVersion === 'number' && Number.isFinite(vessel.aisVersion)) {
+        staticBits.push(`AISv ${vessel.aisVersion}`);
+      }
+      const etaParts = [vessel.etaMonth, vessel.etaDay, vessel.etaHour, vessel.etaMinute].filter(
+        (x) => typeof x === 'number' && Number.isFinite(x)
+      );
+      if (etaParts.length > 0) {
+        const emin =
+          typeof vessel.etaMinute === 'number' && Number.isFinite(vessel.etaMinute)
+            ? String(vessel.etaMinute).padStart(2, '0')
+            : '—';
+        staticBits.push(
+          `ETA M${vessel.etaMonth ?? '—'}/${vessel.etaDay ?? '—'} ${vessel.etaHour ?? '—'}:${emin}`
+        );
+      }
+      if (vessel.shipStaticValid === false) staticBits.push('static invalid');
+
+      const motion = [
+        sog && `SOG ${sog}`,
+        cog && `COG ${cog}`,
+        th && `Heading ${th}`,
+        nav && `Nav ${nav}`,
+        aisRep,
+        st,
+        rot,
+        dimStr,
+        staticBits.length > 0 ? staticBits.join(', ') : '',
+      ]
         .filter(Boolean)
         .join('; ');
       const mmsi = vessel.mmsi != null ? String(vessel.mmsi) : '';

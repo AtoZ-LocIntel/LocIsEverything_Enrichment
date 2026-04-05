@@ -68,12 +68,48 @@ export interface AISStreamFeature {
   lon: number;
   latitude: number;
   longitude: number;
+  /** AIS Stream `MessageType` (e.g. PositionReport, ExtendedClassBPositionReport). */
+  aisMessageType?: string;
   sog?: number;
   cog?: number;
   navigationalStatus?: number;
   trueHeading?: number;
+  /** AIS rate of turn (e.g. PositionReport); Extended Class B may omit. */
+  rateOfTurn?: number;
   timestamp?: number;
   shipName?: string;
+  /** IMO-style ship and cargo type code (common on Extended Class B). */
+  shipType?: number;
+  /** Bow/stern/port/starboard offsets in meters (Extended Class B `Dimension`). */
+  dimension?: { a: number; b: number; c: number; d: number };
+  /** AIS metadata `time_utc` when present. */
+  metaTimeUtc?: string;
+  positionAccuracy?: boolean;
+  raim?: boolean;
+  messageId?: number;
+  /** GNSS fix type (Extended Class B / some reports). */
+  fixType?: number;
+  dte?: boolean;
+  assignedMode?: boolean;
+  /** AIS special manoeuvre indicator (PositionReport). */
+  specialManoeuvre?: number;
+  /** Decoded position valid flag when AIS provides it. */
+  reportValid?: boolean;
+  /** From AIS message type 5 / `ShipStaticData` (merged when received). */
+  hasShipStaticData?: boolean;
+  callSign?: string;
+  imoNumber?: number;
+  destination?: string;
+  maximumStaticDraught?: number;
+  aisVersion?: number;
+  etaMonth?: number;
+  etaDay?: number;
+  etaHour?: number;
+  etaMinute?: number;
+  shipStaticMessageId?: number;
+  staticRepeatIndicator?: number;
+  shipStaticValid?: boolean;
+  staticSpare?: boolean;
   distance_miles?: number;
 }
 
@@ -86,6 +122,11 @@ function normalizeNum(v: unknown): number | null {
   return null;
 }
 
+function normalizeBool(v: unknown): boolean | undefined {
+  if (typeof v === 'boolean') return v;
+  return undefined;
+}
+
 function extractPositionPayload(
   msg: Record<string, unknown> | undefined,
   messageType: string | undefined
@@ -96,7 +137,8 @@ function extractPositionPayload(
     msg.StandardClassBPositionReport ||
     msg.ExtendedClassBPositionReport ||
     msg.positionreport ||
-    msg.standardclassbpositionreport;
+    msg.standardclassbpositionreport ||
+    msg.extendedclassbpositionreport;
   if (explicit && typeof explicit === 'object') {
     return explicit as Record<string, unknown>;
   }
@@ -131,9 +173,12 @@ function parsePositionMessage(raw: Record<string, unknown>): AISStreamFeature | 
         ? String(userId)
         : '';
 
+  const nameFromMessage =
+    pr && typeof pr.Name === 'string' && pr.Name.trim() ? pr.Name.trim() : undefined;
   const shipName =
     (typeof meta.ShipName === 'string' && meta.ShipName.trim()) ||
     (typeof meta.shipName === 'string' && meta.shipName.trim()) ||
+    nameFromMessage ||
     undefined;
 
   const sogN = pr ? normalizeNum(pr.Sog ?? pr.sog) : null;
@@ -141,6 +186,30 @@ function parsePositionMessage(raw: Record<string, unknown>): AISStreamFeature | 
   const navN = pr ? normalizeNum(pr.NavigationalStatus ?? pr.navigationalstatus) : null;
   const thN = pr ? normalizeNum(pr.TrueHeading ?? pr.trueheading) : null;
   const tsN = pr ? normalizeNum(pr.Timestamp ?? pr.timestamp) : null;
+  const rotN = pr ? normalizeNum(pr.RateOfTurn ?? pr.rateofturn) : null;
+  const typeN = pr ? normalizeNum(pr.Type ?? pr.type) : null;
+  const msgIdN = pr ? normalizeNum(pr.MessageID ?? pr.messageId) : null;
+  const fixTN = pr ? normalizeNum(pr.FixType ?? pr.fixtype) : null;
+  const smN = pr ? normalizeNum(pr.SpecialManoeuvreIndicator ?? pr.specialmanoeuvreindicator) : null;
+
+  const metaTimeUtc =
+    typeof meta.time_utc === 'string' && meta.time_utc.trim()
+      ? meta.time_utc.trim()
+      : typeof meta.timeUtc === 'string' && meta.timeUtc.trim()
+        ? meta.timeUtc.trim()
+        : undefined;
+
+  let dimension: AISStreamFeature['dimension'];
+  if (pr && pr.Dimension && typeof pr.Dimension === 'object') {
+    const d = pr.Dimension as Record<string, unknown>;
+    const a = normalizeNum(d.A ?? d.a);
+    const b = normalizeNum(d.B ?? d.b);
+    const c = normalizeNum(d.C ?? d.c);
+    const dd = normalizeNum(d.D ?? d.d);
+    if (a != null && b != null && c != null && dd != null) {
+      dimension = { a, b, c, d: dd };
+    }
+  }
 
   return {
     mmsi: mmsi || 'unknown',
@@ -148,12 +217,188 @@ function parsePositionMessage(raw: Record<string, unknown>): AISStreamFeature | 
     lon,
     latitude: lat,
     longitude: lon,
+    aisMessageType: mt,
     sog: sogN ?? undefined,
     cog: cogN ?? undefined,
     navigationalStatus: navN ?? undefined,
     trueHeading: thN ?? undefined,
+    rateOfTurn: rotN ?? undefined,
     timestamp: tsN ?? undefined,
     shipName,
+    shipType: typeN ?? undefined,
+    dimension,
+    metaTimeUtc,
+    positionAccuracy: pr ? normalizeBool(pr.PositionAccuracy ?? pr.positionaccuracy) : undefined,
+    raim: pr ? normalizeBool(pr.Raim ?? pr.raim) : undefined,
+    messageId: msgIdN ?? undefined,
+    fixType: fixTN ?? undefined,
+    dte: pr ? normalizeBool(pr.Dte ?? pr.dte) : undefined,
+    assignedMode: pr ? normalizeBool(pr.AssignedMode ?? pr.assignedmode) : undefined,
+    specialManoeuvre: smN ?? undefined,
+    reportValid: pr ? normalizeBool(pr.Valid ?? pr.valid) : undefined,
+  };
+}
+
+function omitUndefined<T extends Record<string, unknown>>(patch: Partial<T>): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(patch as Record<string, unknown>).filter(([, v]) => v !== undefined)
+  ) as Partial<T>;
+}
+
+/** Merge position + static; keep last position report type when combining with ShipStaticData. */
+function mergeAISFeatures(base: AISStreamFeature, patch: Partial<AISStreamFeature>): AISStreamFeature {
+  const p = omitUndefined(patch as Record<string, unknown>) as Partial<AISStreamFeature>;
+  const out: AISStreamFeature = {
+    ...base,
+    ...p,
+    lat: patch.lat ?? base.lat,
+    lon: patch.lon ?? base.lon,
+    latitude: patch.latitude ?? base.latitude,
+    longitude: patch.longitude ?? base.longitude,
+    mmsi: patch.mmsi || base.mmsi,
+    shipName: patch.shipName || base.shipName,
+    dimension: patch.dimension ?? base.dimension,
+    shipType: patch.shipType ?? base.shipType,
+    hasShipStaticData: !!(base.hasShipStaticData || patch.hasShipStaticData),
+  };
+  if (base.aisMessageType && patch.aisMessageType === 'ShipStaticData') {
+    out.aisMessageType = base.aisMessageType;
+  }
+  return out;
+}
+
+/**
+ * AIS Stream `MessageType` ShipStaticData — static vessel particulars (msg 5 style).
+ * Lat/lon may come from metadata only (last known position).
+ */
+function parseShipStaticMessage(raw: Record<string, unknown>): Partial<AISStreamFeature> & { mmsi: string } | null {
+  const mt = typeof raw.MessageType === 'string' ? raw.MessageType : undefined;
+  if (mt !== 'ShipStaticData') return null;
+
+  const msg = raw.Message as Record<string, unknown> | undefined;
+  const ss = (msg?.ShipStaticData ?? msg?.shipstaticdata) as Record<string, unknown> | undefined;
+  if (!ss || typeof ss !== 'object') return null;
+
+  const meta = (raw.MetaData || raw.Metadata || {}) as Record<string, unknown>;
+  const uid = ss.UserID ?? ss.userId;
+  const mmsi =
+    meta.MMSI != null
+      ? String(meta.MMSI)
+      : uid != null
+        ? String(uid)
+        : '';
+  if (!mmsi) return null;
+
+  let lat = normalizeNum(meta.Latitude ?? meta.latitude);
+  let lon = normalizeNum(meta.Longitude ?? meta.longitude);
+
+  const name = typeof ss.Name === 'string' && ss.Name.trim() ? ss.Name.trim() : undefined;
+  const callSign =
+    typeof ss.CallSign === 'string' && ss.CallSign.trim() ? ss.CallSign.trim() : undefined;
+  const destination =
+    typeof ss.Destination === 'string' ? String(ss.Destination).trim() : undefined;
+
+  const imoN = normalizeNum(ss.ImoNumber ?? ss.imoNumber);
+  const typeN = normalizeNum(ss.Type ?? ss.type);
+  const draughtN = normalizeNum(ss.MaximumStaticDraught ?? ss.maximumstaticdraught);
+  const aisVerN = normalizeNum(ss.AisVersion ?? ss.aisversion);
+  const fixTN = normalizeNum(ss.FixType ?? ss.fixtype);
+  const msgIdN = normalizeNum(ss.MessageID ?? ss.messageId);
+  const repN = normalizeNum(ss.RepeatIndicator ?? ss.repeatindicator);
+
+  let etaMonth: number | undefined;
+  let etaDay: number | undefined;
+  let etaHour: number | undefined;
+  let etaMinute: number | undefined;
+  if (ss.Eta && typeof ss.Eta === 'object') {
+    const e = ss.Eta as Record<string, unknown>;
+    etaMonth = normalizeNum(e.Month ?? e.month) ?? undefined;
+    etaDay = normalizeNum(e.Day ?? e.day) ?? undefined;
+    etaHour = normalizeNum(e.Hour ?? e.hour) ?? undefined;
+    etaMinute = normalizeNum(e.Minute ?? e.minute) ?? undefined;
+  }
+
+  let dimension: AISStreamFeature['dimension'];
+  if (ss.Dimension && typeof ss.Dimension === 'object') {
+    const d = ss.Dimension as Record<string, unknown>;
+    const a = normalizeNum(d.A ?? d.a);
+    const b = normalizeNum(d.B ?? d.b);
+    const c = normalizeNum(d.C ?? d.c);
+    const dd = normalizeNum(d.D ?? d.d);
+    if (a != null && b != null && c != null && dd != null) {
+      dimension = { a, b, c, d: dd };
+    }
+  }
+
+  const patch: Partial<AISStreamFeature> & { mmsi: string } = {
+    mmsi,
+    aisMessageType: 'ShipStaticData',
+    hasShipStaticData: true,
+    shipName: name,
+    shipType: typeN ?? undefined,
+    dimension,
+    callSign,
+    imoNumber: imoN ?? undefined,
+    destination: destination || undefined,
+    maximumStaticDraught: draughtN ?? undefined,
+    aisVersion: aisVerN ?? undefined,
+    fixType: fixTN ?? undefined,
+    dte: normalizeBool(ss.Dte ?? ss.dte),
+    shipStaticMessageId: msgIdN ?? undefined,
+    staticRepeatIndicator: repN ?? undefined,
+    shipStaticValid: normalizeBool(ss.Valid ?? ss.valid),
+    staticSpare: normalizeBool(ss.Spare ?? ss.spare),
+    etaMonth,
+    etaDay,
+    etaHour,
+    etaMinute,
+  };
+
+  if (lat != null && lon != null) {
+    patch.lat = lat;
+    patch.lon = lon;
+    patch.latitude = lat;
+    patch.longitude = lon;
+  }
+
+  return patch;
+}
+
+function mergeStaticPending(
+  prev: Partial<AISStreamFeature> | undefined,
+  next: Partial<AISStreamFeature> & { mmsi: string }
+): Partial<AISStreamFeature> & { mmsi: string } {
+  return { ...prev, ...next, mmsi: next.mmsi, hasShipStaticData: true };
+}
+
+function staticPatchToFeature(patch: Partial<AISStreamFeature> & { mmsi: string }): AISStreamFeature | null {
+  if (patch.lat == null || patch.lon == null) return null;
+  return {
+    mmsi: patch.mmsi,
+    lat: patch.lat,
+    lon: patch.lon,
+    latitude: patch.latitude ?? patch.lat,
+    longitude: patch.longitude ?? patch.lon,
+    aisMessageType: patch.aisMessageType,
+    shipName: patch.shipName,
+    shipType: patch.shipType,
+    dimension: patch.dimension,
+    callSign: patch.callSign,
+    imoNumber: patch.imoNumber,
+    destination: patch.destination,
+    maximumStaticDraught: patch.maximumStaticDraught,
+    aisVersion: patch.aisVersion,
+    fixType: patch.fixType,
+    dte: patch.dte,
+    hasShipStaticData: patch.hasShipStaticData,
+    shipStaticMessageId: patch.shipStaticMessageId,
+    staticRepeatIndicator: patch.staticRepeatIndicator,
+    shipStaticValid: patch.shipStaticValid,
+    staticSpare: patch.staticSpare,
+    etaMonth: patch.etaMonth,
+    etaDay: patch.etaDay,
+    etaHour: patch.etaHour,
+    etaMinute: patch.etaMinute,
   };
 }
 
@@ -170,6 +415,8 @@ function collectSnapshot(
 ): Promise<{ features: AISStreamFeature[]; stats: CollectSnapshotStats }> {
   return new Promise((resolve, reject) => {
     const byMmsi = new Map<string, AISStreamFeature>();
+    /** Static-only messages without metadata lat/lon — applied when a position report arrives. */
+    const pendingStaticByMmsi = new Map<string, Partial<AISStreamFeature>>();
     let finished = false;
     let messageCount = 0;
     let rawMessageCount = 0;
@@ -198,7 +445,12 @@ function collectSnapshot(
       const subscription = {
         APIKey: apiKey,
         BoundingBoxes: boundingBoxes,
-        FilterMessageTypes: ['PositionReport', 'StandardClassBPositionReport', 'ExtendedClassBPositionReport'],
+        FilterMessageTypes: [
+          'PositionReport',
+          'StandardClassBPositionReport',
+          'ExtendedClassBPositionReport',
+          'ShipStaticData',
+        ],
       };
       ws.send(JSON.stringify(subscription));
     });
@@ -208,13 +460,54 @@ function collectSnapshot(
       try {
         rawMessageCount++;
         const raw = JSON.parse(String(data)) as Record<string, unknown>;
+
+        const staticPatch = parseShipStaticMessage(raw);
+        if (staticPatch && staticPatch.mmsi && staticPatch.mmsi !== 'unknown') {
+          const existing = byMmsi.get(staticPatch.mmsi);
+          if (existing) {
+            byMmsi.set(staticPatch.mmsi, mergeAISFeatures(existing, staticPatch));
+            parsedPositionCount++;
+          } else {
+            const staticOnly = staticPatchToFeature(staticPatch);
+            if (staticOnly) {
+              const pend = pendingStaticByMmsi.get(staticPatch.mmsi);
+              const merged =
+                pend != null ? mergeAISFeatures(staticOnly, pend) : staticOnly;
+              byMmsi.set(staticPatch.mmsi, merged);
+              pendingStaticByMmsi.delete(staticPatch.mmsi);
+              parsedPositionCount++;
+            } else {
+              const prev = pendingStaticByMmsi.get(staticPatch.mmsi);
+              pendingStaticByMmsi.set(staticPatch.mmsi, mergeStaticPending(prev, staticPatch));
+              parsedPositionCount++;
+            }
+          }
+        }
+
         const feature = parsePositionMessage(raw);
         if (feature) {
           parsedPositionCount++;
           if (feature.mmsi !== 'unknown') {
-            byMmsi.set(feature.mmsi, feature);
+            const pend = pendingStaticByMmsi.get(feature.mmsi);
+            let f = feature;
+            if (pend) {
+              f = mergeAISFeatures(feature, pend);
+              pendingStaticByMmsi.delete(feature.mmsi);
+            }
+            const prev = byMmsi.get(feature.mmsi);
+            if (prev) {
+              byMmsi.set(feature.mmsi, mergeAISFeatures(prev, f));
+            } else {
+              byMmsi.set(feature.mmsi, f);
+            }
           } else {
-            byMmsi.set(`${feature.lat.toFixed(5)},${feature.lon.toFixed(5)}`, feature);
+            const key = `${feature.lat.toFixed(5)},${feature.lon.toFixed(5)}`;
+            const prev = byMmsi.get(key);
+            if (prev) {
+              byMmsi.set(key, mergeAISFeatures(prev, feature));
+            } else {
+              byMmsi.set(key, feature);
+            }
           }
         }
         messageCount++;
@@ -263,7 +556,7 @@ function pickQuery(
 }
 
 /**
- * Core snapshot handler: same JSON as Vercel `/api/aisstream/snapshot`.
+ * Core snapshot handler: same JSON as Vercel `/api/ais-snapshot`.
  */
 export async function runAISStreamSnapshotQuery(
   query: Record<string, string | string[] | undefined>

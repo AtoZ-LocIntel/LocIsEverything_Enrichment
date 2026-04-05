@@ -8,6 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import '@maplibre/maplibre-gl-leaflet';
 import { exportEnrichmentResultsToCSV } from '../utils/csvExport';
 import { buildFullFeaturePopupHtml } from '../utils/mapFeaturePopup';
+import { buildAisShipPopupHtml } from '../utils/aisShipPopupHtml';
 import { buildUSGSEarthquakePopupHtml, normalizeEarthquakeForPopup } from '../utils/usgsEarthquakePopupHtml';
 import {
   exportMapElementAsImage,
@@ -17,7 +18,8 @@ import { poiConfigManager } from '../lib/poiConfig';
 import { getLayerSourceUrl } from '../lib/layerSourceUrls';
 import { esriRingsToLeafletPolygonLatLngs } from '../utils/esriPolygonRings';
 import { OCM_CRITICAL_FACILITIES_SLR_FIPSSTCO_CATEGORY } from '../adapters/noaaCountySnapshotsCriticalFacilities10ftSlr';
-import { Copy, FileImage, FileText, ImageDown, Info, MapPin, RotateCcw, Ruler, X } from 'lucide-react';
+import { Copy, FileImage, FileText, ImageDown, Info, MapPin, RotateCcw, Ruler, Search, X } from 'lucide-react';
+import { SingleSearchMapPanel } from './SingleSearch';
 
 interface MapViewProps {
   results: EnrichmentResult[];
@@ -30,6 +32,14 @@ interface MapViewProps {
   initialZoom?: number;
   poiRadii?: Record<string, number>;
   hideLocationMarker?: boolean; // For global view mode - skip location marker and popup
+  /** Homepage-style location search (desktop map panel); stays on map view. */
+  mapSearchInput?: string;
+  onMapSearchInputChange?: (value: string) => void;
+  onMapSearch?: (address: string) => Promise<void>;
+  onMapLocationSearch?: () => Promise<void>;
+  mapPickedLocation?: { lat: number; lon: number } | null;
+  onClearMapPick?: () => void;
+  mapSearchLoading?: boolean;
 }
 
 interface LegendItem {
@@ -6925,6 +6935,13 @@ const MapView: React.FC<MapViewProps> = ({
   initialZoom,
   poiRadii = {},
   hideLocationMarker = false,
+  mapSearchInput,
+  onMapSearchInputChange,
+  onMapSearch,
+  onMapLocationSearch,
+  mapPickedLocation,
+  onClearMapPick,
+  mapSearchLoading,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -7379,6 +7396,8 @@ const MapView: React.FC<MapViewProps> = ({
     }
   };
   const [showBasemapInfo, setShowBasemapInfo] = useState<boolean>(false); // Info tooltip state
+  /** Desktop map panel: collapsible address search to free vertical space */
+  const [showMapAddressSearch, setShowMapAddressSearch] = useState<boolean>(true);
   const basemapInfoRef = useRef<HTMLDivElement>(null);
   // Measure tool state (desktop only)
   const [measureToolMode, setMeasureToolMode] = useState<'off' | 'distance' | 'area' | 'line'>('off');
@@ -9033,9 +9052,6 @@ const MapView: React.FC<MapViewProps> = ({
               return;
             }
             const cog = typeof vessel.cog === 'number' ? vessel.cog : 0;
-            const sog = typeof vessel.sog === 'number' ? vessel.sog : null;
-            const mmsi = vessel.mmsi ?? '—';
-            const name = vessel.shipName || `MMSI ${mmsi}`;
             const heading =
               typeof vessel.trueHeading === 'number' && vessel.trueHeading >= 0 && vessel.trueHeading <= 359
                 ? vessel.trueHeading
@@ -9062,26 +9078,9 @@ const MapView: React.FC<MapViewProps> = ({
               }),
             });
 
-            const dist =
-              typeof vessel.distance_miles === 'number'
-                ? `<div><strong>Distance:</strong> ${vessel.distance_miles.toFixed(1)} mi</div>`
-                : '';
-            const popupContent = `
-              <div style="min-width: 220px; max-width: 360px;">
-                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                  🚢 ${name}
-                </h3>
-                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                  <div><strong>MMSI:</strong> ${mmsi}</div>
-                  ${dist}
-                  ${sog !== null ? `<div><strong>SOG:</strong> ${sog.toFixed(1)} kn</div>` : ''}
-                  <div><strong>COG:</strong> ${cog.toFixed(0)}°</div>
-                  ${typeof vessel.navigationalStatus === 'number' ? `<div><strong>Nav status:</strong> ${vessel.navigationalStatus}</div>` : ''}
-                </div>
-              </div>
-            `;
+            const popupContent = buildAisShipPopupHtml(vessel as Record<string, unknown>, { shipIcon: '🚢' });
 
-            marker.bindPopup(popupContent, { maxWidth: 400 });
+            marker.bindPopup(popupContent, { maxWidth: 440 });
             marker.addTo(primary);
             (marker as any).__layerType = 'ais_live_shipping_toggle';
             (marker as any).__layerTitle = 'AIS Live Ship Positions';
@@ -18632,9 +18631,6 @@ const MapView: React.FC<MapViewProps> = ({
           }
           try {
             const cog = typeof vessel.cog === 'number' ? vessel.cog : 0;
-            const sog = typeof vessel.sog === 'number' ? vessel.sog : null;
-            const mmsi = vessel.mmsi ?? '—';
-            const name = vessel.shipName || `MMSI ${mmsi}`;
             const heading = typeof vessel.trueHeading === 'number' && vessel.trueHeading >= 0 && vessel.trueHeading <= 359 ? vessel.trueHeading : cog;
 
             const iconHtml = `<div style="
@@ -18658,26 +18654,9 @@ const MapView: React.FC<MapViewProps> = ({
               }),
             });
 
-            const dist =
-              typeof vessel.distance_miles === 'number'
-                ? `<div><strong>Distance:</strong> ${vessel.distance_miles.toFixed(1)} mi</div>`
-                : '';
-            const popupContent = `
-              <div style="min-width: 220px; max-width: 360px;">
-                <h3 style="margin: 0 0 8px 0; color: #1f2937; font-weight: 600; font-size: 14px;">
-                  ${shipIcon} ${name}
-                </h3>
-                <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
-                  <div><strong>MMSI:</strong> ${mmsi}</div>
-                  ${dist}
-                  ${sog !== null ? `<div><strong>SOG:</strong> ${sog.toFixed(1)} kn</div>` : ''}
-                  <div><strong>COG:</strong> ${cog.toFixed(0)}°</div>
-                  ${typeof vessel.navigationalStatus === 'number' ? `<div><strong>Nav status:</strong> ${vessel.navigationalStatus}</div>` : ''}
-                </div>
-              </div>
-            `;
+            const popupContent = buildAisShipPopupHtml(vessel as Record<string, unknown>, { shipIcon });
 
-            marker.bindPopup(popupContent, { maxWidth: 400 });
+            marker.bindPopup(popupContent, { maxWidth: 440 });
             marker.addTo(primary);
             (marker as any).__layerType = 'ais_live_shipping';
             (marker as any).__layerTitle = 'AIS Live Ship Positions';
@@ -51896,7 +51875,43 @@ const MapView: React.FC<MapViewProps> = ({
         {/* Basemap Dropdown and Weather Radar Toggle + Measure Tool - Desktop only */}
         {!isMobile && (
           <div className={`pointer-events-auto absolute top-4 ${isGlobalRiskMode ? 'left-80' : 'left-20'} flex gap-3 z-[1200] items-start`}>
-            <div className="bg-black text-white rounded-lg shadow-lg p-3 space-y-3 flex-shrink-0 border border-zinc-700" style={{ minWidth: '280px', maxWidth: '320px' }}>
+            <div
+              className="bg-black text-white rounded-lg shadow-lg p-3 space-y-3 flex-shrink-0 border border-zinc-700 min-w-0 overflow-x-auto overflow-y-auto max-h-[calc(100vh-2rem)]"
+              style={{ minWidth: '280px', maxWidth: '320px' }}
+            >
+            {onMapSearch && mapSearchInput !== undefined && onMapSearchInputChange && (
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setShowMapAddressSearch((v) => !v)}
+                  className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-white hover:bg-zinc-800 transition-colors bg-zinc-900 rounded border border-zinc-600"
+                  aria-expanded={showMapAddressSearch}
+                  title={showMapAddressSearch ? 'Hide location search' : 'Show location search'}
+                >
+                  <span className="flex items-center gap-2 min-w-0">
+                    <Search className="w-4 h-4 shrink-0 text-zinc-300" aria-hidden />
+                    <span className="truncate">Location search</span>
+                  </span>
+                  <span
+                    className={`shrink-0 text-zinc-400 transform transition-transform ${showMapAddressSearch ? 'rotate-180' : ''}`}
+                    aria-hidden
+                  >
+                    ▼
+                  </span>
+                </button>
+                {showMapAddressSearch && (
+                  <SingleSearchMapPanel
+                    searchInput={mapSearchInput}
+                    onSearchInputChange={onMapSearchInputChange}
+                    onSearch={onMapSearch}
+                    onLocationSearch={onMapLocationSearch}
+                    mapPickedLocation={mapPickedLocation}
+                    onClearMapPick={onClearMapPick}
+                    isLoading={mapSearchLoading}
+                  />
+                )}
+              </div>
+            )}
             <div>
               <div className="flex items-center justify-between mb-2 relative">
                 <label className="block text-sm font-semibold text-white">
@@ -51946,7 +51961,7 @@ const MapView: React.FC<MapViewProps> = ({
                   )}
                 </div>
               </div>
-              <div className="border border-zinc-600 rounded-md bg-zinc-950 max-h-96 overflow-y-auto">
+              <div className="border border-zinc-600 rounded-md bg-zinc-950 max-h-96 overflow-auto min-w-0">
                 {/* Thematic Basemap Themes - Collapsible */}
                 <div className="border-b border-zinc-600">
                   <button
@@ -52507,7 +52522,7 @@ const MapView: React.FC<MapViewProps> = ({
                 </span>
               </button>
               {showEventThemes && (
-                <div className="bg-zinc-950 mt-2 space-y-3 pt-2 max-h-[320px] overflow-y-auto overflow-x-hidden rounded border border-zinc-700">
+                <div className="bg-zinc-950 mt-2 space-y-3 pt-2 max-h-[320px] overflow-x-auto overflow-y-auto min-w-0 rounded border border-zinc-700">
                   {/* Weather — NEXRAD (FFG moved to Basemap Themes › NOAA) */}
                   <div className="px-3">
                     <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Weather</h4>
@@ -52570,8 +52585,14 @@ const MapView: React.FC<MapViewProps> = ({
                       )}
                       <div className="relative group">
                         <Info className="w-4 h-4 text-zinc-400 hover:text-zinc-200 transition-colors cursor-help" />
-                        <div className="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                          Uses AIS Stream (server-side). Radius follows your enrichment setting for this layer when selected (default 50 mi), or 50 mi otherwise. Refreshes about every 45 seconds while enabled.
+                        <div className="absolute left-0 bottom-full mb-2 w-72 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                          <div className="font-semibold text-amber-200 mb-1">aisstream.io is in BETA!</div>
+                          <p className="mb-2 text-zinc-100">
+                            aisstream.io is still a new service and currently is in BETA. We make no guarantees and provide no SLA for the uptime of our service!
+                          </p>
+                          <p className="pt-2 border-t border-zinc-600 text-zinc-300">
+                            Uses AIS Stream (server-side). Radius follows your enrichment setting for this layer when selected (default 50 mi), or 50 mi otherwise. Refreshes about every 45 seconds while enabled.
+                          </p>
                           <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                         </div>
                       </div>
@@ -52833,7 +52854,7 @@ const MapView: React.FC<MapViewProps> = ({
         
         {/* Weather basemap overlays + Event Themes - Mobile */}
         {isMobile && !isGlobalRiskMode && (
-          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10" style={{ minWidth: '200px', maxWidth: '280px' }}>
+          <div className="absolute top-4 left-4 bg-white rounded-lg shadow-lg p-3 z-10 min-w-0 overflow-x-auto overflow-y-auto max-h-[calc(100vh-3rem)]" style={{ minWidth: '200px', maxWidth: '280px' }}>
             <button
               type="button"
               onClick={() => setShowWeatherBasemapMobile(!showWeatherBasemapMobile)}
@@ -52845,7 +52866,7 @@ const MapView: React.FC<MapViewProps> = ({
               </span>
             </button>
             {showWeatherBasemapMobile && (
-              <div className="rounded mb-2 space-y-2 max-h-[280px] overflow-y-auto">
+              <div className="rounded mb-2 space-y-2 max-h-[280px] overflow-auto min-w-0">
                 <div className="bg-sky-50/90 rounded px-3 py-2 space-y-1">
                   <div className="text-[10px] font-semibold text-gray-800">Winter Weather Outlook</div>
                   <p className="text-[10px] text-gray-600 leading-snug">WPC Day 4–7. Same as Basemap Themes → Weather.</p>
@@ -52911,7 +52932,7 @@ const MapView: React.FC<MapViewProps> = ({
               </span>
             </button>
             {showEventThemes && (
-              <div className="bg-gray-50 rounded space-y-2 pt-2 max-h-[260px] overflow-y-auto overflow-x-hidden">
+              <div className="bg-gray-50 rounded space-y-2 pt-2 max-h-[260px] overflow-x-auto overflow-y-auto min-w-0">
                 <div className="px-3 pb-1">
                   <div className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">Weather</div>
                   <label className="flex items-center space-x-2 cursor-pointer">
@@ -52956,6 +52977,19 @@ const MapView: React.FC<MapViewProps> = ({
                     🚢 AIS Live Ship Positions
                   </span>
                   {aisToggleLoading && <span className="text-xs text-gray-500">…</span>}
+                  <div className="relative group">
+                    <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors cursor-help" />
+                    <div className="absolute left-0 bottom-full mb-2 w-72 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
+                      <div className="font-semibold text-amber-200 mb-1">aisstream.io is in BETA!</div>
+                      <p className="mb-2 text-zinc-100">
+                        aisstream.io is still a new service and currently is in BETA. We make no guarantees and provide no SLA for the uptime of our service!
+                      </p>
+                      <p className="pt-2 border-t border-zinc-600 text-zinc-300">
+                        Uses AIS Stream (server-side). Radius follows your enrichment setting for this layer when selected (default 50 mi), or 50 mi otherwise. Refreshes about every 45 seconds while enabled.
+                      </p>
+                      <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer px-3 border-t border-gray-200 pt-2">
                   <input

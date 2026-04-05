@@ -419,6 +419,69 @@ function App() {
     }
   };
 
+  /** Same as homepage search / location search but keeps map view (desktop map panel). */
+  const handleMapViewSearch = async (address: string) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+      const enrichmentService = new EnrichmentService();
+      const result = mapPickedLocation
+        ? await enrichmentService.enrichSingleLocationFromCoordinates(
+            mapPickedLocation.lat,
+            mapPickedLocation.lon,
+            selectedEnrichments,
+            poiRadii,
+            poiYears
+          )
+        : await enrichmentService.enrichSingleLocation(address, selectedEnrichments, poiRadii, poiYears);
+      setMapPickedLocation(null);
+      setEnrichmentResults([result]);
+    } catch (error) {
+      console.error('Map view search failed:', error);
+      setError(error instanceof Error ? error.message : 'Search failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMapViewLocationSearch = async () => {
+    try {
+      setError(null);
+      setIsLoading(true);
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by your browser');
+      }
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        });
+      });
+      const { latitude, longitude } = position.coords;
+      const locationString = `${latitude}, ${longitude}`;
+      const enrichmentService = new EnrichmentService();
+      const result = await enrichmentService.enrichSingleLocation(
+        locationString,
+        selectedEnrichments,
+        poiRadii,
+        poiYears
+      );
+      setEnrichmentResults([result]);
+    } catch (error) {
+      console.error('Map view location search failed:', error);
+      if (error instanceof Error && error.message.includes('timeout')) {
+        setError('Location request timed out. Please try again or use manual address entry.');
+      } else if (error instanceof Error && error.message.includes('denied')) {
+        setError('Location access denied. Please enable location services or use manual address entry.');
+      } else {
+        setError(error instanceof Error ? error.message : 'Location search failed. Please try again or use manual address entry.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleViewMap = () => {
     // Save the current view mode before switching to map
     setPreviousViewMode(viewMode);
@@ -760,6 +823,13 @@ function App() {
               onPickLocationForEnrichment={handleMapPickForEnrichment}
               isMobile={isMobile}
               previousViewMode={previousViewMode}
+              mapSearchInput={searchInput}
+              onMapSearchInputChange={setSearchInput}
+              onMapSearch={handleMapViewSearch}
+              onMapLocationSearch={handleMapViewLocationSearch}
+              mapPickedLocation={mapPickedLocation}
+              onClearMapPick={() => setMapPickedLocation(null)}
+              mapSearchLoading={isLoading}
               initialCenter={
                 enrichmentResults.length === 0 
                   ? [37.0902, -95.7129] as [number, number] // US center (North America)

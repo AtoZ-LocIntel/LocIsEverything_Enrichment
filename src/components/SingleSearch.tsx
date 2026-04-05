@@ -293,4 +293,138 @@ const SingleSearch: React.FC<SingleSearchProps> = ({
   );
 };
 
+/** Compact search form (same behavior as homepage Single Search) for map panel / narrow layouts. */
+export interface SingleSearchMapPanelProps {
+  searchInput: string;
+  onSearchInputChange: (value: string) => void;
+  onSearch: (address: string) => Promise<void>;
+  onLocationSearch?: () => Promise<void>;
+  mapPickedLocation?: { lat: number; lon: number } | null;
+  onClearMapPick?: () => void;
+  isLoading?: boolean;
+}
+
+export function SingleSearchMapPanel({
+  searchInput,
+  onSearchInputChange,
+  onSearch,
+  onLocationSearch,
+  mapPickedLocation,
+  onClearMapPick,
+  isLoading = false,
+}: SingleSearchMapPanelProps) {
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchInput.trim()) return;
+    try {
+      await onSearch(searchInput.trim());
+    } catch (error) {
+      console.error('Search failed:', error);
+    }
+  };
+
+  return (
+    <div className="rounded-md border border-zinc-600 bg-zinc-900/80 p-2.5 space-y-2">
+      {mapPickedLocation && onClearMapPick && (
+        <div className="flex items-start gap-2 rounded border border-emerald-700/50 bg-emerald-950/50 px-2 py-1.5 text-[11px] text-emerald-100">
+          <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-400" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-white">Map point selected</p>
+            <p className="text-emerald-200/90 mt-0.5 leading-snug">
+              Run search to analyze this coordinate, or clear to use address search.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClearMapPick}
+            className="shrink-0 rounded p-0.5 text-emerald-300 hover:bg-emerald-900/50 hover:text-white"
+            title="Use address search instead"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <div>
+          <label htmlFor="map-panel-address" className="block text-[11px] font-medium text-zinc-300 mb-1">
+            Address, Zip, City, POI, or Lat/Long
+          </label>
+          <div className="relative">
+            <input
+              id="map-panel-address"
+              type="text"
+              value={searchInput}
+              onChange={(e) => onSearchInputChange(e.target.value)}
+              placeholder="e.g., 3050 Coast Rd, Santa Cruz, CA"
+              className="form-input text-sm pl-9 pr-8 py-2 w-full bg-zinc-100 text-black border-zinc-500"
+              disabled={isLoading}
+            />
+            <Search className="w-4 h-4 text-gray-500 absolute top-1/2 -translate-y-1/2 left-2.5" />
+            {searchInput.trim() && (
+              <button
+                type="button"
+                onClick={() => onSearchInputChange('')}
+                className="absolute top-1/2 -translate-y-1/2 right-2 p-0.5 text-gray-500 hover:text-gray-700"
+                title="Clear"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+        <button
+          type="submit"
+          disabled={!searchInput.trim() || isLoading}
+          className="btn btn-primary w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Searching…</span>
+            </>
+          ) : mapPickedLocation ? (
+            <>
+              <MapPin className="w-4 h-4" />
+              <span>Run enrichments on map point</span>
+            </>
+          ) : (
+            <>
+              <Search className="w-4 h-4" />
+              <span>Search location</span>
+            </>
+          )}
+        </button>
+        {onLocationSearch && (
+          <button
+            type="button"
+            onClick={async () => {
+              setIsLocationLoading(true);
+              try {
+                await onLocationSearch();
+              } catch (error) {
+                console.error('Location search failed:', error);
+              } finally {
+                setIsLocationLoading(false);
+              }
+            }}
+            disabled={isLocationLoading}
+            className="btn w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold bg-orange-800 text-white border border-orange-700/90 hover:bg-orange-700 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isLocationLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Getting location…</span>
+              </>
+            ) : (
+              <span>Search from my location</span>
+            )}
+          </button>
+        )}
+      </form>
+    </div>
+  );
+}
+
 export default SingleSearch;
