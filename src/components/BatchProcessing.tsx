@@ -408,7 +408,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
             </div>
             <div>
               <h3 className="text-xl font-bold text-white" style={{ fontFamily: 'Quicksand, sans-serif' }}>
-                Batch Address Processing
+                Upload CSV
               </h3>
               <p className="text-xs text-gray-200">Upload CSV → map columns → run geocoding & enrichment</p>
             </div>
@@ -652,7 +652,7 @@ const BatchProcessing: React.FC<BatchProcessingProps> = ({
                 </h4>
                 <div className="text-sm text-blue-700 space-y-1">
                   <div>
-                    • <strong>Customize your batch:</strong> Scroll down to select which data sources to include
+                    • <strong>Customize your batch:</strong> Click the back button to select which data sources to include
                   </div>
                   <div>
                     • <strong>Set search radii:</strong> Configure how far to search for points of interest

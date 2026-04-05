@@ -4,7 +4,8 @@ import { debugScroll } from './utils/scrollDebug';
 
 import Header from './components/Header';
 import SingleSearch from './components/SingleSearch';
-import BatchProcessing, { createEmptyBatchFileState } from './components/BatchProcessing';
+import { createEmptyBatchFileState } from './components/BatchProcessing';
+import BatchProcessingPage from './components/BatchProcessingPage';
 import MapView from './components/MapView';
 import MobileResultsView from './components/MobileResultsView';
 import DesktopResultsView from './components/DesktopResultsView';
@@ -22,7 +23,15 @@ import { EnrichmentService } from './services/EnrichmentService';
 import { GeocodeResult } from './lib/types';
 import { Heart } from 'lucide-react';
 
-export type ViewMode = 'config' | 'map' | 'mobile-results' | 'desktop-results' | 'data-sources' | 'enrichment-category' | 'pro-tips';
+export type ViewMode =
+  | 'config'
+  | 'batch'
+  | 'map'
+  | 'mobile-results'
+  | 'desktop-results'
+  | 'data-sources'
+  | 'enrichment-category'
+  | 'pro-tips';
 
 export interface EnrichmentResult {
   location: GeocodeResult;
@@ -559,6 +568,22 @@ function App() {
     setViewMode('data-sources');
   };
 
+  const handleViewBatchProcessing = () => {
+    setViewMode('batch');
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 0);
+  };
+
+  const handleBackFromBatch = () => {
+    setViewMode('config');
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  };
+
   const handleViewProTips = () => {
     setViewMode('pro-tips');
     // Scroll to top immediately when opening Pro Tips page
@@ -623,9 +648,10 @@ function App() {
       />
       
       {/* Only show header when not in full-screen views and not on mobile */}
-      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results', 'map'].includes(viewMode) && !isMobile && (
-        <Header onViewDataSources={handleViewDataSources} />
-      )}
+      {!['data-sources', 'enrichment-category', 'desktop-results', 'mobile-results', 'map', 'batch'].includes(viewMode) &&
+        !isMobile && (
+          <Header onViewDataSources={handleViewDataSources} onViewBatchProcessing={handleViewBatchProcessing} />
+        )}
       
       {viewMode === 'config' ? (
         <div className={`${isMobile ? 'pt-8' : 'pt-28'} px-2 sm:px-4 md:px-6 main-container`}>
@@ -703,16 +729,15 @@ function App() {
                   onViewMap={!isMobile ? handleViewMapForBasemaps : undefined}
                 />
               </div>
-              {!isMobile && (
-                <div data-section="batch-processing">
-                  <BatchProcessing
-                    batchFile={batchFileState}
-                    onBatchFileChange={setBatchFileState}
-                    onComplete={handleBatchComplete}
-                    selectedEnrichments={selectedEnrichments}
-                    poiRadii={poiRadii}
-                    onLoadingChange={setIsLoading}
-                  />
+              {isMobile && (
+                <div className="flex justify-center -mt-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={handleViewBatchProcessing}
+                    className="text-sm font-medium text-blue-400 hover:text-blue-300 underline decoration-blue-400/60"
+                  >
+                    Batch CSV processing
+                  </button>
                 </div>
               )}
             </div>
@@ -774,6 +799,16 @@ function App() {
         <ProTipsPage
           onBack={handleBackToMain}
           onViewDataSources={handleViewDataSources}
+        />
+      ) : viewMode === 'batch' ? (
+        <BatchProcessingPage
+          onBack={handleBackFromBatch}
+          batchFile={batchFileState}
+          onBatchFileChange={setBatchFileState}
+          onComplete={handleBatchComplete}
+          selectedEnrichments={selectedEnrichments}
+          poiRadii={poiRadii}
+          onLoadingChange={setIsLoading}
         />
       ) : viewMode === 'enrichment-category' ? (
         isMobile ? (

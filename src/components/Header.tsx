@@ -6,6 +6,8 @@ import ContactModal from './ContactModal';
 
 interface HeaderProps {
   onViewDataSources?: () => void;
+  /** Opens full-screen batch CSV UI (desktop). */
+  onViewBatchProcessing?: () => void;
 }
 
 /** Homepage header — rounded-lg like “View in Map”, slightly tighter than results bar to fit nav */
@@ -15,7 +17,7 @@ const HEADER_ACTION_BTN =
 const HEADER_ACTION_BTN_MD =
   'hidden md:inline-flex items-center justify-center gap-1.5 rounded-lg bg-blue-600 text-white px-3 py-2 text-sm font-medium shadow-sm hover:bg-blue-700 active:bg-blue-800 transition-colors cursor-pointer whitespace-nowrap [&_svg]:text-white [&_svg]:shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5';
 
-const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
+const Header: React.FC<HeaderProps> = ({ onViewDataSources, onViewBatchProcessing }) => {
   const [showDocs, setShowDocs] = useState(false);
   const [showAddSource, setShowAddSource] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
@@ -126,10 +128,8 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                 Single Search
               </button>
               <button 
-                onClick={() => {
-                  const element = document.querySelector('[data-section="batch-processing"]');
-                  element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
+                type="button"
+                onClick={() => onViewBatchProcessing?.()}
                 className={HEADER_ACTION_BTN}
               >
                 <BarChart3 />
@@ -471,13 +471,7 @@ const Header: React.FC<HeaderProps> = ({ onViewDataSources }) => {
                       className="btn btn-outline"
                       onClick={() => {
                         setShowDocs(false);
-                        // Scroll to batch processing section
-                        setTimeout(() => {
-                          const batchSection = document.querySelector('#batch-processing-section');
-                          if (batchSection) {
-                            batchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
-                        }, 100);
+                        onViewBatchProcessing?.();
                       }}
                     >
                       <FileText className="w-4 h-4 mr-2" />
