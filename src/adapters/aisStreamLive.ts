@@ -27,6 +27,7 @@ export interface AISLiveSnapshotDebug {
   parsedPositions?: number;
   featuresBeforeRadiusFilter?: number;
   hint?: string;
+  note?: string;
 }
 
 export async function fetchAISLivePositionReports(
@@ -54,10 +55,13 @@ export async function fetchAISLivePositionReports(
   const res = await fetch(`/api/aisstream/snapshot?${params}`);
   const ct = res.headers.get('content-type') || '';
   if (!ct.includes('application/json')) {
+    const prodHint =
+      typeof import.meta !== 'undefined' && import.meta.env?.PROD === true
+        ? ' Production: the app received HTML instead of JSON — usually the SPA fallback is handling /api/aisstream/snapshot (fix vercel.json so /api/* is not rewritten to index.html). AISSTREAM_API_KEY on Vercel is correct for the serverless function once the route is hit.'
+        : ' Local: use `npm run dev` with AISSTREAM_API_KEY in .env, or set VITE_AIS_PROXY_TARGET to your deployed site.';
     return {
       features: [],
-      error:
-        'AIS snapshot response was not JSON (often the SPA HTML). Use `npm run dev` with AISSTREAM_API_KEY in .env, or set VITE_AIS_PROXY_TARGET to your deployed site.',
+      error: `AIS snapshot response was not JSON (often the SPA HTML).${prodHint}`,
     };
   }
 
@@ -83,6 +87,7 @@ export async function fetchAISLivePositionReports(
       parsedPositions: debugPayload.parsedPositions,
       beforeFilter: debugPayload.featuresBeforeRadiusFilter,
       hint: debugPayload.hint,
+      note: debugPayload.note,
       center: debugPayload.center,
       radiusMiles: debugPayload.radiusMiles,
     };

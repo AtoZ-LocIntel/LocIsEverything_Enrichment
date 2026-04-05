@@ -28,6 +28,40 @@ function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number):
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/**
+ * AIS Stream subscription boxes: each corner [latitude, longitude] per docs.
+ * When the search radius crosses the antimeridian (±180°), a single [minLon, maxLon] interval
+ * cannot describe the region — use two boxes (no overlap duplication per AIS Stream docs).
+ */
+function buildBoundingBoxesForRadiusMiles(lat: number, lon: number, radiusMiles: number): number[][][] {
+  const dLat = milesToLatDelta(radiusMiles);
+  const dLon = milesToLonDelta(radiusMiles, lat);
+  const minLat = Math.max(-90, lat - dLat);
+  const maxLat = Math.min(90, lat + dLat);
+  const minLon = lon - dLon;
+  const maxLon = lon + dLon;
+
+  if (minLon >= -180 && maxLon <= 180) {
+    return [[[minLat, minLon], [maxLat, maxLon]]];
+  }
+
+  const boxes: number[][][] = [];
+
+  if (maxLon > 180) {
+    const overflow = maxLon - 180;
+    boxes.push([[minLat, Math.max(-180, minLon)], [maxLat, 180]]);
+    boxes.push([[minLat, -180], [maxLat, -180 + overflow]]);
+  } else if (minLon < -180) {
+    const under = -180 - minLon;
+    boxes.push([[minLat, -180], [maxLat, Math.min(180, maxLon)]]);
+    boxes.push([[minLat, 180 - under], [maxLat, 180]]);
+  } else {
+    boxes.push([[minLat, Math.max(-180, minLon)], [maxLat, Math.min(180, maxLon)]]);
+  }
+
+  return boxes;
+}
+
 export interface AISStreamFeature {
   mmsi: string;
   lat: number;
@@ -263,11 +297,11 @@ export async function runAISStreamSnapshotQuery(
   const dLon = milesToLonDelta(radiusMiles, lat);
   const minLat = Math.max(-90, lat - dLat);
   const maxLat = Math.min(90, lat + dLat);
-  const minLon = Math.max(-180, lon - dLon);
-  const maxLon = Math.min(180, lon + dLon);
+  const rawMinLon = lon - dLon;
+  const rawMaxLon = lon + dLon;
 
   /** Official docs: each corner is [latitude, longitude] (see aisstream.io documentation). */
-  const boundingBoxes: number[][][] = [[[minLat, minLon], [maxLat, maxLon]]];
+  const boundingBoxes = buildBoundingBoxesForRadiusMiles(lat, lon, radiusMiles);
 
   const collectMs = Math.min(
     15000,
@@ -288,7 +322,14 @@ export async function runAISStreamSnapshotQuery(
 
     const body: Record<string, unknown> = {
       collectedAt: new Date().toISOString(),
-      bbox: { minLat, maxLat, minLon, maxLon },
+      bbox: {
+        minLat,
+        maxLat,
+        minLon: rawMinLon,
+        maxLon: rawMaxLon,
+        crossesAntimeridian: rawMinLon < -180 || rawMaxLon > 180,
+        subscriptionBoxCount: boundingBoxes.length,
+      },
       count: filtered.length,
       features: filtered,
     };
@@ -302,6 +343,8 @@ export async function runAISStreamSnapshotQuery(
         rawWsMessages: stats.rawMessageCount,
         parsedPositions: stats.parsedPositionCount,
         featuresBeforeRadiusFilter: features.length,
+        note:
+          'AIS Stream is global; each request subscribes to region(s) around lat/lon and radiusMiles, then filters by great-circle distance. Results are ships near your search point, not worldwide.',
         hint:
           stats.rawMessageCount === 0
             ? 'No WebSocket messages — check API key, network, or try a busy port/coastal bbox.'
