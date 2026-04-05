@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { runAISStreamSnapshotQuery } from './aisstream/snapshotCore';
+import { runAISStreamSnapshotQuery } from '../lib/aisStreamSnapshotCore.js';
 
 /** Snapshot needs several seconds to collect WebSocket messages. */
 export const config = {

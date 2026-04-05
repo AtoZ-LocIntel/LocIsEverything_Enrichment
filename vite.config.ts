@@ -35,7 +35,7 @@ function aisSnapshotDevPlugin(mode: string) {
             if (ais) {
               process.env.AISSTREAM_API_KEY = ais
             }
-            const { runAISStreamSnapshotQuery } = await import('./api/aisstream/snapshotCore.ts')
+            const { runAISStreamSnapshotQuery } = await import('./lib/aisStreamSnapshotCore.ts')
             const u = new URL(url, 'http://localhost')
             const query: Record<string, string | string[]> = {}
             u.searchParams.forEach((v, k) => {

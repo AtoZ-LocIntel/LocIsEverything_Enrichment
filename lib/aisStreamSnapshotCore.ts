@@ -1,5 +1,6 @@
 /**
  * Shared AIS Stream snapshot logic (Vercel serverless + Vite dev middleware).
+ * Lives under /lib so Vercel bundles it with api/ais-snapshot.ts (nested api/aisstream/* was missing at runtime).
  */
 import WebSocket from 'ws';
 
