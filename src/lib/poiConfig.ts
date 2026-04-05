@@ -4030,4 +4030,18 @@ class POIConfigManager {
   }
 }
 
+/**
+ * Summary form (Desktop/Mobile): enrichment result keys that belong under "Global Risk"
+ * — every POI with `section: global_risk`, plus OpenSky (Global Risk TOC) which has no POI row.
+ */
+export function isGlobalRiskEnrichmentKey(key: string): boolean {
+  if (key.startsWith('opensky_flights')) return true;
+  for (const p of DEFAULT_POI_TYPES) {
+    if (p.section !== 'global_risk') continue;
+    const id = p.id;
+    if (key === id || key.startsWith(`${id}_`)) return true;
+  }
+  return false;
+}
+
 export const poiConfigManager = POIConfigManager.getInstance();

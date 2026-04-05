@@ -9012,9 +9012,15 @@ const MapView: React.FC<MapViewProps> = ({
 
         setAisToggleLoading(true);
         const { fetchAISLivePositionReports } = await import('../adapters/aisStreamLive');
-        const { features, error: aisErr, hint: aisHint } = await fetchAISLivePositionReports(lat, lon, radiusMiles);
+        const { features, error: aisErr, hint: aisHint, debug: aisDbg } = await fetchAISLivePositionReports(
+          lat,
+          lon,
+          radiusMiles
+        );
         if (aisErr) {
           console.warn('AIS toggle:', aisErr, aisHint || '');
+        } else if (import.meta.env.DEV && (!features || features.length === 0) && aisDbg) {
+          console.warn('AIS toggle: 0 vessels — see [AIS snapshot] diagnostics above (dev).', aisDbg.hint || '');
         }
 
         clearMarkers();
@@ -9037,21 +9043,22 @@ const MapView: React.FC<MapViewProps> = ({
 
             const iconHtml = `<div style="
                 transform: rotate(${heading}deg);
-                width: 22px;
-                height: 22px;
+                width: 36px;
+                height: 36px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 16px;
-                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+                font-size: 26px;
+                line-height: 1;
+                filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4));
               ">🚢</div>`;
 
             const marker = L.marker([vlat, vlon], {
               icon: L.divIcon({
                 className: 'custom-marker',
                 html: iconHtml,
-                iconSize: [22, 22],
-                iconAnchor: [11, 11],
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
               }),
             });
 
@@ -18632,21 +18639,22 @@ const MapView: React.FC<MapViewProps> = ({
 
             const iconHtml = `<div style="
                 transform: rotate(${heading}deg);
-                width: 22px;
-                height: 22px;
+                width: 36px;
+                height: 36px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 16px;
-                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+                font-size: 26px;
+                line-height: 1;
+                filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4));
               ">🚢</div>`;
 
             const marker = L.marker([lat, lon], {
               icon: L.divIcon({
                 className: 'custom-marker',
                 html: iconHtml,
-                iconSize: [22, 22],
-                iconAnchor: [11, 11],
+                iconSize: [36, 36],
+                iconAnchor: [18, 18],
               }),
             });
 

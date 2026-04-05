@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Download, ArrowLeft } from 'lucide-react';
 import { EnrichmentResult } from '../App';
+import { isGlobalRiskEnrichmentKey } from '../lib/poiConfig';
 
 interface DesktopResultsViewProps {
   results: EnrichmentResult[];
@@ -1020,7 +1021,7 @@ const DesktopResultsView: React.FC<DesktopResultsViewProps> = ({
         category = 'Watching the Weather';
       } else if (key.includes('mdb_gtfs_feeds')) {
         category = 'Mobility';
-      } else if (key.includes('portwatch_disruptions') || key.includes('portwatch_chokepoints') || key.includes('portwatch_ports') || key.includes('acled') || key.includes('climate_risks') || key.includes('spillovers_port_impact') || key.includes('usgs_earthquakes') || key.includes('global_oil_gas_') || key.includes('maritime_boundaries') || key.includes('global_data_centers_osm') || key.includes('global_desalination_plants_osm')) {
+      } else if (isGlobalRiskEnrichmentKey(key)) {
         category = 'Global Risk';
       } else if (key.includes('weather') || key.includes('climate')) {
         category = 'Weather & Climate';

@@ -43,28 +43,53 @@ export interface AISStreamFeature {
   distance_miles?: number;
 }
 
-function extractPositionPayload(msg: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+function normalizeNum(v: unknown): number | null {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = parseFloat(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+function extractPositionPayload(
+  msg: Record<string, unknown> | undefined,
+  messageType: string | undefined
+): Record<string, unknown> | undefined {
   if (!msg) return undefined;
-  return (msg.PositionReport ||
+  const explicit =
+    msg.PositionReport ||
     msg.StandardClassBPositionReport ||
     msg.ExtendedClassBPositionReport ||
     msg.positionreport ||
-    msg.standardclassbpositionreport) as Record<string, unknown> | undefined;
+    msg.standardclassbpositionreport;
+  if (explicit && typeof explicit === 'object') {
+    return explicit as Record<string, unknown>;
+  }
+  if (messageType && typeof msg[messageType] === 'object' && msg[messageType]) {
+    return msg[messageType] as Record<string, unknown>;
+  }
+  return undefined;
 }
 
 function parsePositionMessage(raw: Record<string, unknown>): AISStreamFeature | null {
   const msg = raw.Message as Record<string, unknown> | undefined;
-  const pr = extractPositionPayload(msg);
-  if (!pr) return null;
+  const mt = typeof raw.MessageType === 'string' ? raw.MessageType : undefined;
+  const pr = extractPositionPayload(msg, mt);
 
-  const lat = pr.Latitude ?? pr.latitude;
-  const lon = pr.Longitude ?? pr.longitude;
-  if (typeof lat !== 'number' || typeof lon !== 'number' || Number.isNaN(lat) || Number.isNaN(lon)) {
+  const meta = (raw.MetaData || raw.Metadata || {}) as Record<string, unknown>;
+
+  let lat = pr ? normalizeNum(pr.Latitude ?? pr.latitude) : null;
+  let lon = pr ? normalizeNum(pr.Longitude ?? pr.longitude) : null;
+  if (lat == null || lon == null) {
+    lat = normalizeNum(meta.Latitude ?? meta.latitude);
+    lon = normalizeNum(meta.Longitude ?? meta.longitude);
+  }
+  if (lat == null || lon == null) {
     return null;
   }
 
-  const meta = (raw.MetaData || raw.Metadata || {}) as Record<string, unknown>;
-  const userId = pr.UserID ?? pr.userId;
+  const userId = pr ? pr.UserID ?? pr.userId : undefined;
   const mmsi =
     meta.MMSI != null
       ? String(meta.MMSI)
@@ -77,19 +102,30 @@ function parsePositionMessage(raw: Record<string, unknown>): AISStreamFeature | 
     (typeof meta.shipName === 'string' && meta.shipName.trim()) ||
     undefined;
 
+  const sogN = pr ? normalizeNum(pr.Sog ?? pr.sog) : null;
+  const cogN = pr ? normalizeNum(pr.Cog ?? pr.cog) : null;
+  const navN = pr ? normalizeNum(pr.NavigationalStatus ?? pr.navigationalstatus) : null;
+  const thN = pr ? normalizeNum(pr.TrueHeading ?? pr.trueheading) : null;
+  const tsN = pr ? normalizeNum(pr.Timestamp ?? pr.timestamp) : null;
+
   return {
     mmsi: mmsi || 'unknown',
     lat,
     lon,
     latitude: lat,
     longitude: lon,
-    sog: typeof pr.Sog === 'number' ? pr.Sog : undefined,
-    cog: typeof pr.Cog === 'number' ? pr.Cog : undefined,
-    navigationalStatus: typeof pr.NavigationalStatus === 'number' ? pr.NavigationalStatus : undefined,
-    trueHeading: typeof pr.TrueHeading === 'number' ? pr.TrueHeading : undefined,
-    timestamp: typeof pr.Timestamp === 'number' ? pr.Timestamp : undefined,
+    sog: sogN ?? undefined,
+    cog: cogN ?? undefined,
+    navigationalStatus: navN ?? undefined,
+    trueHeading: thN ?? undefined,
+    timestamp: tsN ?? undefined,
     shipName,
   };
+}
+
+interface CollectSnapshotStats {
+  rawMessageCount: number;
+  parsedPositionCount: number;
 }
 
 function collectSnapshot(
@@ -97,11 +133,13 @@ function collectSnapshot(
   boundingBoxes: number[][][],
   collectMs: number,
   maxMessages: number
-): Promise<AISStreamFeature[]> {
+): Promise<{ features: AISStreamFeature[]; stats: CollectSnapshotStats }> {
   return new Promise((resolve, reject) => {
     const byMmsi = new Map<string, AISStreamFeature>();
     let finished = false;
     let messageCount = 0;
+    let rawMessageCount = 0;
+    let parsedPositionCount = 0;
 
     const ws = new WebSocket(AIS_STREAM_URL);
 
@@ -114,7 +152,10 @@ function collectSnapshot(
       } catch {
         /* ignore */
       }
-      resolve([...byMmsi.values()]);
+      resolve({
+        features: [...byMmsi.values()],
+        stats: { rawMessageCount, parsedPositionCount },
+      });
     };
 
     const timer = setTimeout(done, collectMs);
@@ -131,12 +172,16 @@ function collectSnapshot(
     ws.on('message', (data: WebSocket.RawData) => {
       if (finished) return;
       try {
+        rawMessageCount++;
         const raw = JSON.parse(String(data)) as Record<string, unknown>;
         const feature = parsePositionMessage(raw);
-        if (feature && feature.mmsi !== 'unknown') {
-          byMmsi.set(feature.mmsi, feature);
-        } else if (feature) {
-          byMmsi.set(`${feature.lat.toFixed(5)},${feature.lon.toFixed(5)}`, feature);
+        if (feature) {
+          parsedPositionCount++;
+          if (feature.mmsi !== 'unknown') {
+            byMmsi.set(feature.mmsi, feature);
+          } else {
+            byMmsi.set(`${feature.lat.toFixed(5)},${feature.lon.toFixed(5)}`, feature);
+          }
         }
         messageCount++;
         if (messageCount >= maxMessages) {
@@ -157,7 +202,10 @@ function collectSnapshot(
         /* ignore */
       }
       if (byMmsi.size > 0) {
-        resolve([...byMmsi.values()]);
+        resolve({
+          features: [...byMmsi.values()],
+          stats: { rawMessageCount, parsedPositionCount },
+        });
       } else {
         reject(err);
       }
@@ -218,15 +266,18 @@ export async function runAISStreamSnapshotQuery(
   const minLon = Math.max(-180, lon - dLon);
   const maxLon = Math.min(180, lon + dLon);
 
-  const boundingBoxes: number[][][] = [[[maxLat, minLon], [minLat, maxLon]]];
+  /** Official docs: each corner is [latitude, longitude] (see aisstream.io documentation). */
+  const boundingBoxes: number[][][] = [[[minLat, minLon], [maxLat, maxLon]]];
 
   const collectMs = Math.min(
     15000,
     Math.max(4000, parseInt(pickQuery(query, 'collectMs') || '12000', 10) || 12000)
   );
 
+  const wantDebug = pickQuery(query, 'debug') === '1';
+
   try {
-    const features = await collectSnapshot(apiKey, boundingBoxes, collectMs, 4000);
+    const { features, stats } = await collectSnapshot(apiKey, boundingBoxes, collectMs, 4000);
     const filtered = features
       .map((f) => {
         const d = haversineMiles(lat, lon, f.lat, f.lon);
@@ -235,14 +286,36 @@ export async function runAISStreamSnapshotQuery(
       .filter((f) => f.distance_miles! <= radiusMiles + 0.5)
       .sort((a, b) => (a.distance_miles ?? 0) - (b.distance_miles ?? 0));
 
+    const body: Record<string, unknown> = {
+      collectedAt: new Date().toISOString(),
+      bbox: { minLat, maxLat, minLon, maxLon },
+      count: filtered.length,
+      features: filtered,
+    };
+
+    if (wantDebug) {
+      body.debug = {
+        boundingBoxes,
+        collectMs,
+        radiusMiles,
+        center: { lat, lon },
+        rawWsMessages: stats.rawMessageCount,
+        parsedPositions: stats.parsedPositionCount,
+        featuresBeforeRadiusFilter: features.length,
+        hint:
+          stats.rawMessageCount === 0
+            ? 'No WebSocket messages — check API key, network, or try a busy port/coastal bbox.'
+            : stats.parsedPositionCount === 0
+              ? 'Messages received but none parsed as positions — message shape may have changed.'
+              : features.length === 0 && filtered.length === 0
+                ? 'Positions parsed but none within radius (try larger radius or coastal area).'
+                : undefined,
+      };
+    }
+
     return {
       status: 200,
-      body: {
-        collectedAt: new Date().toISOString(),
-        bbox: { minLat, maxLat, minLon, maxLon },
-        count: filtered.length,
-        features: filtered,
-      },
+      body,
     };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Unknown error';

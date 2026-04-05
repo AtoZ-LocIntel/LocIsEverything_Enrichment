@@ -31,11 +31,12 @@ const maxLat = Math.min(90, lat + dLat);
 const minLon = Math.max(-180, lon - dLon);
 const maxLon = Math.min(180, lon + dLon);
 
-const boundingBoxes = [[[maxLat, minLon], [minLat, maxLon]]];
+/** Docs: each corner is [lat, lon] */
+const boundingBoxes = [[[minLat, minLon], [maxLat, maxLon]]];
 const url = 'wss://stream.aisstream.io/v0/stream';
 
 console.log(`Connecting to ${url}...`);
-console.log(`BBox around [${lat}, ${lon}] r=${radiusMiles}mi → corners [${maxLat}, ${minLon}] and [${minLat}, ${maxLon}]`);
+console.log(`BBox around [${lat}, ${lon}] r=${radiusMiles}mi → [[minLon,minLat],[maxLon,maxLat]] = ${JSON.stringify(boundingBoxes)}`);
 
 const ws = new WebSocket(url);
 let count = 0;

@@ -520,6 +520,82 @@ const addSummaryDataRows = (result: EnrichmentResult, rows: string[][]): void =>
     ]);
   }
 
+  // AIS Live Ship Positions — one row per vessel (aisstream.io snapshot)
+  if (
+    enrichments.ais_live_shipping_all &&
+    Array.isArray(enrichments.ais_live_shipping_all) &&
+    enrichments.ais_live_shipping_all.length > 0
+  ) {
+    enrichments.ais_live_shipping_all.forEach((vessel: any) => {
+      const vlat = vessel.lat ?? vessel.latitude;
+      const vlon = vessel.lon ?? vessel.longitude;
+      const latStr =
+        typeof vlat === 'number' && Number.isFinite(vlat) ? vlat.toString() : location.lat.toString();
+      const lonStr =
+        typeof vlon === 'number' && Number.isFinite(vlon) ? vlon.toString() : location.lon.toString();
+      const distStr =
+        typeof vessel.distance_miles === 'number' && Number.isFinite(vessel.distance_miles)
+          ? vessel.distance_miles.toFixed(2)
+          : enrichments.ais_live_shipping_proximity_distance != null
+            ? String(enrichments.ais_live_shipping_proximity_distance)
+            : '';
+      const sog = typeof vessel.sog === 'number' ? `${vessel.sog.toFixed(1)} kn` : '';
+      const cog = typeof vessel.cog === 'number' ? `${vessel.cog.toFixed(0)}°` : '';
+      const th =
+        typeof vessel.trueHeading === 'number' && vessel.trueHeading >= 0 && vessel.trueHeading <= 359
+          ? `${vessel.trueHeading.toFixed(0)}°`
+          : '';
+      const nav =
+        vessel.navigationalStatus != null && vessel.navigationalStatus !== ''
+          ? String(vessel.navigationalStatus)
+          : '';
+      const motion = [sog && `SOG ${sog}`, cog && `COG ${cog}`, th && `Heading ${th}`, nav && `Nav ${nav}`]
+        .filter(Boolean)
+        .join('; ');
+      const mmsi = vessel.mmsi != null ? String(vessel.mmsi) : '';
+      const displayName = (typeof vessel.shipName === 'string' && vessel.shipName.trim()) || `MMSI ${mmsi || '—'}`;
+      const ts =
+        typeof vessel.timestamp === 'number' && Number.isFinite(vessel.timestamp)
+          ? new Date(vessel.timestamp > 1e12 ? vessel.timestamp : vessel.timestamp * 1000).toISOString()
+          : '';
+      rows.push([
+        location.name,
+        location.lat.toString(),
+        location.lon.toString(),
+        'AIS Stream',
+        (location.confidence || 'N/A').toString(),
+        'AIS_LIVE_SHIPPING',
+        displayName,
+        latStr,
+        lonStr,
+        distStr,
+        'AIS Live Ship Positions (Global Risk)',
+        motion || '—',
+        mmsi,
+        ts || (enrichments.ais_live_shipping_collected_at != null ? String(enrichments.ais_live_shipping_collected_at) : ''),
+        'aisstream.io',
+      ]);
+    });
+  } else if (enrichments.ais_live_shipping_count !== undefined) {
+    rows.push([
+      location.name,
+      location.lat.toString(),
+      location.lon.toString(),
+      'AIS Stream',
+      (location.confidence || 'N/A').toString(),
+      'AIS_LIVE_SHIPPING',
+      enrichments.ais_live_shipping_summary || 'AIS live shipping',
+      location.lat.toString(),
+      location.lon.toString(),
+      (enrichments.ais_live_shipping_proximity_distance ?? 0).toFixed(1),
+      'AIS Live Ship Positions (Global Risk)',
+      `${enrichments.ais_live_shipping_count ?? 0} vessel(s); ${enrichments.ais_live_shipping_summary || ''}${enrichments.ais_live_shipping_error ? ` Error: ${enrichments.ais_live_shipping_error}` : ''}`,
+      '',
+      enrichments.ais_live_shipping_collected_at != null ? String(enrichments.ais_live_shipping_collected_at) : '',
+      'aisstream.io',
+    ]);
+  }
+
   // Global Data Centers (OSM / Overpass)
   if (enrichments.global_data_centers_osm_all && Array.isArray(enrichments.global_data_centers_osm_all)) {
     enrichments.global_data_centers_osm_all.forEach((dc: any) => {
@@ -857,7 +933,8 @@ const addAllEnrichmentDataRows = (result: EnrichmentResult, rows: string[][]): v
   // Add ALL enrichment fields as rows (excluding arrays and detailed POI data)
   Object.entries(enrichments).forEach(([key, value]) => {
     // Skip detailed POI arrays (handled separately)
-    if (key.includes('_all_pois') || 
+    if (key.includes('_all_pois') ||
+        key === 'ais_live_shipping_all' ||
         key.includes('_detailed') || 
         key.includes('_elements') || 
         key.includes('_features') ||
