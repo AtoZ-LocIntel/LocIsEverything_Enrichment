@@ -603,8 +603,13 @@ export async function runAISStreamSnapshotQuery(
 
   const wantDebug = pickQuery(query, 'debug') === '1';
 
+  /** Keep WebSocket work bounded; large message counts risk memory/time on serverless. */
+  const maxWsMessages = 1200;
+  /** Vercel response body limit (~4.5MB hobby); cap ships returned to stay well under. */
+  const maxFeaturesReturned = 750;
+
   try {
-    const { features, stats } = await collectSnapshot(apiKey, boundingBoxes, collectMs, 4000);
+    const { features, stats } = await collectSnapshot(apiKey, boundingBoxes, collectMs, maxWsMessages);
     const filtered = features
       .map((f) => {
         const d = haversineMiles(lat, lon, f.lat, f.lon);
@@ -612,6 +617,8 @@ export async function runAISStreamSnapshotQuery(
       })
       .filter((f) => f.distance_miles! <= radiusMiles + 0.5)
       .sort((a, b) => (a.distance_miles ?? 0) - (b.distance_miles ?? 0));
+
+    const capped = filtered.slice(0, maxFeaturesReturned);
 
     const body: Record<string, unknown> = {
       collectedAt: new Date().toISOString(),
@@ -623,9 +630,13 @@ export async function runAISStreamSnapshotQuery(
         crossesAntimeridian: rawMinLon < -180 || rawMaxLon > 180,
         subscriptionBoxCount: boundingBoxes.length,
       },
-      count: filtered.length,
-      features: filtered,
+      count: capped.length,
+      features: capped,
     };
+    if (filtered.length > capped.length) {
+      body.truncated = true;
+      body.totalMatched = filtered.length;
+    }
 
     if (wantDebug) {
       body.debug = {

@@ -83,24 +83,41 @@ export async function fetchAISLivePositionReports(
   }
   const res = await fetch(`/api/ais-snapshot?${params}`);
   const ct = res.headers.get('content-type') || '';
-  if (!ct.includes('application/json')) {
+  const rawText = await res.text();
+  const looksJson = ct.includes('application/json') || rawText.trimStart().startsWith('{');
+
+  if (!looksJson) {
     const prodHint =
       typeof import.meta !== 'undefined' && import.meta.env?.PROD === true
-        ? ' Production: HTML was returned instead of JSON — the SPA rewrite must not run before /api/*. In vercel.json put `/api/(.*)` → `/api/$1` first, then `/(.*)` → `/index.html`. Confirm api/ais-snapshot.ts deploys and AISSTREAM_API_KEY is set for Production.'
+        ? ' Check Vercel Function logs for /api/ais-snapshot. Ensure vercel.json rewrites list `/api/(.*)` before SPA fallback; set AISSTREAM_API_KEY for Production.'
         : ' Local: use `npm run dev` with AISSTREAM_API_KEY in .env, or set VITE_AIS_PROXY_TARGET to your deployed site.';
     return {
       features: [],
-      error: `AIS snapshot response was not JSON (often the SPA HTML).${prodHint}`,
+      error: `AIS snapshot was not JSON (HTTP ${res.status}).${prodHint}`,
     };
   }
 
-  const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(rawText) as Record<string, unknown>;
+  } catch {
+    return {
+      features: [],
+      error: `AIS snapshot returned invalid JSON (HTTP ${res.status}).`,
+    };
+  }
 
   if (!res.ok) {
+    const detail =
+      typeof data.details === 'string'
+        ? data.details
+        : typeof data.hint === 'string'
+          ? data.hint
+          : undefined;
     return {
       features: [],
       error: typeof data.error === 'string' ? data.error : res.statusText,
-      hint: typeof data.hint === 'string' ? data.hint : undefined,
+      hint: detail,
     };
   }
 
