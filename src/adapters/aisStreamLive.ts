@@ -86,7 +86,7 @@ export async function fetchAISLivePositionReports(
   if (!ct.includes('application/json')) {
     const prodHint =
       typeof import.meta !== 'undefined' && import.meta.env?.PROD === true
-        ? ' Production: the app received HTML instead of JSON — usually the SPA fallback is serving index.html for /api/ais-snapshot (check vercel.json rewrites exclude /api/* and that api/ais-snapshot.ts is deployed). AISSTREAM_API_KEY on Vercel is correct for the serverless function once the route is hit.'
+        ? ' Production: HTML was returned instead of JSON — the SPA rewrite must not run before /api/*. In vercel.json put `/api/(.*)` → `/api/$1` first, then `/(.*)` → `/index.html`. Confirm api/ais-snapshot.ts deploys and AISSTREAM_API_KEY is set for Production.'
         : ' Local: use `npm run dev` with AISSTREAM_API_KEY in .env, or set VITE_AIS_PROXY_TARGET to your deployed site.';
     return {
       features: [],
